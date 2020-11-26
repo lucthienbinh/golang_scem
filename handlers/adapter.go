@@ -2,20 +2,29 @@ package handlers
 
 import (
 	"github.com/lucthienbinh/golang_scem/models"
+	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
 
-// ConnectDatbase to open connect with database
-func ConnectDatbase() (err error) {
+// ConnectPostgres to open connect with database
+func ConnectPostgres() (err error) {
 	// https://github.com/go-gorm/postgres
 	// https://stackoverflow.com/questions/50085286/postgresql-fatal-ident-authentication-failed-for-user
 	db, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  "user=postgres password=postgres dbname=scem_database port=5432 sslmode=disable TimeZone=Asia/Ho_Chi_Minh",
 		PreferSimpleProtocol: true, // disables implicit prepared statement usage
 	}), &gorm.Config{})
+	return err
+}
+
+// ConnectMySQL to open connect with database
+func ConnectMySQL() (err error) {
+	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
+	dsn := "root:@tcp(localhost:3306)/scem_database?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	return err
 }
 

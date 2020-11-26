@@ -21,7 +21,8 @@ func RunServer() {
 	// Initial auth middleware
 	middlewares.RunAuth()
 	// Connect Postgres database
-	if err := handlers.ConnectDatbase(); err != nil {
+	if err := handlers.ConnectPostgres(); err != nil {
+		// if err := handlers.ConnectMySQL(); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
