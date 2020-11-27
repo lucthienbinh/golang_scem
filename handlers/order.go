@@ -14,7 +14,7 @@ func GetOrderInfoListHandler(c *gin.Context) {
 	orderInfoList := []models.OrderInfoDatabase{}
 	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, ord.has_package, " +
 		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as trasnport_type, " +
-		"e.name as employee_name, ord.receiver, ord.detail, ord.total_price, ord.note"
+		"e.name as employee_name, ord.receiver, ord.detail, ord.total_price, ord.note, ord.created_at"
 	leftJoin1 := "left join customers as c1 on ord.customer_send_id = c1.id"
 	leftJoin2 := "left join customers as c2 on ord.customer_receive_id = c2.id"
 	leftJoin3 := "left join transport_types as t on ord.trasnport_type_id = t.id"

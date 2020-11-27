@@ -23,6 +23,8 @@ type OrderInfo struct {
 	Detail            string `json:"detail" binding:"required"`
 	TotalPrice        int32  `json:"total_price" binding:"required"`
 	Note              string `json:"note"`
+	CreatedAt         int64  `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt         int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // OrderStatusJSON save data of zeebe client
@@ -58,6 +60,8 @@ type OrderInfoDatabase struct {
 	Detail              string `json:"detail"`
 	TotalPrice          int32  `json:"total_price"`
 	Note                string `json:"note"`
+	CreatedAt           int64  `json:"created_at"`
+	UpdatedAt           int64  `json:"updated_at"`
 }
 
 // -------------------- Convert function --------------------

@@ -98,7 +98,8 @@ func UpdateCustomerHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// dont update point field
+	// dont update these field
+	fetchCustomer.ID = customer.ID
 	fetchCustomer.Point = customer.Point
 	if err = db.Model(&fetchCustomer).Updates(&fetchCustomer).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -181,11 +182,14 @@ func UpdateEmployeeHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	fetchEmployee := &models.Employee{}
 	if err := c.ShouldBindJSON(&employee); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err = db.Model(&employee).Updates(&employee).Error; err != nil {
+	// dont update these field
+	fetchEmployee.ID = employee.ID
+	if err = db.Model(&fetchEmployee).Updates(&fetchEmployee).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

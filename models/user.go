@@ -24,12 +24,14 @@ type Customer struct {
 	Gender     string `json:"gender" binding:"required"`
 	Address    string `json:"address" binding:"required"`
 	Point      int16  `json:"point"`
+	CreatedAt  int64  `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt  int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // Employee structure
 type Employee struct {
 	ID                 uint   `gorm:"primary_key" json:"id"`
-	UserAuthID         uint   `json:"user_auth_id" json:"-"`
+	UserAuthID         uint   `json:"-"`
 	Name               string `json:"name" binding:"required"`
 	Age                uint8  `json:"age" binding:"required"`
 	Phone              string `json:"phone" binding:"required"`
@@ -39,6 +41,8 @@ type Employee struct {
 	EmployeeTypeID     uint   `json:"employee_type_id" binding:"required"`
 	Avatar             string `json:"avatar" binding:"required"`
 	DeliveryLocationID uint   `json:"delivery_location_id"`
+	CreatedAt          int64  `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt          int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // EmployeeType structure
