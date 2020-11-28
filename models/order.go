@@ -9,7 +9,7 @@ import (
 
 // OrderInfo structure
 type OrderInfo struct {
-	ID                uint   `gorm:"primary_key" json:"id"`
+	ID                uint   `gorm:"primary_key;<-:false" json:"id"`
 	Weight            int16  `json:"weight"`
 	Volume            int16  `json:"volume"`
 	Type              string `json:"type"`
@@ -36,7 +36,7 @@ type OrderStatusJSON struct {
 
 // TransportType structure
 type TransportType struct {
-	ID              uint   `gorm:"primary_key" json:"id"`
+	ID              uint   `gorm:"primary_key;<-:false" json:"id"`
 	Name            string `json:"name"`
 	RouteFixedPrice int32  `json:"fixed_price"`
 	PricePerKm      int32  `json:"price_per_km"`

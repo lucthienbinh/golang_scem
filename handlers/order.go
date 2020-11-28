@@ -105,7 +105,7 @@ func DeleteOrderInfoHandler(c *gin.Context) {
 // GetTransportTypeListHandler in database
 func GetTransportTypeListHandler(c *gin.Context) {
 	transportTypes := []models.TransportType{}
-	db.Find(&transportTypes)
+	db.Order("id asc").Find(&transportTypes)
 	c.JSON(http.StatusOK, gin.H{"transport_type_list": &transportTypes})
 	return
 }
@@ -155,6 +155,7 @@ func UpdateTransportTypeHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	transportType.ID = getIDFromParam(c)
 	if err = db.Model(&transportType).Updates(&transportType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

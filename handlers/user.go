@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/middlewares"
@@ -34,12 +35,18 @@ func LogoutHandler(c *gin.Context) {
 	return
 }
 
+// -------------------- COMMON FUNTION --------------------
+func getIDFromParam(c *gin.Context) uint {
+	rawUint64, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	return uint(rawUint64)
+}
+
 // -------------------- CUSTOMER HANDLER FUNTION --------------------
 
 // GetCustomerListHandler in database
 func GetCustomerListHandler(c *gin.Context) {
 	customers := []models.Customer{}
-	db.Find(&customers)
+	db.Order("id asc").Find(&customers)
 	c.JSON(http.StatusOK, gin.H{"customer_list": &customers})
 	return
 }
@@ -93,15 +100,12 @@ func UpdateCustomerHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	fetchCustomer := &models.Customer{}
-	if err := c.ShouldBindJSON(&fetchCustomer); err != nil {
+	if err := c.ShouldBindJSON(&customer); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// dont update these field
-	fetchCustomer.ID = customer.ID
-	fetchCustomer.Point = customer.Point
-	if err = db.Model(&fetchCustomer).Updates(&fetchCustomer).Error; err != nil {
+	customer.ID = getIDFromParam(c)
+	if err = db.Model(&customer).Omit("point").Updates(&customer).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -127,7 +131,7 @@ func DeleteCustomerHandler(c *gin.Context) {
 // GetEmployeeListHandler in database
 func GetEmployeeListHandler(c *gin.Context) {
 	employees := []models.Employee{}
-	db.Find(&employees)
+	db.Order("id asc").Find(&employees)
 	c.JSON(http.StatusOK, gin.H{"employee_list": &employees})
 	return
 }
@@ -182,14 +186,12 @@ func UpdateEmployeeHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	fetchEmployee := &models.Employee{}
 	if err := c.ShouldBindJSON(&employee); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// dont update these field
-	fetchEmployee.ID = employee.ID
-	if err = db.Model(&fetchEmployee).Updates(&fetchEmployee).Error; err != nil {
+	employee.ID = getIDFromParam(c)
+	if err = db.Model(&employee).Updates(&employee).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -215,8 +217,8 @@ func DeleteEmployeeHandler(c *gin.Context) {
 // GetDeliveryLocationListHandler in database
 func GetDeliveryLocationListHandler(c *gin.Context) {
 	deliveryLocations := []models.DeliveryLocation{}
-	db.Find(&deliveryLocations)
-	c.JSON(http.StatusOK, gin.H{"delivery_type_list": &deliveryLocations})
+	db.Order("id asc").Find(&deliveryLocations)
+	c.JSON(http.StatusOK, gin.H{"delivery_location_list": &deliveryLocations})
 	return
 }
 
@@ -235,7 +237,7 @@ func GetDeliveryLocationHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"delivery_type_info": &deliveryLocation})
+	c.JSON(http.StatusOK, gin.H{"delivery_location_info": &deliveryLocation})
 	return
 }
 
@@ -250,7 +252,7 @@ func CreateDeliveryLocationHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "An employee type has been created!"})
+	c.JSON(http.StatusOK, gin.H{"server_response": "A delivery location has been created!"})
 	return
 }
 
@@ -265,6 +267,7 @@ func UpdateDeliveryLocationHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	deliveryLocation.ID = getIDFromParam(c)
 	if err = db.Model(&deliveryLocation).Updates(&deliveryLocation).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -291,7 +294,7 @@ func DeleteDeliveryLocationHandler(c *gin.Context) {
 // GetEmployeeTypeListHandler in database
 func GetEmployeeTypeListHandler(c *gin.Context) {
 	employeeTypes := []models.EmployeeType{}
-	db.Find(&employeeTypes)
+	db.Order("id asc").Find(&employeeTypes)
 	c.JSON(http.StatusOK, gin.H{"employee_type_list": &employeeTypes})
 	return
 }
@@ -341,6 +344,7 @@ func UpdateEmployeeTypeHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	employeeType.ID = getIDFromParam(c)
 	if err = db.Model(&employeeType).Updates(&employeeType).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

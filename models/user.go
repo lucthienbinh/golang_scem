@@ -16,22 +16,22 @@ type UserAuthenticate struct {
 
 // Customer structure
 type Customer struct {
-	ID         uint   `gorm:"primary_key" json:"id"`
-	UserAuthID uint   `json:"-"`
+	ID         uint   `gorm:"primary_key;<-:false" json:"id"`
+	UserAuthID uint   `gorm:"<-:false" json:"-"`
 	Name       string `json:"name" binding:"required"`
 	Age        uint8  `json:"age" binding:"required"`
 	Phone      string `json:"phone" binding:"required"`
 	Gender     string `json:"gender" binding:"required"`
 	Address    string `json:"address" binding:"required"`
 	Point      int16  `json:"point"`
-	CreatedAt  int64  `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt  int64  `gorm:"autoUpdateTime" json:"updated_at"`
+	CreatedAt  int64  `json:"created_at"`
+	UpdatedAt  int64  `json:"updated_at"`
 }
 
 // Employee structure
 type Employee struct {
-	ID                 uint   `gorm:"primary_key" json:"id"`
-	UserAuthID         uint   `json:"-"`
+	ID                 uint   `gorm:"primary_key;<-:false" json:"id"`
+	UserAuthID         uint   `gorm:"<-:false" json:"-"`
 	Name               string `json:"name" binding:"required"`
 	Age                uint8  `json:"age" binding:"required"`
 	Phone              string `json:"phone" binding:"required"`
@@ -47,13 +47,13 @@ type Employee struct {
 
 // EmployeeType structure
 type EmployeeType struct {
-	ID   uint   `gorm:"primary_key" json:"id"`
-	Name string `binding:"required"`
+	ID   uint   `gorm:"primary_key;<-:false" json:"id"`
+	Name string `binding:"required" json:"name"`
 }
 
 // DeliveryLocation structure
 type DeliveryLocation struct {
-	ID       uint   `gorm:"primary_key" json:"id"`
+	ID       uint   `gorm:"primary_key;<-:false" json:"id"`
 	City     string `json:"city"`
 	District string `json:"district"`
 }
