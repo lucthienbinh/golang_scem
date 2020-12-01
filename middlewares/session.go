@@ -34,8 +34,8 @@ func GetUserAuthIDInSession(c *gin.Context) uint {
 	return uint(rawUint64)
 }
 
-// CreateSession after login successful
-func CreateSession(c *gin.Context, userAuth *models.UserAuthenticate) {
+// CreateWebSession after login successful
+func CreateWebSession(c *gin.Context, userAuth *models.UserAuthenticate) {
 	w := c.Writer
 	csrf, err := generateKey()
 	if err != nil {
@@ -74,65 +74,67 @@ func CreateSession(c *gin.Context, userAuth *models.UserAuthenticate) {
 	}
 	http.SetCookie(w, &csrfCookie)
 
-	c.JSON(http.StatusOK, gin.H{"status": "You are logged in"})
+	c.JSON(http.StatusOK, gin.H{"status": "Successfully logged in"})
 }
 
-// ValidateSession when user access route with middleware
-func ValidateSession(c *gin.Context) {
-	w := c.Writer
-	r := c.Request
-	userSession, err := sesh.GetUserSession(r)
-	if err != nil {
-		log.Printf("Err fetching user session: %v\n", err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
-		return
-	}
-	// nil session pointers indicate a 401 unauthorized
-	if userSession == nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
-		return
-	}
-	log.Printf("In validate; user session expiration before extension: %v\n", userSession.ExpiresAt.UTC())
+// ValidateWebSession when user access route with middleware
+func ValidateWebSession() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		w := c.Writer
+		r := c.Request
+		userSession, err := sesh.GetUserSession(r)
+		if err != nil {
+			log.Printf("Err fetching user session: %v\n", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
+			return
+		}
+		// nil session pointers indicate a 401 unauthorized
+		if userSession == nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+			return
+		}
+		log.Printf("In validate; user session expiration before extension: %v\n", userSession.ExpiresAt.UTC())
 
-	myJSON := SessionJSON{}
-	if err := json.Unmarshal([]byte(userSession.JSON), &myJSON); err != nil {
-		log.Printf("Err unmarshalling json: %v\n", err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
-		return
-	}
-	log.Printf("In validate; user's custom json: %v\n", myJSON)
+		myJSON := SessionJSON{}
+		if err := json.Unmarshal([]byte(userSession.JSON), &myJSON); err != nil {
+			log.Printf("Err unmarshalling json: %v\n", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
+			return
+		}
+		log.Printf("In validate; user's custom json: %v\n", myJSON)
 
-	// note: we set the csrf in a cookie, but look for it in request headers
-	csrf := r.Header.Get("X-CSRF-Token")
-	if csrf != myJSON.CSRF {
-		log.Printf("Unauthorized! CSRF token doesn't match user session")
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
-		return
-	}
+		// note: we set the csrf in a cookie, but look for it in request headers
+		csrf := r.Header.Get("X-CSRF-Token")
+		if csrf != myJSON.CSRF {
+			log.Printf("Unauthorized! CSRF token doesn't match user session")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+			return
+		}
 
-	// note that session expiry's need to be manually extended
-	if err = sesh.ExtendUserSession(userSession, r, w); err != nil {
-		log.Printf("Err extending user session: %v\n", err)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
-		return
-	}
-	log.Printf("In validate; users session expiration after extension: %v\n", userSession.ExpiresAt.UTC())
+		// note that session expiry's need to be manually extended
+		if err = sesh.ExtendUserSession(userSession, r, w); err != nil {
+			log.Printf("Err extending user session: %v\n", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
+			return
+		}
+		log.Printf("In validate; users session expiration after extension: %v\n", userSession.ExpiresAt.UTC())
 
-	// need to extend the csrf cookie, too
-	csrfCookie := http.Cookie{
-		Name:     "csrf",
-		Value:    csrf,
-		Expires:  userSession.ExpiresAt,
-		Path:     "/",
-		HttpOnly: false,
-		Secure:   false, // note: can't use secure cookies in development
+		// need to extend the csrf cookie, too
+		csrfCookie := http.Cookie{
+			Name:     "csrf",
+			Value:    csrf,
+			Expires:  userSession.ExpiresAt,
+			Path:     "/",
+			HttpOnly: false,
+			Secure:   false, // note: can't use secure cookies in development
+		}
+		http.SetCookie(w, &csrfCookie)
+		c.Next()
 	}
-	http.SetCookie(w, &csrfCookie)
-	c.Next()
 }
 
-// ClearSession when user loged out
-func ClearSession(c *gin.Context) {
+// ClearWebSession when user loged out
+func ClearWebSession(c *gin.Context) {
 	w := c.Writer
 	r := c.Request
 	userSession, err := sesh.GetUserSession(r)
@@ -184,11 +186,11 @@ func ClearSession(c *gin.Context) {
 	http.SetCookie(w, &csrfCookie)
 
 	// w.WriteHeader(http.StatusOK)
-	c.JSON(http.StatusOK, gin.H{"status": "You are logged out"})
+	c.JSON(http.StatusOK, gin.H{"status": "Successfully logged out"})
 }
 
-// RunAuth to connect redis server
-func RunAuth() {
+// RunWebAuth to connect redis server
+func RunWebAuth() {
 	seshStore := store.New(store.Options{})
 
 	// e.g. `$ openssl rand -base64 64`

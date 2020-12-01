@@ -27,13 +27,13 @@ func WebLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		return
 	}
-	middlewares.CreateSession(c, userAuth)
+	middlewares.CreateWebSession(c, userAuth)
 	return
 }
 
 // WebLogoutHandler remove user session
 func WebLogoutHandler(c *gin.Context) {
-	middlewares.ClearSession(c)
+	middlewares.ClearWebSession(c)
 	return
 }
 
@@ -53,13 +53,13 @@ func AppLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		return
 	}
-	middlewares.CreateSession(c, userAuth)
+	middlewares.GenerateAppJWT(userAuth.ID)
 	return
 }
 
 // AppLogoutHandler remove user session
 func AppLogoutHandler(c *gin.Context) {
-	middlewares.ClearSession(c)
+	middlewares.ClearWebSession(c)
 	return
 }
 

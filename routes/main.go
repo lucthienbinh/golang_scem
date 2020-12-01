@@ -18,8 +18,12 @@ func RunServer() {
 	// gin.SetMode(gin.ReleaseMode)
 	// export GIN_MODE=debug
 
-	// Initial auth middleware
-	middlewares.RunAuth()
+	// Initial web auth middleware
+	middlewares.RunWebAuth()
+
+	// Initial app auth middleware
+	middlewares.RunAppJWTAuth()
+
 	// Connect Postgres database
 	if err := handlers.ConnectPostgres(); err != nil {
 		// if err := handlers.ConnectMySQL(); err != nil {
