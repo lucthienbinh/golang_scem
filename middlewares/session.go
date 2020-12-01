@@ -26,6 +26,14 @@ type SessionJSON struct {
 
 var sesh *sessions.Service
 
+// GetUserAuthIDInSession to validate role
+func GetUserAuthIDInSession(c *gin.Context) uint {
+	r := c.Request
+	userSession, _ := sesh.GetUserSession(r)
+	rawUint64, _ := strconv.ParseUint(userSession.UserID, 10, 32)
+	return uint(rawUint64)
+}
+
 // CreateSession after login successful
 func CreateSession(c *gin.Context, userAuth *models.UserAuthenticate) {
 	w := c.Writer
@@ -84,7 +92,7 @@ func ValidateSession(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		return
 	}
-	log.Printf("In require; user session expiration before extension: %v\n", userSession.ExpiresAt.UTC())
+	log.Printf("In validate; user session expiration before extension: %v\n", userSession.ExpiresAt.UTC())
 
 	myJSON := SessionJSON{}
 	if err := json.Unmarshal([]byte(userSession.JSON), &myJSON); err != nil {
@@ -92,7 +100,7 @@ func ValidateSession(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
 		return
 	}
-	log.Printf("In require; user's custom json: %v\n", myJSON)
+	log.Printf("In validate; user's custom json: %v\n", myJSON)
 
 	// note: we set the csrf in a cookie, but look for it in request headers
 	csrf := r.Header.Get("X-CSRF-Token")
@@ -108,7 +116,7 @@ func ValidateSession(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
 		return
 	}
-	log.Printf("In require; users session expiration after extension: %v\n", userSession.ExpiresAt.UTC())
+	log.Printf("In validate; users session expiration after extension: %v\n", userSession.ExpiresAt.UTC())
 
 	// need to extend the csrf cookie, too
 	csrfCookie := http.Cookie{

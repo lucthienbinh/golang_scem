@@ -42,6 +42,9 @@ func RunServer() {
 // so this one won't be so messy
 func routeList() {
 
+	userAuth := router.Group("/user-auth")
+	userAuthRoutes(userAuth)
+
 	api := router.Group("/api")
 	userRoutes(api)
 	orderRoutes(api)

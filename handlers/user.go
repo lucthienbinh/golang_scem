@@ -9,8 +9,10 @@ import (
 	"github.com/lucthienbinh/golang_scem/models"
 )
 
-// LoginHandler check user information
-func LoginHandler(c *gin.Context) {
+// -------------------- USER AUTHENTICATION HANDLER FUNTION --------------------
+
+// WebLoginHandler check user information
+func WebLoginHandler(c *gin.Context) {
 	var json models.Login
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -29,8 +31,34 @@ func LoginHandler(c *gin.Context) {
 	return
 }
 
-// LogoutHandler remove user session
-func LogoutHandler(c *gin.Context) {
+// WebLogoutHandler remove user session
+func WebLogoutHandler(c *gin.Context) {
+	middlewares.ClearSession(c)
+	return
+}
+
+// AppLoginHandler check user information
+func AppLoginHandler(c *gin.Context) {
+	var json models.Login
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if json.Email == "" || json.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing field"})
+		return
+	}
+	userAuth := &models.UserAuthenticate{}
+	if err := db.Where("email = ? AND active = true", json.Email).First(&userAuth).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+		return
+	}
+	middlewares.CreateSession(c, userAuth)
+	return
+}
+
+// AppLogoutHandler remove user session
+func AppLogoutHandler(c *gin.Context) {
 	middlewares.ClearSession(c)
 	return
 }

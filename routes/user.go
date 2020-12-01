@@ -5,11 +5,14 @@ import (
 	"github.com/lucthienbinh/golang_scem/handlers"
 )
 
+func userAuthRoutes(rg *gin.RouterGroup) {
+	rg.POST("/web/loginJSON", handlers.WebLoginHandler)
+	rg.GET("/web/logout", handlers.WebLogoutHandler)
+	rg.POST("/app/loginJSON", handlers.AppLoginHandler)
+	rg.GET("/app/logout", handlers.AppLogoutHandler)
+}
+
 func userRoutes(rg *gin.RouterGroup) {
-	// Authorization user
-	authUsers := rg.Group("/auth-user")
-	authUsers.POST("/loginJSON", handlers.LoginHandler)
-	authUsers.GET("/logout", handlers.LogoutHandler)
 
 	customer := rg.Group("/customer")
 	// customers.Use(middlewares.ValidateSession)
