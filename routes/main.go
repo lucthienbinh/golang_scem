@@ -22,7 +22,7 @@ func RunServer() {
 	middlewares.RunWebAuth()
 
 	// Initial app auth middleware
-	middlewares.RunAppJWTAuth()
+	middlewares.RunAppAuth()
 
 	// Connect Postgres database
 	if err := handlers.ConnectPostgres(); err != nil {

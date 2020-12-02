@@ -11,6 +11,8 @@ import (
 
 // -------------------- USER AUTHENTICATION HANDLER FUNTION --------------------
 
+// ---------- WEB AUTHENTICATION HANDLER ----------
+
 // WebLoginHandler check user information
 func WebLoginHandler(c *gin.Context) {
 	var json models.Login
@@ -37,6 +39,8 @@ func WebLogoutHandler(c *gin.Context) {
 	return
 }
 
+// ---------- APP AUTHENTICATION HANDLER ----------
+
 // AppLoginHandler check user information
 func AppLoginHandler(c *gin.Context) {
 	var json models.Login
@@ -53,13 +57,19 @@ func AppLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		return
 	}
-	middlewares.GenerateAppJWT(userAuth.ID)
+	middlewares.CreateAppToken(c, userAuth)
 	return
 }
 
 // AppLogoutHandler remove user session
 func AppLogoutHandler(c *gin.Context) {
-	middlewares.ClearWebSession(c)
+	middlewares.DeleteAppToken(c)
+	return
+}
+
+// AppReloginHandler remove user session
+func AppReloginHandler(c *gin.Context) {
+	middlewares.RefreshAppToken(c)
 	return
 }
 

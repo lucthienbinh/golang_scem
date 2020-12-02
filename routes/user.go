@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/handlers"
+	"github.com/lucthienbinh/golang_scem/middlewares"
 )
 
 func userAuthRoutes(rg *gin.RouterGroup) {
@@ -10,6 +11,7 @@ func userAuthRoutes(rg *gin.RouterGroup) {
 	rg.GET("/web/logout", handlers.WebLogoutHandler)
 	rg.POST("/app/loginJSON", handlers.AppLoginHandler)
 	rg.GET("/app/logout", handlers.AppLogoutHandler)
+	rg.POST("/app/reloginJSON", handlers.AppReloginHandler)
 }
 
 func userRoutes(rg *gin.RouterGroup) {
@@ -38,8 +40,7 @@ func userRoutes(rg *gin.RouterGroup) {
 	employeeType.PUT("/update/:id", handlers.UpdateEmployeeTypeHandler)
 	employeeType.DELETE("/delete/:id", handlers.DeleteEmployeeTypeHandler)
 
-	deliveryLocation := rg.Group("/delivery-location")
-	// employees.Use(middlewares.ValidateSession)
+	deliveryLocation := rg.Group("/delivery-location", middlewares.ValidateAppToken())
 	deliveryLocation.GET("/list", handlers.GetDeliveryLocationListHandler)
 	deliveryLocation.GET("/id/:id", handlers.GetDeliveryLocationHandler)
 	deliveryLocation.POST("/create", handlers.CreateDeliveryLocationHandler)

@@ -61,7 +61,7 @@ func CreateWebSession(c *gin.Context, userAuth *models.UserAuthenticate) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
 		return
 	}
-	log.Printf("In issue; user's session: %v\n", userSession)
+	// log.Printf("In issue; user's session: %v\n", userSession)
 
 	// note: we set the csrf in a cookie, but look for it in request headers
 	csrfCookie := http.Cookie{
@@ -117,7 +117,7 @@ func ValidateWebSession() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"status": "Internal Server Error"})
 			return
 		}
-		log.Printf("In validate; users session expiration after extension: %v\n", userSession.ExpiresAt.UTC())
+		// log.Printf("In validate; users session expiration after extension: %v\n", userSession.ExpiresAt.UTC())
 
 		// need to extend the csrf cookie, too
 		csrfCookie := http.Cookie{
@@ -149,7 +149,7 @@ func ClearWebSession(c *gin.Context) {
 		return
 	}
 
-	log.Printf("In clear; session: %v\n", userSession)
+	// log.Printf("In clear; session: %v\n", userSession)
 
 	myJSON := SessionJSON{}
 	if err := json.Unmarshal([]byte(userSession.JSON), &myJSON); err != nil {

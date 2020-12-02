@@ -12,8 +12,11 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v7"
+	"github.com/lucthienbinh/golang_scem/models"
 	"github.com/twinj/uuid"
 )
+
+// Source: https://learn.vonage.com/blog/2020/03/13/using-jwt-for-authentication-in-a-golang-application-dr
 
 var client *redis.Client
 
@@ -36,14 +39,14 @@ func RunAppAuth() {
 // -------------------- Public function --------------------
 
 // CreateAppToken after logged in successful
-func CreateAppToken(c *gin.Context) {
+func CreateAppToken(c *gin.Context, userAuth *models.UserAuthenticate) {
 
-	ts, err := createToken(user.ID)
+	ts, err := createToken(userAuth.ID)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, err.Error())
 		return
 	}
-	saveErr := createAuth(user.ID, ts)
+	saveErr := createAuth(userAuth.ID, ts)
 	if saveErr != nil {
 		c.JSON(http.StatusUnprocessableEntity, saveErr.Error())
 	}
@@ -54,13 +57,12 @@ func CreateAppToken(c *gin.Context) {
 	c.JSON(http.StatusOK, tokens)
 }
 
-// TokenAuthMiddleware secure private routes
-func TokenAuthMiddleware() gin.HandlerFunc {
+// ValidateAppToken secure private routes
+func ValidateAppToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := tokenValid(c.Request)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, err.Error())
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": err.Error()})
 			return
 		}
 		c.Next()
@@ -82,183 +84,8 @@ func DeleteAppToken(c *gin.Context) {
 	c.JSON(http.StatusOK, "Successfully logged out")
 }
 
-type accessDetails struct {
-	AccessUUID string
-	UserID     uint
-}
-
-type tokenDetails struct {
-	AccessToken  string
-	RefreshToken string
-	AccessUUID   string
-	RefreshUUID  string
-	AtExpires    int64
-	RtExpires    int64
-}
-
-func createToken(userid uint) (*tokenDetails, error) {
-	td := &tokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
-	td.AccessUUID = uuid.NewV4().String()
-
-	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-	td.RefreshUUID = td.AccessUUID + "++" + strconv.Itoa(int(userid))
-
-	var err error
-	//Creating Access Token
-	os.Setenv("ACCESS_SECRET", "jdnfksdmfksd") //this should be in an env file
-	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
-	atClaims["access_uuid"] = td.AccessUUID
-	atClaims["user_id"] = userid
-	atClaims["exp"] = td.AtExpires
-	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
-	if err != nil {
-		return nil, err
-	}
-	//Creating Refresh Token
-	os.Setenv("REFRESH_SECRET", "mcmvmkmsdnfsdmfdsjf") //this should be in an env file
-	rtClaims := jwt.MapClaims{}
-	rtClaims["refresh_uuid"] = td.RefreshUUID
-	rtClaims["user_id"] = userid
-	rtClaims["exp"] = td.RtExpires
-	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
-	td.RefreshToken, err = rt.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
-	if err != nil {
-		return nil, err
-	}
-	return td, nil
-}
-
-func createAuth(userid uint, td *tokenDetails) error {
-	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
-	rt := time.Unix(td.RtExpires, 0)
-	now := time.Now()
-
-	errAccess := client.Set(td.AccessUUID, strconv.Itoa(int(userid)), at.Sub(now)).Err()
-	if errAccess != nil {
-		return errAccess
-	}
-	errRefresh := client.Set(td.RefreshUUID, strconv.Itoa(int(userid)), rt.Sub(now)).Err()
-	if errRefresh != nil {
-		return errRefresh
-	}
-	return nil
-}
-
-func extractToken(r *http.Request) string {
-	bearToken := r.Header.Get("Authorization")
-	strArr := strings.Split(bearToken, " ")
-	if len(strArr) == 2 {
-		return strArr[1]
-	}
-	return ""
-}
-
-// Parse, validate, and return a token.
-// keyFunc will receive the parsed token and should return the key for validating.
-func verifyToken(r *http.Request) (*jwt.Token, error) {
-	tokenString := extractToken(r)
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("ACCESS_SECRET")), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return token, nil
-}
-
-func tokenValid(r *http.Request) error {
-	token, err := verifyToken(r)
-	if err != nil {
-		return err
-	}
-	if _, ok := token.Claims.(jwt.Claims); !ok || !token.Valid {
-		return err
-	}
-	return nil
-}
-
-func extractTokenMetadata(r *http.Request) (*accessDetails, error) {
-	token, err := verifyToken(r)
-	if err != nil {
-		return nil, err
-	}
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if ok && token.Valid {
-		accessUUID, ok := claims["access_uuid"].(string)
-		if !ok {
-			return nil, err
-		}
-		userID, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		userIDConvert := uint(userID)
-		return &accessDetails{
-			AccessUUID: accessUUID,
-			UserID:     userIDConvert,
-		}, nil
-	}
-	return nil, err
-}
-
-type todo struct {
-	UserID uint   `json:"user_id"`
-	Title  string `json:"title"`
-}
-
-func fetchAuth(authD *accessDetails) (uint, error) {
-	userid, err := client.Get(authD.AccessUUID).Result()
-	if err != nil {
-		return 0, err
-	}
-	userID, _ := strconv.ParseUint(userid, 10, 64)
-	userIDConvert := uint(userID)
-	if authD.UserID != userIDConvert {
-		return 0, errors.New("unauthorized")
-	}
-	return userIDConvert, nil
-}
-
-func createTodo(c *gin.Context) {
-	var td todo
-	if err := c.ShouldBindJSON(&td); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, "invalid json")
-		return
-	}
-	//Extract the access token metadata
-	metadata, err := extractTokenMetadata(c.Request)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, "unauthorized")
-		return
-	}
-	userID, err := fetchAuth(metadata)
-	userIDConvert := uint(userID)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, err.Error())
-		return
-	}
-	td.UserID = userIDConvert
-	//you can proceed to save the Todo to a database
-	//but we will just return it to the caller:
-
-	c.JSON(http.StatusCreated, td)
-}
-
-func deleteAuth(givenUUID string) (int64, error) {
-	deleted, err := client.Del(givenUUID).Result()
-	if err != nil {
-		return 0, err
-	}
-	return deleted, nil
-}
-
-func Refresh(c *gin.Context) {
+// RefreshAppToken function
+func RefreshAppToken(c *gin.Context) {
 	mapToken := map[string]string{}
 	if err := c.ShouldBindJSON(&mapToken); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, err.Error())
@@ -328,6 +155,144 @@ func Refresh(c *gin.Context) {
 	}
 }
 
+// -------------------- Private function --------------------
+
+type accessDetails struct {
+	AccessUUID string
+	UserID     uint
+}
+
+type tokenDetails struct {
+	AccessToken  string
+	RefreshToken string
+	AccessUUID   string
+	RefreshUUID  string
+	AtExpires    int64
+	RtExpires    int64
+}
+
+func createToken(userid uint) (*tokenDetails, error) {
+	td := &tokenDetails{}
+	td.AtExpires = time.Now().Add(time.Minute * 1).Unix()
+	td.AccessUUID = uuid.NewV4().String()
+
+	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	td.RefreshUUID = td.AccessUUID + "++" + strconv.Itoa(int(userid))
+
+	var err error
+	//Creating Access Token
+	os.Setenv("ACCESS_SECRET", "jdnfksdmfksd") //this should be in an env file
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["access_uuid"] = td.AccessUUID
+	atClaims["user_id"] = userid
+	atClaims["exp"] = td.AtExpires
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
+	if err != nil {
+		return nil, err
+	}
+	//Creating Refresh Token
+	os.Setenv("REFRESH_SECRET", "mcmvmkmsdnfsdmfdsjf") //this should be in an env file
+	rtClaims := jwt.MapClaims{}
+	rtClaims["refresh_uuid"] = td.RefreshUUID
+	rtClaims["user_id"] = userid
+	rtClaims["exp"] = td.RtExpires
+	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+	td.RefreshToken, err = rt.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
+	if err != nil {
+		return nil, err
+	}
+	return td, nil
+}
+
+func createAuth(userid uint, td *tokenDetails) error {
+	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
+	rt := time.Unix(td.RtExpires, 0)
+	now := time.Now()
+
+	errAccess := client.Set(td.AccessUUID, strconv.Itoa(int(userid)), at.Sub(now)).Err()
+	if errAccess != nil {
+		return errAccess
+	}
+	errRefresh := client.Set(td.RefreshUUID, strconv.Itoa(int(userid)), rt.Sub(now)).Err()
+	if errRefresh != nil {
+		return errRefresh
+	}
+	return nil
+}
+
+func extractToken(r *http.Request) string {
+	bearToken := r.Header.Get("Authorization")
+	strArr := strings.Split(bearToken, " ")
+	if len(strArr) == 2 {
+		return strArr[1]
+	}
+	return ""
+}
+
+// Parse, validate, and return a token.
+// keyFunc will receive the parsed token and should return the key for validating.
+func verifyToken(r *http.Request) (*jwt.Token, error) {
+	tokenString := extractToken(r)
+	if tokenString == "" {
+		return nil, errors.New("unauthorized")
+	}
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("ACCESS_SECRET")), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return token, nil
+}
+
+func tokenValid(r *http.Request) error {
+	token, err := verifyToken(r)
+	if err != nil {
+		return err
+	}
+	if _, ok := token.Claims.(jwt.Claims); !ok || !token.Valid {
+		return err
+	}
+	return nil
+}
+
+func extractTokenMetadata(r *http.Request) (*accessDetails, error) {
+	token, err := verifyToken(r)
+	if err != nil {
+		return nil, err
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		accessUUID, ok := claims["access_uuid"].(string)
+		if !ok {
+			return nil, err
+		}
+		userID, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		userIDConvert := uint(userID)
+		return &accessDetails{
+			AccessUUID: accessUUID,
+			UserID:     userIDConvert,
+		}, nil
+	}
+	return nil, err
+}
+
+func deleteAuth(givenUUID string) (int64, error) {
+	deleted, err := client.Del(givenUUID).Result()
+	if err != nil {
+		return 0, err
+	}
+	return deleted, nil
+}
+
 func deleteTokens(authD *accessDetails) error {
 	//get the refresh uuid
 	refreshUUID := fmt.Sprintf("%s++%d", authD.AccessUUID, authD.UserID)
@@ -346,4 +311,40 @@ func deleteTokens(authD *accessDetails) error {
 		return errors.New("something went wrong")
 	}
 	return nil
+}
+
+// -------------------- Author example --------------------
+// Fetch data in redis with extractTokenMetadata()
+
+func fetchAuth(authD *accessDetails) (uint, error) {
+	userid, err := client.Get(authD.AccessUUID).Result()
+	if err != nil {
+		return 0, err
+	}
+	userID, _ := strconv.ParseUint(userid, 10, 64)
+	userIDConvert := uint(userID)
+	if authD.UserID != userIDConvert {
+		return 0, errors.New("unauthorized")
+	}
+	return userIDConvert, nil
+}
+
+func createTodo(c *gin.Context) {
+
+	//Extract the access token metadata
+	metadata, err := extractTokenMetadata(c.Request)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID, err := fetchAuth(metadata)
+	userIDConvert := uint(userID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, err.Error())
+		return
+	}
+	// you can proceed to save the Todo to a database
+	// but we will just return it to the caller:
+
+	c.JSON(http.StatusCreated, userIDConvert)
 }
