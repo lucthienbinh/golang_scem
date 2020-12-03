@@ -53,8 +53,10 @@ func CreateAppToken(c *gin.Context, userAuth *models.UserAuthenticate) {
 	tokens := map[string]string{
 		"access_token":  ts.AccessToken,
 		"refresh_token": ts.RefreshToken,
+		"token_type":    "Bearer",
+		"expires":       strconv.FormatInt(ts.AtExpires, 10),
 	}
-	c.JSON(http.StatusOK, tokens)
+	c.JSON(http.StatusCreated, tokens)
 }
 
 // ValidateAppToken secure private routes
@@ -148,6 +150,8 @@ func RefreshAppToken(c *gin.Context) {
 		tokens := map[string]string{
 			"access_token":  ts.AccessToken,
 			"refresh_token": ts.RefreshToken,
+			"token_type":    "Bearer",
+			"expires":       strconv.FormatInt(ts.AtExpires, 10),
 		}
 		c.JSON(http.StatusCreated, tokens)
 	} else {
