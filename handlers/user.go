@@ -73,6 +73,12 @@ func AppReloginHandler(c *gin.Context) {
 	return
 }
 
+// AppOpenHandler remove user session
+func AppOpenHandler(c *gin.Context) {
+	middlewares.CheckOldToken(c)
+	return
+}
+
 // -------------------- COMMON FUNTION --------------------
 func getIDFromParam(c *gin.Context) uint {
 	rawUint64, _ := strconv.ParseUint(c.Param("id"), 10, 32)

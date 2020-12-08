@@ -11,7 +11,10 @@ func userAuthRoutes(rg *gin.RouterGroup) {
 	rg.GET("/web/logout", handlers.WebLogoutHandler)
 	rg.POST("/app/loginJSON", handlers.AppLoginHandler)
 	rg.GET("/app/logout", handlers.AppLogoutHandler)
-	rg.POST("/app/reloginJSON", handlers.AppReloginHandler)
+	// validate old token
+	accessToken := rg.Group("/app/access-token", middlewares.ValidateAppTokenForRefresh())
+	accessToken.POST("/get-new", handlers.AppReloginHandler)
+	accessToken.GET("/check-old", handlers.AppOpenHandler)
 }
 
 func userRoutes(rg *gin.RouterGroup) {

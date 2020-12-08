@@ -53,7 +53,7 @@ func CreateAppToken(c *gin.Context, userAuth *models.UserAuthenticate) {
 	tokens := map[string]string{
 		"access_token":  ts.AccessToken,
 		"refresh_token": ts.RefreshToken,
-		"token_type":    "Bearer",
+		"token_type":    "Bearer ",
 		"expires":       strconv.FormatInt(ts.AtExpires, 10),
 	}
 	c.JSON(http.StatusCreated, tokens)
@@ -65,9 +65,22 @@ func ValidateAppToken() gin.HandlerFunc {
 		err := tokenValid(c.Request)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": err.Error()})
-			return
+		} else {
+			c.Next()
 		}
-		c.Next()
+
+	}
+}
+
+// ValidateAppTokenForRefresh secure private routes
+func ValidateAppTokenForRefresh() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := tokenValid(c.Request)
+		if err.Error() == "Token is expired" && (c.FullPath() == "/user-auth/app/access-token/get-new") {
+			c.Next()
+		} else {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": err.Error()})
+		}
 	}
 }
 
@@ -84,6 +97,11 @@ func DeleteAppToken(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, "Successfully logged out")
+}
+
+// CheckOldToken to check when open app
+func CheckOldToken(c *gin.Context) {
+	c.JSON(http.StatusOK, "Valid app access token")
 }
 
 // RefreshAppToken function
@@ -150,7 +168,7 @@ func RefreshAppToken(c *gin.Context) {
 		tokens := map[string]string{
 			"access_token":  ts.AccessToken,
 			"refresh_token": ts.RefreshToken,
-			"token_type":    "Bearer",
+			"token_type":    "Bearer ",
 			"expires":       strconv.FormatInt(ts.AtExpires, 10),
 		}
 		c.JSON(http.StatusCreated, tokens)
@@ -177,7 +195,7 @@ type tokenDetails struct {
 
 func createToken(userid uint) (*tokenDetails, error) {
 	td := &tokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 1).Unix()
+	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
 	td.AccessUUID = uuid.NewV4().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
