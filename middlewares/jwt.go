@@ -76,10 +76,13 @@ func ValidateAppToken() gin.HandlerFunc {
 func ValidateAppTokenForRefresh() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := tokenValid(c.Request)
-		if err.Error() == "Token is expired" && (c.FullPath() == "/user-auth/app/access-token/get-new") {
-			c.Next()
-		} else {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": err.Error()})
+		if err != nil {
+			if (err.Error() == "Token is expired") && (c.FullPath() == "/user-auth/app/access-token/get-new") {
+				c.Next()
+			} else {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": err.Error()})
+			}
+
 		}
 	}
 }
