@@ -83,6 +83,8 @@ func ValidateAppTokenForRefresh() gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": err.Error()})
 			}
 
+		} else {
+			c.Next()
 		}
 	}
 }
