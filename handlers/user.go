@@ -133,7 +133,7 @@ func CreateCustomerHandler(c *gin.Context) {
 			return
 		}
 	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "A customer has been created!"})
+	c.JSON(http.StatusCreated, gin.H{"server_response": "A customer has been created!"})
 	return
 }
 
@@ -219,7 +219,7 @@ func CreateEmployeeHandler(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{"server_response": "An employee has been created!"})
+	c.JSON(http.StatusCreated, gin.H{"server_response": "An employee has been created!"})
 	return
 }
 
@@ -296,7 +296,7 @@ func CreateDeliveryLocationHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "A delivery location has been created!"})
+	c.JSON(http.StatusCreated, gin.H{"server_response": "A delivery location has been created!"})
 	return
 }
 
@@ -373,7 +373,7 @@ func CreateEmployeeTypeHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "An employee type has been created!"})
+	c.JSON(http.StatusCreated, gin.H{"server_response": "An employee type has been created!"})
 	return
 }
 

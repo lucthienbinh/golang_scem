@@ -64,7 +64,7 @@ func CreateOrderInfoHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "An order info has been created!"})
+	c.JSON(http.StatusCreated, gin.H{"server_response": "An order info has been created!"})
 	return
 }
 
@@ -140,7 +140,7 @@ func CreateTransportTypeHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "An transport type has been created!"})
+	c.JSON(http.StatusCreated, gin.H{"server_response": "An transport type has been created!"})
 	return
 }
 
