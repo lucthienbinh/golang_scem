@@ -20,7 +20,7 @@ func userAuthRoutes(rg *gin.RouterGroup) {
 func userRoutes(rg *gin.RouterGroup) {
 
 	customer := rg.Group("/customer")
-	// customers.Use(middlewares.ValidateSession)
+	customer.Use(middlewares.ValidateWebSession())
 	customer.GET("/list", handlers.GetCustomerListHandler)
 	customer.GET("/id/:id", handlers.GetCustomerHandler)
 	customer.POST("/create", handlers.CreateCustomerHandler)

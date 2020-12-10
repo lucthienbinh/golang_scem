@@ -20,7 +20,7 @@ type Customer struct {
 	UserAuthID uint   `gorm:"<-:false" json:"-"`
 	Name       string `json:"name" binding:"required"`
 	Age        uint8  `json:"age" binding:"required"`
-	Phone      string `json:"phone" binding:"required"`
+	Phone      int64  `json:"phone" binding:"required"`
 	Gender     string `json:"gender" binding:"required"`
 	Address    string `json:"address" binding:"required"`
 	Point      int16  `json:"point"`
@@ -34,7 +34,7 @@ type Employee struct {
 	UserAuthID         uint   `gorm:"<-:false" json:"-"`
 	Name               string `json:"name" binding:"required"`
 	Age                uint8  `json:"age" binding:"required"`
-	Phone              string `json:"phone" binding:"required"`
+	Phone              int64  `json:"phone" binding:"required"`
 	Gender             string `json:"gender" binding:"required"`
 	Address            string `json:"address" binding:"required"`
 	IdentityCard       string `json:"indentity_card" binding:"required"`
@@ -71,7 +71,7 @@ type EmployeeBasicInfo struct {
 	ID             uint   `json:"id"`
 	Name           string `json:"name"`
 	EmployeeTypeID uint   `json:"employee_type_id"`
-	Phone          string `json:"phone"`
+	Phone          int64  `json:"phone"`
 	Address        string `json:"location"`
 }
 
@@ -79,7 +79,7 @@ type EmployeeBasicInfo struct {
 type CustomerBasicInfo struct {
 	ID      uint   `json:"id"`
 	Name    string `json:"name"`
-	Phone   string `json:"phone"`
+	Phone   int64  `json:"phone"`
 	Address string `json:"location"`
 }
 
@@ -89,7 +89,7 @@ type CustomerWithAuth struct {
 	Password string `json:"password" binding:"required"`
 	Name     string `json:"name" binding:"required"`
 	Age      uint8  `json:"age" binding:"required"`
-	Phone    string `json:"phone" binding:"required"`
+	Phone    int64  `json:"phone" binding:"required"`
 	Gender   string `json:"gender" binding:"required"`
 	Address  string `json:"address" binding:"required"`
 }
@@ -100,7 +100,7 @@ type EmployeeWithAuth struct {
 	Password           string `json:"password" binding:"required"`
 	Name               string `json:"name" binding:"required"`
 	Age                uint8  `json:"age" binding:"required"`
-	Phone              string `json:"phone" binding:"required"`
+	Phone              int64  `json:"phone" binding:"required"`
 	Gender             string `json:"gender" binding:"required"`
 	Address            string `json:"address" binding:"required"`
 	IdentityCard       string `json:"indentity_card" binding:"required"`
