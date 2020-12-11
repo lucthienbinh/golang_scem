@@ -24,8 +24,6 @@ type Customer struct {
 	Gender     string `json:"gender" validate:"nonzero"`
 	Address    string `json:"address" validate:"nonzero"`
 	Point      int16  `json:"point"`
-	CreatedAt  int64  `json:"created_at"`
-	UpdatedAt  int64  `json:"updated_at"`
 }
 
 // Employee structure
@@ -41,8 +39,6 @@ type Employee struct {
 	EmployeeTypeID     uint   `json:"employee_type_id" validate:"nonzero"`
 	Avatar             string `json:"avatar" validate:"nonzero"`
 	DeliveryLocationID uint   `json:"delivery_location_id"`
-	CreatedAt          int64  `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt          int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // EmployeeType structure

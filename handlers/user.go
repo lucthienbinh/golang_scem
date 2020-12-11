@@ -18,18 +18,16 @@ import (
 func WebLoginHandler(c *gin.Context) {
 	var json models.Login
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if err := validator.Validate(json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+	if err := validator.Validate(&json); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 	userAuth := &models.UserAuthenticate{}
 	if err := db.Where("email = ? AND active = true", json.Email).First(&userAuth).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
-		return
+		c.AbortWithStatus(http.StatusUnauthorized)
 	}
 	middlewares.CreateWebSession(c, userAuth)
 	return
@@ -47,16 +45,16 @@ func WebLogoutHandler(c *gin.Context) {
 func AppLoginHandler(c *gin.Context) {
 	var json models.Login
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if json.Email == "" || json.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing field"})
+	if err := validator.Validate(&json); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	userAuth := &models.UserAuthenticate{}
 	if err := db.Where("email = ? AND active = true", json.Email).First(&userAuth).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 	middlewares.CreateAppToken(c, userAuth)
@@ -109,7 +107,7 @@ func getCustomerOrNotFound(c *gin.Context) (*models.Customer, error) {
 func GetCustomerHandler(c *gin.Context) {
 	customer, err := getCustomerOrNotFound(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"customer_info": &customer})
@@ -120,11 +118,12 @@ func GetCustomerHandler(c *gin.Context) {
 func CreateCustomerHandler(c *gin.Context) {
 	customerWithAuth := &models.CustomerWithAuth{}
 	if err := c.ShouldBindJSON(&customerWithAuth); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if err := validator.Validate(customerWithAuth); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := validator.Validate(&customerWithAuth); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 	customer, userAuth := customerWithAuth.ConvertCWAToNormal()
 	if err := db.Create(&userAuth).Error; err != nil {
@@ -146,11 +145,15 @@ func CreateCustomerHandler(c *gin.Context) {
 func UpdateCustomerHandler(c *gin.Context) {
 	customer, err := getCustomerOrNotFound(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 	if err := c.ShouldBindJSON(&customer); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if err := validator.Validate(&customer); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	customer.ID = getIDFromParam(c)
@@ -158,20 +161,20 @@ func UpdateCustomerHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
+	c.JSON(http.StatusOK, gin.H{"server_response": "A customer has been updated!"})
 	return
 }
 
 // DeleteCustomerHandler in database
 func DeleteCustomerHandler(c *gin.Context) {
 	if _, err := getCustomerOrNotFound(c); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 	if err := db.Delete(&models.Customer{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
+	c.JSON(http.StatusOK, gin.H{"server_response": "A customer has been deleted!"})
 	return
 }
 
