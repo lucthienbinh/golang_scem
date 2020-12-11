@@ -124,9 +124,7 @@ func CreateCustomerHandler(c *gin.Context) {
 		return
 	}
 	if err := validator.Validate(customerWithAuth); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 	customer, userAuth := customerWithAuth.ConvertCWAToNormal()
 	if err := db.Create(&userAuth).Error; err != nil {
