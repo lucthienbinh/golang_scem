@@ -16,12 +16,12 @@ type OrderInfo struct {
 	Image             string `json:"image"`
 	CustomerSendID    uint   `json:"customer_send_id" `
 	CustomerReceiveID uint   `json:"customer_receive_id"`
-	TrasnportTypeID   uint   `json:"trasnport_type_id" binding:"required"`
+	TrasnportTypeID   uint   `json:"trasnport_type_id" validate:"nonzero"`
 	HasPackage        bool   `json:"has_package"`
-	EmployeeID        uint   `json:"employee_id" binding:"required"`
-	Receiver          string `json:"receiver" binding:"required"`
-	Detail            string `json:"detail" binding:"required"`
-	TotalPrice        int32  `json:"total_price" binding:"required"`
+	EmployeeID        uint   `json:"employee_id" validate:"nonzero"`
+	Receiver          string `json:"receiver" validate:"nonzero"`
+	Detail            string `json:"detail" validate:"nonzero"`
+	TotalPrice        int32  `json:"total_price" validate:"nonzero"`
 	Note              string `json:"note"`
 	CreatedAt         int64  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt         int64  `gorm:"autoUpdateTime" json:"updated_at"`

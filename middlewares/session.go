@@ -90,7 +90,7 @@ func ValidateWebSession() gin.HandlerFunc {
 		}
 		// nil session pointers indicate a 401 unauthorized
 		if userSession == nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 		log.Printf("In validate; user session expiration before extension: %v\n", userSession.ExpiresAt.UTC())
@@ -107,7 +107,7 @@ func ValidateWebSession() gin.HandlerFunc {
 		csrf := r.Header.Get("X-CSRF-Token")
 		if csrf != myJSON.CSRF {
 			log.Printf("Unauthorized! CSRF token doesn't match user session")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
@@ -145,7 +145,7 @@ func ClearWebSession(c *gin.Context) {
 	}
 	// nil session pointers indicate a 401 unauthorized
 	if userSession == nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
@@ -163,7 +163,7 @@ func ClearWebSession(c *gin.Context) {
 	csrf := r.Header.Get("X-CSRF-Token")
 	if csrf != myJSON.CSRF {
 		log.Printf("Unauthorized! CSRF token doesn't match user session")
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 

@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/middlewares"
 	"github.com/lucthienbinh/golang_scem/models"
+	"gopkg.in/validator.v2"
 )
 
 // -------------------- USER AUTHENTICATION HANDLER FUNTION --------------------
@@ -20,9 +21,10 @@ func WebLoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if json.Email == "" || json.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing field"})
-		return
+	if err := validator.Validate(json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 	}
 	userAuth := &models.UserAuthenticate{}
 	if err := db.Where("email = ? AND active = true", json.Email).First(&userAuth).Error; err != nil {
@@ -120,6 +122,11 @@ func CreateCustomerHandler(c *gin.Context) {
 	if err := c.ShouldBindJSON(&customerWithAuth); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+	if err := validator.Validate(customerWithAuth); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 	}
 	customer, userAuth := customerWithAuth.ConvertCWAToNormal()
 	if err := db.Create(&userAuth).Error; err != nil {

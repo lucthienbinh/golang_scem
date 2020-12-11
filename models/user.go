@@ -16,13 +16,13 @@ type UserAuthenticate struct {
 
 // Customer structure
 type Customer struct {
-	ID         uint   `gorm:"primary_key;<-:false" json:"id"`
-	UserAuthID uint   `gorm:"<-:false" json:"-"`
-	Name       string `json:"name" binding:"required"`
-	Age        uint8  `json:"age" binding:"required"`
-	Phone      int64  `json:"phone" binding:"required"`
-	Gender     string `json:"gender" binding:"required"`
-	Address    string `json:"address" binding:"required"`
+	ID         uint   `gorm:"primary_key;<-:create" json:"id"`
+	UserAuthID uint   `gorm:"<-:create" json:"-"`
+	Name       string `json:"name" validate:"nonzero"`
+	Age        uint8  `json:"age" validate:"nonzero"`
+	Phone      int64  `json:"phone" validate:"nonzero"`
+	Gender     string `json:"gender" validate:"nonzero"`
+	Address    string `json:"address" validate:"nonzero"`
 	Point      int16  `json:"point"`
 	CreatedAt  int64  `json:"created_at"`
 	UpdatedAt  int64  `json:"updated_at"`
@@ -30,16 +30,16 @@ type Customer struct {
 
 // Employee structure
 type Employee struct {
-	ID                 uint   `gorm:"primary_key;<-:false" json:"id"`
-	UserAuthID         uint   `gorm:"<-:false" json:"-"`
-	Name               string `json:"name" binding:"required"`
-	Age                uint8  `json:"age" binding:"required"`
-	Phone              int64  `json:"phone" binding:"required"`
-	Gender             string `json:"gender" binding:"required"`
-	Address            string `json:"address" binding:"required"`
-	IdentityCard       string `json:"indentity_card" binding:"required"`
-	EmployeeTypeID     uint   `json:"employee_type_id" binding:"required"`
-	Avatar             string `json:"avatar" binding:"required"`
+	ID                 uint   `gorm:"primary_key;<-:create" json:"id"`
+	UserAuthID         uint   `gorm:"<-:create" json:"-"`
+	Name               string `json:"name" validate:"nonzero"`
+	Age                uint8  `json:"age" validate:"nonzero"`
+	Phone              int64  `json:"phone" validate:"nonzero"`
+	Gender             string `json:"gender" validate:"nonzero"`
+	Address            string `json:"address" validate:"nonzero"`
+	IdentityCard       string `json:"indentity_card" validate:"nonzero"`
+	EmployeeTypeID     uint   `json:"employee_type_id" validate:"nonzero"`
+	Avatar             string `json:"avatar" validate:"nonzero"`
 	DeliveryLocationID uint   `json:"delivery_location_id"`
 	CreatedAt          int64  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt          int64  `gorm:"autoUpdateTime" json:"updated_at"`
@@ -48,7 +48,7 @@ type Employee struct {
 // EmployeeType structure
 type EmployeeType struct {
 	ID   uint   `gorm:"primary_key;<-:false" json:"id"`
-	Name string `binding:"required" json:"name"`
+	Name string `validate:"nonzero" json:"name"`
 }
 
 // DeliveryLocation structure
@@ -62,8 +62,8 @@ type DeliveryLocation struct {
 
 // Login structure
 type Login struct {
-	Email    string `form:"email" json:"email" xml:"email"  binding:"required"`
-	Password string `form:"password" json:"password" xml:"password" binding:"required"`
+	Email    string `form:"email" json:"email" xml:"email"  validate:"nonzero"`
+	Password string `form:"password" json:"password" xml:"password" validate:"nonzero"`
 }
 
 // EmployeeBasicInfo structure
@@ -85,27 +85,27 @@ type CustomerBasicInfo struct {
 
 // CustomerWithAuth structure
 type CustomerWithAuth struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-	Name     string `json:"name" binding:"required"`
-	Age      uint8  `json:"age" binding:"required"`
-	Phone    int64  `json:"phone" binding:"required"`
-	Gender   string `json:"gender" binding:"required"`
-	Address  string `json:"address" binding:"required"`
+	Email    string `json:"email" validate:"nonzero"`
+	Password string `json:"password" validate:"nonzero"`
+	Name     string `json:"name" validate:"nonzero"`
+	Age      uint8  `json:"age" validate:"nonzero"`
+	Phone    int64  `json:"phone" validate:"nonzero"`
+	Gender   string `json:"gender" validate:"nonzero"`
+	Address  string `json:"address" validate:"nonzero"`
 }
 
 // EmployeeWithAuth structure
 type EmployeeWithAuth struct {
-	Email              string `json:"email" binding:"required"`
-	Password           string `json:"password" binding:"required"`
-	Name               string `json:"name" binding:"required"`
-	Age                uint8  `json:"age" binding:"required"`
-	Phone              int64  `json:"phone" binding:"required"`
-	Gender             string `json:"gender" binding:"required"`
-	Address            string `json:"address" binding:"required"`
-	IdentityCard       string `json:"indentity_card" binding:"required"`
-	EmployeeTypeID     uint   `json:"employee_type_id" binding:"required"`
-	Avatar             string `json:"avatar" binding:"required"`
+	Email              string `json:"email" validate:"nonzero"`
+	Password           string `json:"password" validate:"nonzero"`
+	Name               string `json:"name" validate:"nonzero"`
+	Age                uint8  `json:"age" validate:"nonzero"`
+	Phone              int64  `json:"phone" validate:"nonzero"`
+	Gender             string `json:"gender" validate:"nonzero"`
+	Address            string `json:"address" validate:"nonzero"`
+	IdentityCard       string `json:"indentity_card" validate:"nonzero"`
+	EmployeeTypeID     uint   `json:"employee_type_id" validate:"nonzero"`
+	Avatar             string `json:"avatar" validate:"nonzero"`
 	DeliveryLocationID uint   `json:"delivery_location_id"`
 }
 

@@ -13,6 +13,7 @@ require (
 	github.com/twinj/uuid v1.0.0
 	github.com/zeebe-io/zeebe/clients/go v0.25.1
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
+	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
 	gorm.io/datatypes v1.0.0
 	gorm.io/driver/mysql v1.0.3
 	gorm.io/driver/postgres v1.0.5
