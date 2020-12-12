@@ -43,13 +43,13 @@ type Employee struct {
 
 // EmployeeType structure
 type EmployeeType struct {
-	ID   uint   `gorm:"primary_key;<-:false" json:"id"`
+	ID   uint   `gorm:"primary_key;<-:create" json:"id"`
 	Name string `validate:"nonzero" json:"name"`
 }
 
 // DeliveryLocation structure
 type DeliveryLocation struct {
-	ID       uint   `gorm:"primary_key;<-:false" json:"id"`
+	ID       uint   `gorm:"primary_key;<-:create" json:"id"`
 	City     string `json:"city"`
 	District string `json:"district"`
 }

@@ -44,7 +44,7 @@ type TransportType struct {
 
 // -------------------- Struct use to covert data to json for handler --------------------
 
-// OrderInfoDatabase structure to return data to frontend
+// OrderInfoDatabase structure to get data for view in frontend
 type OrderInfoDatabase struct {
 	ID                  uint   `json:"id"`
 	Weight              int16  `json:"weight"`
