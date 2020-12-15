@@ -16,7 +16,7 @@ type UserAuthenticate struct {
 
 // Customer structure
 type Customer struct {
-	ID         uint   `gorm:"primary_key;<-:create" json:"id"`
+	ID         uint   `gorm:"primary_key;<-:false" json:"id"`
 	UserAuthID uint   `gorm:"<-:create" json:"-"`
 	Name       string `json:"name" validate:"nonzero"`
 	Age        uint8  `json:"age" validate:"nonzero"`
@@ -28,7 +28,7 @@ type Customer struct {
 
 // Employee structure
 type Employee struct {
-	ID                 uint   `gorm:"primary_key;<-:create" json:"id"`
+	ID                 uint   `gorm:"primary_key;<-:false" json:"id"`
 	UserAuthID         uint   `gorm:"<-:create" json:"-"`
 	Name               string `json:"name" validate:"nonzero"`
 	Age                uint8  `json:"age" validate:"nonzero"`
@@ -43,13 +43,13 @@ type Employee struct {
 
 // EmployeeType structure
 type EmployeeType struct {
-	ID   uint   `gorm:"primary_key;<-:create" json:"id"`
+	ID   uint   `gorm:"primary_key;<-:false" json:"id"`
 	Name string `validate:"nonzero" json:"name"`
 }
 
 // DeliveryLocation structure
 type DeliveryLocation struct {
-	ID       uint   `gorm:"primary_key;<-:create" json:"id"`
+	ID       uint   `gorm:"primary_key;<-:false" json:"id"`
 	City     string `json:"city"`
 	District string `json:"district"`
 }

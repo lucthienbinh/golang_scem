@@ -133,7 +133,16 @@ func createDefaultCustomer() (err error) {
 	if err := db.Create(&userAuth).Error; err != nil {
 		return err
 	}
-	customer := models.Customer{UserAuthID: userAuth.ID, Name: "Customer", Age: 18, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao"}
+	customer := models.Customer{UserAuthID: userAuth.ID, Name: "Customer One", Age: 18, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao, Phuong 1, Quan 5"}
+	if err := db.Create(&customer).Error; err != nil {
+		return err
+	}
+
+	userAuth = models.UserAuthenticate{Email: "customer3@gmail.com", Password: "12345678"}
+	if err := db.Create(&userAuth).Error; err != nil {
+		return err
+	}
+	customer = models.Customer{UserAuthID: userAuth.ID, Name: "Customer Three", Age: 18, Phone: 223334444, Gender: "female", Address: "13 Tran Hung Dao"}
 	if err := db.Create(&customer).Error; err != nil {
 		return err
 	}
@@ -142,7 +151,7 @@ func createDefaultCustomer() (err error) {
 	if err := db.Create(&userAuth).Error; err != nil {
 		return err
 	}
-	customer = models.Customer{UserAuthID: userAuth.ID, Name: "Customer2", Age: 18, Phone: 223334444, Gender: "male", Address: "13 Tran Hung Dao"}
+	customer = models.Customer{UserAuthID: userAuth.ID, Name: "Customer Two", Age: 18, Phone: 223334444, Gender: "male", Address: "14 Tran Hung Dao"}
 	return db.Create(&customer).Error
 }
 
@@ -171,7 +180,39 @@ func createDeliveryLocation() (err error) {
 	if err := db.Create(&location).Error; err != nil {
 		return err
 	}
+	location = models.DeliveryLocation{City: "HCM", District: "2"}
+	if err := db.Create(&location).Error; err != nil {
+		return err
+	}
+	location = models.DeliveryLocation{City: "HCM", District: "3"}
+	if err := db.Create(&location).Error; err != nil {
+		return err
+	}
+	location = models.DeliveryLocation{City: "HCM", District: "4"}
+	if err := db.Create(&location).Error; err != nil {
+		return err
+	}
+	location = models.DeliveryLocation{City: "HCM", District: "5"}
+	if err := db.Create(&location).Error; err != nil {
+		return err
+	}
+	location = models.DeliveryLocation{City: "DL", District: "1"}
+	if err := db.Create(&location).Error; err != nil {
+		return err
+	}
 	location = models.DeliveryLocation{City: "DL", District: "2"}
+	if err := db.Create(&location).Error; err != nil {
+		return err
+	}
+	location = models.DeliveryLocation{City: "DL", District: "3"}
+	if err := db.Create(&location).Error; err != nil {
+		return err
+	}
+	location = models.DeliveryLocation{City: "DL", District: "4"}
+	if err := db.Create(&location).Error; err != nil {
+		return err
+	}
+	location = models.DeliveryLocation{City: "DL", District: "5"}
 	if err := db.Create(&location).Error; err != nil {
 		return err
 	}
