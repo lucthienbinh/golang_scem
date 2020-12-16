@@ -2,55 +2,88 @@ package routes
 
 import (
 	"log"
-	"os"
+	"net/http"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/lucthienbinh/golang_scem/handlers"
 	"github.com/lucthienbinh/golang_scem/middlewares"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
-	router = gin.Default()
+	g errgroup.Group
 )
 
-// RunServer is the entry point to start the server
+// RunServer will start 2 server for app and web
 func RunServer() {
 	// gin.SetMode(gin.ReleaseMode)
 	// export GIN_MODE=debug
 
-	// Initial web auth middleware
-	middlewares.RunWebAuth()
-
-	// Initial app auth middleware
-	middlewares.RunAppAuth()
-
-	// Connect Postgres database
-	if err := handlers.ConnectPostgres(); err != nil {
-		// if err := handlers.ConnectMySQL(); err != nil {
-		log.Print(err)
-		os.Exit(1)
+	webServer := &http.Server{
+		Addr:         ":5000",
+		Handler:      webRouter(),
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
-	if err := handlers.RefreshDatabase(); err != nil {
-		// if err := handlers.MigrationDatabase(); err != nil {
-		log.Print(err)
-		os.Exit(1)
+
+	appServer := &http.Server{
+		Addr:         ":5001",
+		Handler:      appRouter(),
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
-	log.Print("Connected with posgres database with: user=postgres dbname=scem_database port=543")
-	log.Print("Listening and serving HTTP on :5000")
-	routeList()
-	router.Run(":5000")
+
+	g.Go(func() error {
+		err := webServer.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+		return err
+	})
+
+	g.Go(func() error {
+		err := appServer.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		log.Fatal(err)
+	}
 }
 
-// RouteList will create our routes of our entire application
-// this way every group of routes can be defined in their own file
-// so this one won't be so messy
-func routeList() {
+func webRouter() http.Handler {
+	e := gin.Default()
 
-	userAuth := router.Group("/user-auth")
-	userAuthRoutes(userAuth)
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://127.0.0.1:3000"}
+	config.AllowCredentials = true
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "X-CSRF-Token", "Accept"}
+	e.Use(cors.New(config))
 
-	api := router.Group("/api")
+	webAuth := e.Group("/web-auth")
+	webAuthRoutes(webAuth)
+
+	api := e.Group("/api")
+	api.Use(middlewares.ValidateWebSession())
 	userRoutes(api)
 	orderRoutes(api)
 
+	return e
+}
+
+func appRouter() http.Handler {
+	e := gin.Default()
+
+	appAuth := e.Group("/app-auth")
+	appAuthRoutes(appAuth)
+
+	api := e.Group("/api")
+	userRoutes(api)
+	orderRoutes(api)
+
+	return e
 }

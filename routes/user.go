@@ -6,9 +6,12 @@ import (
 	"github.com/lucthienbinh/golang_scem/middlewares"
 )
 
-func userAuthRoutes(rg *gin.RouterGroup) {
+func webAuthRoutes(rg *gin.RouterGroup) {
 	rg.POST("/web/loginJSON", handlers.WebLoginHandler)
 	rg.GET("/web/logout", handlers.WebLogoutHandler)
+}
+
+func appAuthRoutes(rg *gin.RouterGroup) {
 	rg.POST("/app/loginJSON", handlers.AppLoginHandler)
 	rg.GET("/app/logout", handlers.AppLogoutHandler)
 	// validate old token
