@@ -167,8 +167,15 @@ func UpdateCustomerHandler(c *gin.Context) {
 
 // DeleteCustomerHandler in database
 func DeleteCustomerHandler(c *gin.Context) {
-	if _, err := getCustomerOrNotFound(c); err != nil {
+	var userAuthID uint
+	if customer, err := getCustomerOrNotFound(c); err == nil {
+		userAuthID = customer.UserAuthID
+	} else {
 		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	if err := db.Delete(&models.UserAuthenticate{}, userAuthID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	if err := db.Delete(&models.Customer{}, c.Param("id")).Error; err != nil {
@@ -196,12 +203,20 @@ func GetEmployeeListHandler(c *gin.Context) {
 	return
 }
 
-func getEmployeeOrNotFound(c *gin.Context) (*models.Employee, error) {
-	employee := &models.Employee{}
-	if err := db.First(&employee, c.Param("id")).Error; err != nil {
-		return employee, err
+func getEmployeeOrNotFound(c *gin.Context) (*models.EmployeeInfoFetchDB, error) {
+
+	employeeInfoFetchDB := &models.EmployeeInfoFetchDB{}
+
+	selectPart := "e.id, e.name, e.age, e.phone, e.gender, e.address, " +
+		"e.identity_card, et.name as employee_type_name, e.avatar, " +
+		"dl.city as delivery_location_city, dl.district as delivery_location_district"
+	leftJoin1 := "left join employee_types as et on e.employee_type_id = et.id"
+	leftJoin2 := "left join delivery_locations as dl on e.delivery_location_id = dl.id"
+
+	if err := db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).First(&employeeInfoFetchDB, c.Param("id")).Error; err != nil {
+		return employeeInfoFetchDB, err
 	}
-	return employee, nil
+	return employeeInfoFetchDB, nil
 }
 
 // GetEmployeeHandler in database
