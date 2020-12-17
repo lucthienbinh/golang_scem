@@ -7,13 +7,13 @@ import (
 )
 
 func webAuthRoutes(rg *gin.RouterGroup) {
-	rg.POST("/web/loginJSON", handlers.WebLoginHandler)
-	rg.GET("/web/logout", handlers.WebLogoutHandler)
+	rg.POST("/loginJSON", handlers.WebLoginHandler)
+	rg.GET("/logout", handlers.WebLogoutHandler)
 }
 
 func appAuthRoutes(rg *gin.RouterGroup) {
-	rg.POST("/app/loginJSON", handlers.AppLoginHandler)
-	rg.GET("/app/logout", handlers.AppLogoutHandler)
+	rg.POST("/loginJSON", handlers.AppLoginHandler)
+	rg.GET("/logout", handlers.AppLogoutHandler)
 	// validate old token
 	accessToken := rg.Group("/app/access-token", middlewares.ValidateAppTokenForRefresh())
 	accessToken.POST("/get-new", handlers.AppReloginHandler)

@@ -1,8 +1,12 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/middlewares"
@@ -232,6 +236,31 @@ func GetEmployeeHandler(c *gin.Context) {
 
 // ImageEmployeeHandler updload image of employee
 func ImageEmployeeHandler(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	log.Println(file.Filename)
+
+	b := make([]byte, 8)
+
+	if _, err := rand.Read(b); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	newName := fmt.Sprintf("%x", b)
+	createTime := fmt.Sprintf("%d", time.Now().Unix())
+	newName = createTime + "_" + newName + ".jpg"
+	filepath := "public/upload/images/" + newName
+
+	// Upload the file to specific dst.
+	if err := c.SaveUploadedFile(file, filepath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"filename": newName})
 	return
 }
 
@@ -239,7 +268,11 @@ func ImageEmployeeHandler(c *gin.Context) {
 func CreateEmployeeHandler(c *gin.Context) {
 	employeeWithAuth := &models.EmployeeWithAuth{}
 	if err := c.ShouldBindJSON(&employeeWithAuth); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if err := validator.Validate(&employeeWithAuth); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	employee, userAuth := employeeWithAuth.ConvertEWAToNormal()
