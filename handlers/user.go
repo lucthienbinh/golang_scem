@@ -183,9 +183,16 @@ func DeleteCustomerHandler(c *gin.Context) {
 
 // GetEmployeeListHandler in database
 func GetEmployeeListHandler(c *gin.Context) {
-	employees := []models.Employee{}
-	db.Order("id asc").Find(&employees)
-	c.JSON(http.StatusOK, gin.H{"employee_list": &employees})
+	employeeInfoList := []models.EmployeeInfoFetchDB{}
+	selectPart := "e.id, e.name, e.age, e.phone, e.gender, e.address, " +
+		"e.identity_card, et.name as employee_type_name, e.avatar, " +
+		"dl.city as delivery_location_city, dl.district as delivery_location_district"
+	leftJoin1 := "left join employee_types as et on e.employee_type_id = et.id"
+	leftJoin2 := "left join delivery_locations as dl on e.delivery_location_id = dl.id"
+
+	db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Order("e.id asc").Find(&employeeInfoList)
+
+	c.JSON(http.StatusOK, gin.H{"employee_list": employeeInfoList})
 	return
 }
 

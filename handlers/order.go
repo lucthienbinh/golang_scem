@@ -11,7 +11,7 @@ import (
 
 // GetOrderInfoListHandler in database
 func GetOrderInfoListHandler(c *gin.Context) {
-	orderInfoList := []models.OrderInfoDatabase{}
+	orderInfoList := []models.OrderInfoFetchDB{}
 	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, ord.has_package, " +
 		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as trasnport_type, " +
 		"e.name as employee_name, ord.receiver, ord.detail, ord.total_price, ord.note, ord.created_at"
@@ -26,8 +26,8 @@ func GetOrderInfoListHandler(c *gin.Context) {
 	return
 }
 
-func getOrderInfoOrNotFound(c *gin.Context) (*models.OrderInfoDatabase, error) {
-	orderInfoDatabase := &models.OrderInfoDatabase{}
+func getOrderInfoOrNotFound(c *gin.Context) (*models.OrderInfoFetchDB, error) {
+	orderInfoFetchDB := &models.OrderInfoFetchDB{}
 	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, ord.has_package, " +
 		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as trasnport_type, " +
 		"e.name as employee_name, ord.receiver, ord.detail, ord.total_price, ord.note"
@@ -36,20 +36,20 @@ func getOrderInfoOrNotFound(c *gin.Context) (*models.OrderInfoDatabase, error) {
 	leftJoin3 := "left join transport_types as t on ord.trasnport_type_id = t.id"
 	leftJoin4 := "left join employees as e on ord.employee_id = e.id"
 
-	if err := db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).First(&orderInfoDatabase, c.Param("id")).Error; err != nil {
-		return orderInfoDatabase, err
+	if err := db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).First(&orderInfoFetchDB, c.Param("id")).Error; err != nil {
+		return orderInfoFetchDB, err
 	}
-	return orderInfoDatabase, nil
+	return orderInfoFetchDB, nil
 }
 
 // GetOrderInfoHandler in database
 func GetOrderInfoHandler(c *gin.Context) {
-	orderInfoDatabase, err := getOrderInfoOrNotFound(c)
+	orderInfoFetchDB, err := getOrderInfoOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"order_info": &orderInfoDatabase})
+	c.JSON(http.StatusOK, gin.H{"order_info": &orderInfoFetchDB})
 	return
 }
 

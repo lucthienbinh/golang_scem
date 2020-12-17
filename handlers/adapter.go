@@ -121,7 +121,7 @@ func createDefaultEmployee() (err error) {
 	if err := db.Create(&userAuth).Error; err != nil {
 		return err
 	}
-	employee = models.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 18, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 2, Avatar: "user1.png", DeliveryLocationID: 2}
+	employee = models.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 18, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "user1.png", DeliveryLocationID: 2}
 	if err := db.Create(&employee).Error; err != nil {
 		return err
 	}

@@ -44,10 +44,10 @@ type TransportType struct {
 	DeletedAt       gorm.DeletedAt
 }
 
-// -------------------- Struct use to covert data to json for handler --------------------
+// -------------------- Struct uses to fetch data for frontend --------------------
 
-// OrderInfoDatabase structure to get data for view in frontend
-type OrderInfoDatabase struct {
+// OrderInfoFetchDB structure
+type OrderInfoFetchDB struct {
 	ID                  uint   `json:"id"`
 	Weight              int16  `json:"weight"`
 	Volume              int16  `json:"volume"`
