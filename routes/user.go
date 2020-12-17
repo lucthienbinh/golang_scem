@@ -23,7 +23,6 @@ func appAuthRoutes(rg *gin.RouterGroup) {
 func userRoutes(rg *gin.RouterGroup) {
 
 	customer := rg.Group("/customer")
-	customer.Use(middlewares.ValidateWebSession())
 	customer.GET("/list", handlers.GetCustomerListHandler)
 	customer.GET("/id/:id", handlers.GetCustomerHandler)
 	customer.POST("/create", handlers.CreateCustomerHandler)
@@ -31,7 +30,6 @@ func userRoutes(rg *gin.RouterGroup) {
 	customer.DELETE("/delete/:id", handlers.DeleteCustomerHandler)
 
 	employee := rg.Group("/employee")
-	// employees.Use(middlewares.ValidateSession)
 	employee.GET("/list", handlers.GetEmployeeListHandler)
 	employee.GET("/id/:id", handlers.GetEmployeeHandler)
 	employee.POST("/create", handlers.CreateEmployeeHandler)
@@ -39,7 +37,6 @@ func userRoutes(rg *gin.RouterGroup) {
 	employee.DELETE("/delete/:id", handlers.DeleteEmployeeHandler)
 
 	employeeType := rg.Group("/employee-type")
-	// employees.Use(middlewares.ValidateSession)
 	employeeType.GET("/list", handlers.GetEmployeeTypeListHandler)
 	employeeType.GET("/id/:id", handlers.GetEmployeeTypeHandler)
 	employeeType.POST("/create", handlers.CreateEmployeeTypeHandler)
@@ -48,7 +45,6 @@ func userRoutes(rg *gin.RouterGroup) {
 
 	// middlewares.ValidateAppToken()
 	deliveryLocation := rg.Group("/delivery-location")
-	customer.Use(middlewares.ValidateWebSession())
 	deliveryLocation.GET("/list", handlers.GetDeliveryLocationListHandler)
 	deliveryLocation.GET("/id/:id", handlers.GetDeliveryLocationHandler)
 	deliveryLocation.POST("/create", handlers.CreateDeliveryLocationHandler)
