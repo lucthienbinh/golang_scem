@@ -33,6 +33,7 @@ func userRoutes(rg *gin.RouterGroup) {
 	employee.GET("/list", handlers.GetEmployeeListHandler)
 	employee.GET("/id/:id", handlers.GetEmployeeHandler)
 	employee.POST("/create", handlers.CreateEmployeeHandler)
+	employee.POST("/upload/image", handlers.ImageEmployeeHandler)
 	employee.PUT("/update/:id", handlers.UpdateEmployeeHandler)
 	employee.DELETE("/delete/:id", handlers.DeleteEmployeeHandler)
 

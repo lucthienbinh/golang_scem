@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 // -------------------- Table in database --------------------
@@ -25,6 +25,7 @@ type OrderInfo struct {
 	Note              string `json:"note"`
 	CreatedAt         int64  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt         int64  `gorm:"autoUpdateTime" json:"updated_at"`
+	DeletedAt         gorm.DeletedAt
 }
 
 // OrderStatusJSON save data of zeebe client
@@ -40,6 +41,7 @@ type TransportType struct {
 	Name            string `json:"name"`
 	RouteFixedPrice int32  `json:"fixed_price"`
 	PricePerKm      int32  `json:"price_per_km"`
+	DeletedAt       gorm.DeletedAt
 }
 
 // -------------------- Struct use to covert data to json for handler --------------------

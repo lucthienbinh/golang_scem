@@ -173,6 +173,7 @@ func DeleteCustomerHandler(c *gin.Context) {
 	}
 	if err := db.Delete(&models.Customer{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "A customer has been deleted!"})
 	return
@@ -204,6 +205,11 @@ func GetEmployeeHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"employee_info": &employee})
+	return
+}
+
+// ImageEmployeeHandler updload image of employee
+func ImageEmployeeHandler(c *gin.Context) {
 	return
 }
 
@@ -259,6 +265,7 @@ func DeleteEmployeeHandler(c *gin.Context) {
 	}
 	if err := db.Delete(&models.Employee{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
 	return
@@ -300,6 +307,10 @@ func CreateDeliveryLocationHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if err := validator.Validate(&deliveryLocation); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 	if err := db.Create(&deliveryLocation).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -319,6 +330,10 @@ func UpdateDeliveryLocationHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if err := validator.Validate(&deliveryLocation); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 	deliveryLocation.ID = getIDFromParam(c)
 	if err = db.Model(&deliveryLocation).Updates(&deliveryLocation).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -336,6 +351,7 @@ func DeleteDeliveryLocationHandler(c *gin.Context) {
 	}
 	if err := db.Delete(&models.DeliveryLocation{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
 	return

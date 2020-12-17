@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 // UserAuthenticate structure for authentication
@@ -24,6 +24,7 @@ type Customer struct {
 	Gender     string `json:"gender" validate:"nonzero"`
 	Address    string `json:"address" validate:"nonzero"`
 	Point      int16  `json:"point"`
+	DeletedAt  gorm.DeletedAt
 }
 
 // Employee structure
@@ -39,19 +40,22 @@ type Employee struct {
 	EmployeeTypeID     uint   `json:"employee_type_id" validate:"nonzero"`
 	Avatar             string `json:"avatar" validate:"nonzero"`
 	DeliveryLocationID uint   `json:"delivery_location_id"`
+	DeletedAt          gorm.DeletedAt
 }
 
 // EmployeeType structure
 type EmployeeType struct {
-	ID   uint   `gorm:"primary_key;<-:false" json:"id"`
-	Name string `validate:"nonzero" json:"name"`
+	ID        uint   `gorm:"primary_key;<-:false" json:"id"`
+	Name      string `validate:"nonzero" json:"name"`
+	DeletedAt gorm.DeletedAt
 }
 
 // DeliveryLocation structure
 type DeliveryLocation struct {
-	ID       uint   `gorm:"primary_key;<-:false" json:"id"`
-	City     string `json:"city"`
-	District string `json:"district"`
+	ID        uint   `gorm:"primary_key;<-:false" json:"id"`
+	City      string `json:"city" validate:"nonzero"`
+	District  string `json:"district" validate:"nonzero"`
+	DeletedAt gorm.DeletedAt
 }
 
 // -------------------- Struct use to covert data to json for handler --------------------
