@@ -200,23 +200,18 @@ func GetEmployeeListHandler(c *gin.Context) {
 		"dl.city as delivery_location_city, dl.district as delivery_location_district"
 	leftJoin1 := "left join employee_types as et on e.employee_type_id = et.id"
 	leftJoin2 := "left join delivery_locations as dl on e.delivery_location_id = dl.id"
-
 	db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Order("e.id asc").Find(&employeeInfoList)
-
 	c.JSON(http.StatusOK, gin.H{"employee_list": employeeInfoList})
 	return
 }
 
 func getEmployeeOrNotFound(c *gin.Context) (*models.EmployeeInfoFetchDB, error) {
-
 	employeeInfoFetchDB := &models.EmployeeInfoFetchDB{}
-
 	selectPart := "e.id, e.name, e.age, e.phone, e.gender, e.address, " +
 		"e.identity_card, et.name as employee_type_name, e.avatar, " +
 		"dl.city as delivery_location_city, dl.district as delivery_location_district"
 	leftJoin1 := "left join employee_types as et on e.employee_type_id = et.id"
 	leftJoin2 := "left join delivery_locations as dl on e.delivery_location_id = dl.id"
-
 	if err := db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).First(&employeeInfoFetchDB, c.Param("id")).Error; err != nil {
 		return employeeInfoFetchDB, err
 	}
@@ -261,6 +256,20 @@ func ImageEmployeeHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"filename": newName})
+	return
+}
+
+// CreateEmployeeFormData in frontend
+func CreateEmployeeFormData(c *gin.Context) {
+	employeeTypeOptions := []models.SelectStuct{}
+	selectPart := "et.id as value, et.name as label "
+	db.Table("employee_types as et").Select(selectPart).Order("et.id asc").Find(&employeeTypeOptions)
+	for i := 0; i < len(employeeTypeOptions); i++ {
+		employeeTypeOptions[i].Name = "employee_type_id"
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"et_options": &employeeTypeOptions,
+	})
 	return
 }
 

@@ -124,6 +124,13 @@ type EmployeeInfoFetchDB struct {
 	DeliveryLocationDistrict string `json:"delivery_location_district"`
 }
 
+// SelectStuct for select options
+type SelectStuct struct {
+	Value uint   `json:"value"`
+	Name  string `json:"name"`
+	Label string `json:"label"`
+}
+
 // -------------------- Convert function to keep safe sensitive info--------------------
 
 // ConvertToBasic function
