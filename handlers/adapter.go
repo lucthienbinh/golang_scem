@@ -105,7 +105,7 @@ func createDefaultEmployee() (err error) {
 	if err := db.Create(&userAuth).Error; err != nil {
 		return err
 	}
-	employee := models.Employee{UserAuthID: userAuth.ID, Name: "Binh", Age: 18, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao", IdentityCard: "17687t562765786", EmployeeTypeID: 1, Avatar: "user1.png"}
+	employee := models.Employee{UserAuthID: userAuth.ID, Name: "Binh", Age: 18, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao", IdentityCard: "17687t562765786", EmployeeTypeID: 1, Avatar: "image1.jpg"}
 	if err := db.Create(&employee).Error; err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func createDefaultEmployee() (err error) {
 	if err := db.Create(&userAuth).Error; err != nil {
 		return err
 	}
-	employee = models.Employee{UserAuthID: userAuth.ID, Name: "Hoa", Age: 18, Phone: 448883333, Gender: "male", Address: "21 Huynh Thuc Khang", IdentityCard: "17687t562765786", EmployeeTypeID: 2, Avatar: "user1.png"}
+	employee = models.Employee{UserAuthID: userAuth.ID, Name: "Hoa", Age: 18, Phone: 448883333, Gender: "male", Address: "21 Huynh Thuc Khang", IdentityCard: "17687t562765786", EmployeeTypeID: 2, Avatar: "image2.jpg"}
 	if err := db.Create(&employee).Error; err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func createDefaultEmployee() (err error) {
 	if err := db.Create(&userAuth).Error; err != nil {
 		return err
 	}
-	employee = models.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 18, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "user1.png", DeliveryLocationID: 4}
+	employee = models.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 18, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 4}
 	if err := db.Create(&employee).Error; err != nil {
 		return err
 	}

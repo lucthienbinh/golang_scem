@@ -63,7 +63,7 @@ func webRouter() http.Handler {
 	config.AllowCredentials = true
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "X-CSRF-Token", "Accept"}
 	e.Use(cors.New(config))
-	e.Static("/api/image", "./public/upload/images")
+	e.Static("/api/images", "./public/upload/images")
 	// Set a lower memory limit for multipart forms (default is 32 MiB)
 	e.MaxMultipartMemory = 8 << 20 // 8 MiB
 

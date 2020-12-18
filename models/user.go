@@ -178,6 +178,7 @@ func (c *EmployeeWithAuth) ConvertEWAToNormal() (*Employee, *UserAuthenticate) {
 			Address:            c.Address,
 			IdentityCard:       c.IdentityCard,
 			Avatar:             c.Avatar,
+			EmployeeTypeID:     c.EmployeeTypeID,
 			DeliveryLocationID: c.DeliveryLocationID,
 		}, &UserAuthenticate{
 			Email:    c.Email,

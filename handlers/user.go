@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -200,7 +201,7 @@ func GetEmployeeListHandler(c *gin.Context) {
 		"dl.city as delivery_location_city, dl.district as delivery_location_district"
 	leftJoin1 := "left join employee_types as et on e.employee_type_id = et.id"
 	leftJoin2 := "left join delivery_locations as dl on e.delivery_location_id = dl.id"
-	db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Order("e.id asc").Find(&employeeInfoList)
+	db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Where(" e.deleted_at is NULL ").Order("e.id asc").Find(&employeeInfoList)
 	c.JSON(http.StatusOK, gin.H{"employee_list": employeeInfoList})
 	return
 }
@@ -212,7 +213,7 @@ func getEmployeeOrNotFound(c *gin.Context) (*models.EmployeeInfoFetchDB, error) 
 		"dl.city as delivery_location_city, dl.district as delivery_location_district"
 	leftJoin1 := "left join employee_types as et on e.employee_type_id = et.id"
 	leftJoin2 := "left join delivery_locations as dl on e.delivery_location_id = dl.id"
-	if err := db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).First(&employeeInfoFetchDB, c.Param("id")).Error; err != nil {
+	if err := db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Where(" e.deleted_at is NULL ").First(&employeeInfoFetchDB, c.Param("id")).Error; err != nil {
 		return employeeInfoFetchDB, err
 	}
 	return employeeInfoFetchDB, nil
@@ -222,7 +223,7 @@ func getEmployeeOrNotFound(c *gin.Context) (*models.EmployeeInfoFetchDB, error) 
 func GetEmployeeHandler(c *gin.Context) {
 	employee, err := getEmployeeOrNotFound(c)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"employee_info": &employee})
@@ -244,9 +245,10 @@ func ImageEmployeeHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	extension := strings.Split(file.Filename, ".")
 	newName := fmt.Sprintf("%x", b)
 	createTime := fmt.Sprintf("%d", time.Now().Unix())
-	newName = createTime + "_" + newName + ".jpg"
+	newName = createTime + "_" + newName + "." + extension[1]
 	filepath := "public/upload/images/" + newName
 
 	// Upload the file to specific dst.
@@ -263,14 +265,14 @@ func ImageEmployeeHandler(c *gin.Context) {
 func CreateEmployeeFormData(c *gin.Context) {
 	employeeTypeOptions := []models.SelectStuct{}
 	selectPart := "et.id as value, et.name as label "
-	db.Table("employee_types as et").Select(selectPart).Order("et.id asc").Find(&employeeTypeOptions)
+	db.Table("employee_types as et").Select(selectPart).Where(" et.deleted_at is NULL ").Order("et.id asc").Find(&employeeTypeOptions)
 	for i := 0; i < len(employeeTypeOptions); i++ {
 		employeeTypeOptions[i].Name = "employee_type_id"
 	}
 
 	deliveryLocationOptions := []models.SelectStuct{}
 	selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
-	db.Table("delivery_locations as dl").Select(selectPart).Order("dl.id asc").Find(&deliveryLocationOptions)
+	db.Table("delivery_locations as dl").Select(selectPart).Where(" dl.deleted_at is NULL ").Order("dl.id asc").Find(&deliveryLocationOptions)
 	for i := 0; i < len(deliveryLocationOptions); i++ {
 		deliveryLocationOptions[i].Name = "delivery_location_id"
 	}
@@ -307,6 +309,36 @@ func CreateEmployeeHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"server_response": "An employee has been created!"})
+	return
+}
+
+// UpdateEmployeeFormData in frontend
+func UpdateEmployeeFormData(c *gin.Context) {
+	employee := &models.Employee{}
+	if err := db.First(&employee, c.Param("id")).Error; err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	employeeTypeOptions := []models.SelectStuct{}
+	selectPart := "et.id as value, et.name as label "
+	db.Table("employee_types as et").Select(selectPart).Where(" et.deleted_at is NULL ").Order("et.id asc").Find(&employeeTypeOptions)
+	for i := 0; i < len(employeeTypeOptions); i++ {
+		employeeTypeOptions[i].Name = "employee_type_id"
+	}
+
+	deliveryLocationOptions := []models.SelectStuct{}
+	selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
+	db.Table("delivery_locations as dl").Select(selectPart).Where(" dl.deleted_at is NULL ").Order("dl.id asc").Find(&deliveryLocationOptions)
+	for i := 0; i < len(deliveryLocationOptions); i++ {
+		deliveryLocationOptions[i].Name = "delivery_location_id"
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"et_options":    &employeeTypeOptions,
+		"dl_options":    &deliveryLocationOptions,
+		"employee_info": &employee,
+	})
 	return
 }
 
