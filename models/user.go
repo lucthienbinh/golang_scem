@@ -103,7 +103,7 @@ type EmployeeWithAuth struct {
 	Phone              int64  `json:"phone" validate:"nonzero"`
 	Gender             string `json:"gender" validate:"nonzero"`
 	Address            string `json:"address" validate:"nonzero"`
-	IdentityCard       string `json:"indentity_card" validate:"nonzero"`
+	IdentityCard       string `json:"identity_card" validate:"nonzero"`
 	EmployeeTypeID     uint   `json:"employee_type_id" validate:"nonzero"`
 	Avatar             string `json:"avatar" validate:"nonzero"`
 	DeliveryLocationID uint   `json:"delivery_location_id"`

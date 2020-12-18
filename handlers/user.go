@@ -267,8 +267,17 @@ func CreateEmployeeFormData(c *gin.Context) {
 	for i := 0; i < len(employeeTypeOptions); i++ {
 		employeeTypeOptions[i].Name = "employee_type_id"
 	}
+
+	deliveryLocationOptions := []models.SelectStuct{}
+	selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
+	db.Table("delivery_locations as dl").Select(selectPart).Order("dl.id asc").Find(&deliveryLocationOptions)
+	for i := 0; i < len(deliveryLocationOptions); i++ {
+		deliveryLocationOptions[i].Name = "delivery_location_id"
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"et_options": &employeeTypeOptions,
+		"dl_options": &deliveryLocationOptions,
 	})
 	return
 }
