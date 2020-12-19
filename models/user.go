@@ -45,17 +45,15 @@ type Employee struct {
 
 // EmployeeType structure
 type EmployeeType struct {
-	ID        uint   `gorm:"primary_key;<-:false" json:"id"`
-	Name      string `validate:"nonzero" json:"name"`
-	DeletedAt gorm.DeletedAt
+	ID   uint   `gorm:"primary_key;<-:false" json:"id"`
+	Name string `validate:"nonzero" json:"name"`
 }
 
 // DeliveryLocation structure
 type DeliveryLocation struct {
-	ID        uint   `gorm:"primary_key;<-:false" json:"id"`
-	City      string `json:"city" validate:"nonzero"`
-	District  string `json:"district" validate:"nonzero"`
-	DeletedAt gorm.DeletedAt
+	ID       uint   `gorm:"primary_key;<-:false" json:"id"`
+	City     string `json:"city" validate:"nonzero"`
+	District string `json:"district" validate:"nonzero"`
 }
 
 // -------------------- Struct uses to fetch data for frontend --------------------

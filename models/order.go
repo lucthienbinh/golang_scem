@@ -41,7 +41,6 @@ type TransportType struct {
 	Name            string `json:"name"`
 	RouteFixedPrice int32  `json:"fixed_price"`
 	PricePerKm      int32  `json:"price_per_km"`
-	DeletedAt       gorm.DeletedAt
 }
 
 // -------------------- Struct uses to fetch data for frontend --------------------

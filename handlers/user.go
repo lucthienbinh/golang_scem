@@ -172,14 +172,12 @@ func UpdateCustomerHandler(c *gin.Context) {
 
 // DeleteCustomerHandler in database
 func DeleteCustomerHandler(c *gin.Context) {
-	var userAuthID uint
-	if customer, err := getCustomerOrNotFound(c); err == nil {
-		userAuthID = customer.UserAuthID
-	} else {
+	customer, err := getCustomerOrNotFound(c)
+	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
-	if err := db.Delete(&models.UserAuthenticate{}, userAuthID).Error; err != nil {
+	if err := db.Delete(&models.UserAuthenticate{}, customer.UserAuthID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -201,32 +199,29 @@ func GetEmployeeListHandler(c *gin.Context) {
 		"dl.city as delivery_location_city, dl.district as delivery_location_district"
 	leftJoin1 := "left join employee_types as et on e.employee_type_id = et.id"
 	leftJoin2 := "left join delivery_locations as dl on e.delivery_location_id = dl.id"
-	db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Where(" e.deleted_at is NULL ").Order("e.id asc").Find(&employeeInfoList)
+	db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).
+		Where(" e.deleted_at is NULL ").
+		Order("e.id asc").Find(&employeeInfoList)
 	c.JSON(http.StatusOK, gin.H{"employee_list": employeeInfoList})
 	return
 }
 
-func getEmployeeOrNotFound(c *gin.Context) (*models.EmployeeInfoFetchDB, error) {
+// GetEmployeeHandler in database
+func GetEmployeeHandler(c *gin.Context) {
+
 	employeeInfoFetchDB := &models.EmployeeInfoFetchDB{}
 	selectPart := "e.id, e.name, e.age, e.phone, e.gender, e.address, " +
 		"e.identity_card, et.name as employee_type_name, e.avatar, " +
 		"dl.city as delivery_location_city, dl.district as delivery_location_district"
 	leftJoin1 := "left join employee_types as et on e.employee_type_id = et.id"
 	leftJoin2 := "left join delivery_locations as dl on e.delivery_location_id = dl.id"
-	if err := db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Where(" e.deleted_at is NULL ").First(&employeeInfoFetchDB, c.Param("id")).Error; err != nil {
-		return employeeInfoFetchDB, err
-	}
-	return employeeInfoFetchDB, nil
-}
-
-// GetEmployeeHandler in database
-func GetEmployeeHandler(c *gin.Context) {
-	employee, err := getEmployeeOrNotFound(c)
-	if err != nil {
+	if err := db.Table("employees as e").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).
+		Where(" e.deleted_at is NULL ").
+		First(&employeeInfoFetchDB, c.Param("id")).Error; err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"employee_info": &employee})
+	c.JSON(http.StatusOK, gin.H{"employee_info": &employeeInfoFetchDB})
 	return
 }
 
@@ -265,14 +260,14 @@ func ImageEmployeeHandler(c *gin.Context) {
 func CreateEmployeeFormData(c *gin.Context) {
 	employeeTypeOptions := []models.SelectStuct{}
 	selectPart := "et.id as value, et.name as label "
-	db.Table("employee_types as et").Select(selectPart).Where(" et.deleted_at is NULL ").Order("et.id asc").Find(&employeeTypeOptions)
+	db.Table("employee_types as et").Select(selectPart).Order("et.id asc").Find(&employeeTypeOptions)
 	for i := 0; i < len(employeeTypeOptions); i++ {
 		employeeTypeOptions[i].Name = "employee_type_id"
 	}
 
 	deliveryLocationOptions := []models.SelectStuct{}
 	selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
-	db.Table("delivery_locations as dl").Select(selectPart).Where(" dl.deleted_at is NULL ").Order("dl.id asc").Find(&deliveryLocationOptions)
+	db.Table("delivery_locations as dl").Select(selectPart).Order("dl.id asc").Find(&deliveryLocationOptions)
 	for i := 0; i < len(deliveryLocationOptions); i++ {
 		deliveryLocationOptions[i].Name = "delivery_location_id"
 	}
@@ -322,14 +317,14 @@ func UpdateEmployeeFormData(c *gin.Context) {
 
 	employeeTypeOptions := []models.SelectStuct{}
 	selectPart := "et.id as value, et.name as label "
-	db.Table("employee_types as et").Select(selectPart).Where(" et.deleted_at is NULL ").Order("et.id asc").Find(&employeeTypeOptions)
+	db.Table("employee_types as et").Select(selectPart).Order("et.id asc").Find(&employeeTypeOptions)
 	for i := 0; i < len(employeeTypeOptions); i++ {
 		employeeTypeOptions[i].Name = "employee_type_id"
 	}
 
 	deliveryLocationOptions := []models.SelectStuct{}
 	selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
-	db.Table("delivery_locations as dl").Select(selectPart).Where(" dl.deleted_at is NULL ").Order("dl.id asc").Find(&deliveryLocationOptions)
+	db.Table("delivery_locations as dl").Select(selectPart).Order("dl.id asc").Find(&deliveryLocationOptions)
 	for i := 0; i < len(deliveryLocationOptions); i++ {
 		deliveryLocationOptions[i].Name = "delivery_location_id"
 	}
@@ -344,17 +339,22 @@ func UpdateEmployeeFormData(c *gin.Context) {
 
 // UpdateEmployeeHandler in database
 func UpdateEmployeeHandler(c *gin.Context) {
-	employee, err := getEmployeeOrNotFound(c)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	employee := &models.Employee{}
+	if err := db.First(&employee, c.Param("id")).Error; err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
+
 	if err := c.ShouldBindJSON(&employee); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if err := validator.Validate(&employee); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	employee.ID = getIDFromParam(c)
-	if err = db.Model(&employee).Updates(&employee).Error; err != nil {
+	if err := db.Model(&employee).Updates(&employee).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -364,10 +364,17 @@ func UpdateEmployeeHandler(c *gin.Context) {
 
 // DeleteEmployeeHandler in database
 func DeleteEmployeeHandler(c *gin.Context) {
-	if _, err := getEmployeeOrNotFound(c); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	employee := &models.Employee{}
+	if err := db.First(&employee, c.Param("id")).Error; err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
+
+	if err := db.Delete(&models.UserAuthenticate{}, employee.UserAuthID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	if err := db.Delete(&models.Employee{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
