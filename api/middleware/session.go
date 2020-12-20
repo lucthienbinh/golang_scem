@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	"crypto/rand"
@@ -15,7 +15,6 @@ import (
 	"github.com/adam-hanna/sessions/store"
 	"github.com/adam-hanna/sessions/transport"
 	"github.com/gin-gonic/gin"
-	"github.com/lucthienbinh/golang_scem/models"
 )
 
 // SessionJSON is used for marshalling and unmarshalling custom session json information.
@@ -35,7 +34,7 @@ func GetUserAuthIDInSession(c *gin.Context) uint {
 }
 
 // CreateWebSession after login successful
-func CreateWebSession(c *gin.Context, userAuth *models.UserAuthenticate) {
+func CreateWebSession(c *gin.Context, userAuthID uint) {
 	w := c.Writer
 	csrf, err := generateKey()
 	if err != nil {
@@ -54,7 +53,7 @@ func CreateWebSession(c *gin.Context, userAuth *models.UserAuthenticate) {
 		return
 	}
 
-	userID := strconv.FormatUint(uint64(userAuth.ID), 10)
+	userID := strconv.FormatUint(uint64(userAuthID), 10)
 	userSession, err := sesh.IssueUserSession(userID, string(JSONBytes[:]), w)
 	if err != nil {
 		log.Printf("Err issuing user session: %v\n", err)

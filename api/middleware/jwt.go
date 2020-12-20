@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	"errors"
@@ -12,7 +12,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v7"
-	"github.com/lucthienbinh/golang_scem/models"
 	"github.com/twinj/uuid"
 )
 
@@ -39,14 +38,14 @@ func RunAppAuth() {
 // -------------------- Public function --------------------
 
 // CreateAppToken after logged in successful
-func CreateAppToken(c *gin.Context, userAuth *models.UserAuthenticate) {
+func CreateAppToken(c *gin.Context, userAuthID uint) {
 
-	ts, err := createToken(userAuth.ID)
+	ts, err := createToken(userAuthID)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, err.Error())
 		return
 	}
-	saveErr := createAuth(userAuth.ID, ts)
+	saveErr := createAuth(userAuthID, ts)
 	if saveErr != nil {
 		c.JSON(http.StatusUnprocessableEntity, saveErr.Error())
 	}

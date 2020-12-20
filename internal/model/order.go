@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"gorm.io/datatypes"
@@ -64,5 +64,3 @@ type OrderInfoFetchDB struct {
 	CreatedAt           int64  `json:"created_at"`
 	UpdatedAt           int64  `json:"updated_at"`
 }
-
-// -------------------- Convert function --------------------

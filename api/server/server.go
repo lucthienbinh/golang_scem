@@ -1,4 +1,4 @@
-package routes
+package server
 
 import (
 	"log"
@@ -7,7 +7,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/lucthienbinh/golang_scem/middlewares"
+	"github.com/lucthienbinh/golang_scem/api/middleware"
+	"github.com/lucthienbinh/golang_scem/api/router"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -57,7 +58,6 @@ func RunServer() {
 
 func webRouter() http.Handler {
 	e := gin.Default()
-
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"http://127.0.0.1:3000"}
 	config.AllowCredentials = true
@@ -68,12 +68,12 @@ func webRouter() http.Handler {
 	e.MaxMultipartMemory = 8 << 20 // 8 MiB
 
 	webAuth := e.Group("/web-auth")
-	webAuthRoutes(webAuth)
+	router.WebAuthRoutes(webAuth)
 
 	api := e.Group("/api")
-	api.Use(middlewares.ValidateWebSession())
-	userRoutes(api)
-	orderRoutes(api)
+	api.Use(middleware.ValidateWebSession())
+	router.UserRoutes(api)
+	router.OrderRoutes(api)
 
 	return e
 }
@@ -83,11 +83,11 @@ func appRouter() http.Handler {
 	e.Static("/api/image", "./public/upload/images")
 
 	appAuth := e.Group("/app-auth")
-	appAuthRoutes(appAuth)
+	router.AppAuthRoutes(appAuth)
 
 	api := e.Group("/api")
-	userRoutes(api)
-	orderRoutes(api)
+	router.UserRoutes(api)
+	router.OrderRoutes(api)
 
 	return e
 }

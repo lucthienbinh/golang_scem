@@ -1,8 +1,10 @@
-package models
+package model
 
 import (
 	"gorm.io/gorm"
 )
+
+// -------------------- Table in database --------------------
 
 // UserAuthenticate structure for authentication
 type UserAuthenticate struct {
@@ -11,8 +13,6 @@ type UserAuthenticate struct {
 	Password   string `json:"password"`
 	Active     bool   `gorm:"default:1" json:"active"`
 }
-
-// -------------------- Table in database --------------------
 
 // Customer structure
 type Customer struct {
@@ -57,12 +57,6 @@ type DeliveryLocation struct {
 }
 
 // -------------------- Struct uses to fetch data for frontend --------------------
-
-// Login structure
-type Login struct {
-	Email    string `form:"email" json:"email" xml:"email"  validate:"nonzero"`
-	Password string `form:"password" json:"password" xml:"password" validate:"nonzero"`
-}
 
 // EmployeeBasicInfo structure
 type EmployeeBasicInfo struct {

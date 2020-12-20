@@ -1,17 +1,17 @@
-package handlers
+package handler
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lucthienbinh/golang_scem/models"
+	"github.com/lucthienbinh/golang_scem/internal/model"
 )
 
 // -------------------- ORDER HANDLER FUNTION --------------------
 
 // GetOrderInfoListHandler in database
 func GetOrderInfoListHandler(c *gin.Context) {
-	orderInfoList := []models.OrderInfoFetchDB{}
+	orderInfoList := []model.OrderInfoFetchDB{}
 	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, ord.has_package, " +
 		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as trasnport_type, " +
 		"e.name as employee_name, ord.receiver, ord.detail, ord.total_price, ord.note, ord.created_at"
@@ -20,14 +20,16 @@ func GetOrderInfoListHandler(c *gin.Context) {
 	leftJoin3 := "left join transport_types as t on ord.trasnport_type_id = t.id"
 	leftJoin4 := "left join employees as e on ord.employee_id = e.id"
 
-	db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).Find(&orderInfoList)
+	db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).
+		Where(" e.deleted_at is NULL ").
+		Order("ord.id asc").Find(&orderInfoList)
 
 	c.JSON(http.StatusOK, gin.H{"order_info_list": orderInfoList})
 	return
 }
 
-func getOrderInfoOrNotFound(c *gin.Context) (*models.OrderInfoFetchDB, error) {
-	orderInfoFetchDB := &models.OrderInfoFetchDB{}
+func getOrderInfoOrNotFound(c *gin.Context) (*model.OrderInfoFetchDB, error) {
+	orderInfoFetchDB := &model.OrderInfoFetchDB{}
 	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, ord.has_package, " +
 		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as trasnport_type, " +
 		"e.name as employee_name, ord.receiver, ord.detail, ord.total_price, ord.note"
@@ -36,7 +38,9 @@ func getOrderInfoOrNotFound(c *gin.Context) (*models.OrderInfoFetchDB, error) {
 	leftJoin3 := "left join transport_types as t on ord.trasnport_type_id = t.id"
 	leftJoin4 := "left join employees as e on ord.employee_id = e.id"
 
-	if err := db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).First(&orderInfoFetchDB, c.Param("id")).Error; err != nil {
+	if err := db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).
+		Where(" e.deleted_at is NULL ").
+		Order("ord.id asc").First(&orderInfoFetchDB, c.Param("id")).Error; err != nil {
 		return orderInfoFetchDB, err
 	}
 	return orderInfoFetchDB, nil
@@ -55,7 +59,7 @@ func GetOrderInfoHandler(c *gin.Context) {
 
 // CreateOrderInfoHandler in database
 func CreateOrderInfoHandler(c *gin.Context) {
-	orderInfo := &models.OrderInfo{}
+	orderInfo := &model.OrderInfo{}
 	if err := c.ShouldBindJSON(&orderInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -93,7 +97,7 @@ func DeleteOrderInfoHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if err := db.Delete(&models.OrderInfo{}, c.Param("id")).Error; err != nil {
+	if err := db.Delete(&model.OrderInfo{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
@@ -104,14 +108,14 @@ func DeleteOrderInfoHandler(c *gin.Context) {
 
 // GetTransportTypeListHandler in database
 func GetTransportTypeListHandler(c *gin.Context) {
-	transportTypes := []models.TransportType{}
+	transportTypes := []model.TransportType{}
 	db.Order("id asc").Find(&transportTypes)
 	c.JSON(http.StatusOK, gin.H{"transport_type_list": &transportTypes})
 	return
 }
 
-func getTransportTypeOrNotFound(c *gin.Context) (*models.TransportType, error) {
-	transportType := &models.TransportType{}
+func getTransportTypeOrNotFound(c *gin.Context) (*model.TransportType, error) {
+	transportType := &model.TransportType{}
 	if err := db.First(&transportType, c.Param("id")).Error; err != nil {
 		return transportType, err
 	}
@@ -131,7 +135,7 @@ func GetTransportTypeHandler(c *gin.Context) {
 
 // CreateTransportTypeHandler in database
 func CreateTransportTypeHandler(c *gin.Context) {
-	transportType := &models.TransportType{}
+	transportType := &model.TransportType{}
 	if err := c.ShouldBindJSON(&transportType); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -170,7 +174,7 @@ func DeleteTransportTypeHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if err := db.Delete(&models.TransportType{}, c.Param("id")).Error; err != nil {
+	if err := db.Delete(&model.TransportType{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})

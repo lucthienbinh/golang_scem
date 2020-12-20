@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"crypto/rand"
@@ -10,78 +10,19 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lucthienbinh/golang_scem/middlewares"
-	"github.com/lucthienbinh/golang_scem/models"
+	"github.com/lucthienbinh/golang_scem/internal/model"
 	"gopkg.in/validator.v2"
 )
 
 // -------------------- USER AUTHENTICATION HANDLER FUNTION --------------------
 
-// ---------- WEB AUTHENTICATION HANDLER ----------
-
-// WebLoginHandler check user information
-func WebLoginHandler(c *gin.Context) {
-	var json models.Login
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
+// ValidateUserAuth in database
+func ValidateUserAuth(email, password string) (uint, bool) {
+	userAuth := &model.UserAuthenticate{}
+	if err := db.Where("email = ? AND active = true", email).First(&userAuth).Error; err != nil {
+		return uint(0), false
 	}
-	if err := validator.Validate(&json); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	userAuth := &models.UserAuthenticate{}
-	if err := db.Where("email = ? AND active = true", json.Email).First(&userAuth).Error; err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-	}
-	middlewares.CreateWebSession(c, userAuth)
-	return
-}
-
-// WebLogoutHandler remove user session
-func WebLogoutHandler(c *gin.Context) {
-	middlewares.ClearWebSession(c)
-	return
-}
-
-// ---------- APP AUTHENTICATION HANDLER ----------
-
-// AppLoginHandler check user information
-func AppLoginHandler(c *gin.Context) {
-	var json models.Login
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	if err := validator.Validate(&json); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	userAuth := &models.UserAuthenticate{}
-	if err := db.Where("email = ? AND active = true", json.Email).First(&userAuth).Error; err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	middlewares.CreateAppToken(c, userAuth)
-	return
-}
-
-// AppLogoutHandler remove user session
-func AppLogoutHandler(c *gin.Context) {
-	middlewares.DeleteAppToken(c)
-	return
-}
-
-// AppReloginHandler remove user session
-func AppReloginHandler(c *gin.Context) {
-	middlewares.RefreshAppToken(c)
-	return
-}
-
-// AppOpenHandler remove user session
-func AppOpenHandler(c *gin.Context) {
-	middlewares.CheckOldToken(c)
-	return
+	return userAuth.ID, true
 }
 
 // -------------------- COMMON FUNTION --------------------
@@ -94,14 +35,14 @@ func getIDFromParam(c *gin.Context) uint {
 
 // GetCustomerListHandler in database
 func GetCustomerListHandler(c *gin.Context) {
-	customers := []models.Customer{}
+	customers := []model.Customer{}
 	db.Order("id asc").Find(&customers)
 	c.JSON(http.StatusOK, gin.H{"customer_list": &customers})
 	return
 }
 
-func getCustomerOrNotFound(c *gin.Context) (*models.Customer, error) {
-	customer := &models.Customer{}
+func getCustomerOrNotFound(c *gin.Context) (*model.Customer, error) {
+	customer := &model.Customer{}
 	if err := db.First(&customer, c.Param("id")).Error; err != nil {
 		return customer, err
 	}
@@ -121,7 +62,7 @@ func GetCustomerHandler(c *gin.Context) {
 
 // CreateCustomerHandler in database
 func CreateCustomerHandler(c *gin.Context) {
-	customerWithAuth := &models.CustomerWithAuth{}
+	customerWithAuth := &model.CustomerWithAuth{}
 	if err := c.ShouldBindJSON(&customerWithAuth); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
@@ -177,11 +118,11 @@ func DeleteCustomerHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
-	if err := db.Delete(&models.UserAuthenticate{}, customer.UserAuthID).Error; err != nil {
+	if err := db.Delete(&model.UserAuthenticate{}, customer.UserAuthID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if err := db.Delete(&models.Customer{}, c.Param("id")).Error; err != nil {
+	if err := db.Delete(&model.Customer{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -193,7 +134,7 @@ func DeleteCustomerHandler(c *gin.Context) {
 
 // GetEmployeeListHandler in database
 func GetEmployeeListHandler(c *gin.Context) {
-	employeeInfoList := []models.EmployeeInfoFetchDB{}
+	employeeInfoList := []model.EmployeeInfoFetchDB{}
 	selectPart := "e.id, e.name, e.age, e.phone, e.gender, e.address, " +
 		"e.identity_card, et.name as employee_type_name, e.avatar, " +
 		"dl.city as delivery_location_city, dl.district as delivery_location_district"
@@ -209,7 +150,7 @@ func GetEmployeeListHandler(c *gin.Context) {
 // GetEmployeeHandler in database
 func GetEmployeeHandler(c *gin.Context) {
 
-	employeeInfoFetchDB := &models.EmployeeInfoFetchDB{}
+	employeeInfoFetchDB := &model.EmployeeInfoFetchDB{}
 	selectPart := "e.id, e.name, e.age, e.phone, e.gender, e.address, " +
 		"e.identity_card, et.name as employee_type_name, e.avatar, " +
 		"dl.city as delivery_location_city, dl.district as delivery_location_district"
@@ -258,14 +199,14 @@ func ImageEmployeeHandler(c *gin.Context) {
 
 // CreateEmployeeFormData in frontend
 func CreateEmployeeFormData(c *gin.Context) {
-	employeeTypeOptions := []models.SelectStuct{}
+	employeeTypeOptions := []model.SelectStuct{}
 	selectPart := "et.id as value, et.name as label "
 	db.Table("employee_types as et").Select(selectPart).Order("et.id asc").Find(&employeeTypeOptions)
 	for i := 0; i < len(employeeTypeOptions); i++ {
 		employeeTypeOptions[i].Name = "employee_type_id"
 	}
 
-	deliveryLocationOptions := []models.SelectStuct{}
+	deliveryLocationOptions := []model.SelectStuct{}
 	selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
 	db.Table("delivery_locations as dl").Select(selectPart).Order("dl.id asc").Find(&deliveryLocationOptions)
 	for i := 0; i < len(deliveryLocationOptions); i++ {
@@ -281,7 +222,7 @@ func CreateEmployeeFormData(c *gin.Context) {
 
 // CreateEmployeeHandler in database
 func CreateEmployeeHandler(c *gin.Context) {
-	employeeWithAuth := &models.EmployeeWithAuth{}
+	employeeWithAuth := &model.EmployeeWithAuth{}
 	if err := c.ShouldBindJSON(&employeeWithAuth); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
@@ -309,20 +250,20 @@ func CreateEmployeeHandler(c *gin.Context) {
 
 // UpdateEmployeeFormData in frontend
 func UpdateEmployeeFormData(c *gin.Context) {
-	employee := &models.Employee{}
+	employee := &model.Employee{}
 	if err := db.First(&employee, c.Param("id")).Error; err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 
-	employeeTypeOptions := []models.SelectStuct{}
+	employeeTypeOptions := []model.SelectStuct{}
 	selectPart := "et.id as value, et.name as label "
 	db.Table("employee_types as et").Select(selectPart).Order("et.id asc").Find(&employeeTypeOptions)
 	for i := 0; i < len(employeeTypeOptions); i++ {
 		employeeTypeOptions[i].Name = "employee_type_id"
 	}
 
-	deliveryLocationOptions := []models.SelectStuct{}
+	deliveryLocationOptions := []model.SelectStuct{}
 	selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
 	db.Table("delivery_locations as dl").Select(selectPart).Order("dl.id asc").Find(&deliveryLocationOptions)
 	for i := 0; i < len(deliveryLocationOptions); i++ {
@@ -339,7 +280,7 @@ func UpdateEmployeeFormData(c *gin.Context) {
 
 // UpdateEmployeeHandler in database
 func UpdateEmployeeHandler(c *gin.Context) {
-	employee := &models.Employee{}
+	employee := &model.Employee{}
 	if err := db.First(&employee, c.Param("id")).Error; err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
@@ -364,18 +305,18 @@ func UpdateEmployeeHandler(c *gin.Context) {
 
 // DeleteEmployeeHandler in database
 func DeleteEmployeeHandler(c *gin.Context) {
-	employee := &models.Employee{}
+	employee := &model.Employee{}
 	if err := db.First(&employee, c.Param("id")).Error; err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
 
-	if err := db.Delete(&models.UserAuthenticate{}, employee.UserAuthID).Error; err != nil {
+	if err := db.Delete(&model.UserAuthenticate{}, employee.UserAuthID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := db.Delete(&models.Employee{}, c.Param("id")).Error; err != nil {
+	if err := db.Delete(&model.Employee{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -387,14 +328,14 @@ func DeleteEmployeeHandler(c *gin.Context) {
 
 // GetDeliveryLocationListHandler in database
 func GetDeliveryLocationListHandler(c *gin.Context) {
-	deliveryLocations := []models.DeliveryLocation{}
+	deliveryLocations := []model.DeliveryLocation{}
 	db.Order("id asc").Find(&deliveryLocations)
 	c.JSON(http.StatusOK, gin.H{"delivery_location_list": &deliveryLocations})
 	return
 }
 
-func getDeliveryLocationOrNotFound(c *gin.Context) (*models.DeliveryLocation, error) {
-	deliveryLocation := &models.DeliveryLocation{}
+func getDeliveryLocationOrNotFound(c *gin.Context) (*model.DeliveryLocation, error) {
+	deliveryLocation := &model.DeliveryLocation{}
 	if err := db.First(&deliveryLocation, c.Param("id")).Error; err != nil {
 		return deliveryLocation, err
 	}
@@ -414,7 +355,7 @@ func GetDeliveryLocationHandler(c *gin.Context) {
 
 // CreateDeliveryLocationHandler in database
 func CreateDeliveryLocationHandler(c *gin.Context) {
-	deliveryLocation := &models.DeliveryLocation{}
+	deliveryLocation := &model.DeliveryLocation{}
 	if err := c.ShouldBindJSON(&deliveryLocation); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -461,7 +402,7 @@ func DeleteDeliveryLocationHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if err := db.Delete(&models.DeliveryLocation{}, c.Param("id")).Error; err != nil {
+	if err := db.Delete(&model.DeliveryLocation{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -473,14 +414,14 @@ func DeleteDeliveryLocationHandler(c *gin.Context) {
 
 // GetEmployeeTypeListHandler in database
 func GetEmployeeTypeListHandler(c *gin.Context) {
-	employeeTypes := []models.EmployeeType{}
+	employeeTypes := []model.EmployeeType{}
 	db.Order("id asc").Find(&employeeTypes)
 	c.JSON(http.StatusOK, gin.H{"employee_type_list": &employeeTypes})
 	return
 }
 
-func getEmployeeTypeOrNotFound(c *gin.Context) (*models.EmployeeType, error) {
-	employeeType := &models.EmployeeType{}
+func getEmployeeTypeOrNotFound(c *gin.Context) (*model.EmployeeType, error) {
+	employeeType := &model.EmployeeType{}
 	if err := db.First(&employeeType, c.Param("id")).Error; err != nil {
 		return employeeType, err
 	}
@@ -500,7 +441,7 @@ func GetEmployeeTypeHandler(c *gin.Context) {
 
 // CreateEmployeeTypeHandler in database
 func CreateEmployeeTypeHandler(c *gin.Context) {
-	employeeType := &models.EmployeeType{}
+	employeeType := &model.EmployeeType{}
 	if err := c.ShouldBindJSON(&employeeType); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -539,7 +480,7 @@ func DeleteEmployeeTypeHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if err := db.Delete(&models.EmployeeType{}, c.Param("id")).Error; err != nil {
+	if err := db.Delete(&model.EmployeeType{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
