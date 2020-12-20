@@ -6,12 +6,26 @@ import (
 
 // -------------------- Table in database --------------------
 
-// UserAuthenticate structure for authentication
+// UserAuthenticate structure for authentication ONLY
 type UserAuthenticate struct {
 	gorm.Model `json:"-"`
-	Email      string `json:"email" binding:"email"`
+	Email      string `json:"email"`
 	Password   string `json:"password"`
 	Active     bool   `gorm:"default:1" json:"active"`
+}
+
+// CustomerFCMToken structure for Firebase Cloud Messaging
+type CustomerFCMToken struct {
+	gorm.Model `json:"-"`
+	CustomerID uint   `json:"customer_id"`
+	Token      string `json:"token"`
+}
+
+// EmployeeFCMToken structure for Firebase Cloud Messaging
+type EmployeeFCMToken struct {
+	gorm.Model `json:"-"`
+	EmployeeID uint   `json:"employee_id"`
+	Token      string `json:"token"`
 }
 
 // Customer structure
