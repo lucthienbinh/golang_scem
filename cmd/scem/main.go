@@ -18,7 +18,7 @@ func main() {
 
 	// Connect Postgres database
 	if err := handler.ConnectPostgres(); err != nil {
-		// if err := handlers.ConnectMySQL(); err != nil {
+		// if err := handler.ConnectMySQL(); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
