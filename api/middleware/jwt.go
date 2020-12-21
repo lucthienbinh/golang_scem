@@ -76,7 +76,7 @@ func ValidateAppTokenForRefresh() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := tokenValid(c.Request)
 		if err != nil {
-			if (err.Error() == "Token is expired") && (c.FullPath() == "/app-auth/access-token/get-new'") {
+			if (err.Error() == "Token is expired") && (c.FullPath() == "/app-auth/access-token/get-new") {
 				c.Next()
 			} else {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": err.Error()})
