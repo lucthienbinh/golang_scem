@@ -23,7 +23,7 @@ func ConnectPostgres() (err error) {
 // ConnectMySQL to open connect with database
 func ConnectMySQL() (err error) {
 	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
-	dsn := "root:@tcp(localhost:3306)/scem_database?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:@tcp(localhost:3308)/scem_database?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	return err
 }

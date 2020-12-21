@@ -5,9 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/api/router"
 	"golang.org/x/sync/errgroup"
 )
@@ -58,20 +56,20 @@ func RunServer() {
 
 func webRouter() http.Handler {
 	e := gin.Default()
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://127.0.0.1:3000"}
-	config.AllowCredentials = true
-	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "X-CSRF-Token", "Accept"}
-	e.Use(cors.New(config))
+	// config := cors.DefaultConfig()
+	// config.AllowOrigins = []string{"http://127.0.0.1:3000"}
+	// config.AllowCredentials = true
+	// config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "X-CSRF-Token", "Accept"}
+	// e.Use(cors.New(config))
 	e.Static("/api/images", "./public/upload/images")
 	// Set a lower memory limit for multipart forms (default is 32 MiB)
-	e.MaxMultipartMemory = 8 << 20 // 8 MiB
+	// e.MaxMultipartMemory = 8 << 20 // 8 MiB
 
 	webAuth := e.Group("/web-auth")
 	router.WebAuthRoutes(webAuth)
 
 	api := e.Group("/api")
-	api.Use(middleware.ValidateWebSession())
+	// api.Use(middleware.ValidateWebSession())
 	router.UserRoutes(api)
 	router.OrderRoutes(api)
 

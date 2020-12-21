@@ -4,21 +4,20 @@ import (
 	"log"
 	"os"
 
-	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/api/server"
 	"github.com/lucthienbinh/golang_scem/internal/handler"
 )
 
 func main() {
 	// Initial web auth middleware
-	middleware.RunWebAuth()
+	// middleware.RunWebAuth()
 
 	// Initial app auth middleware
-	middleware.RunAppAuth()
+	// middleware.RunAppAuth()
 
 	// Connect Postgres database
-	if err := handler.ConnectPostgres(); err != nil {
-		// if err := handler.ConnectMySQL(); err != nil {
+	// if err := handler.ConnectPostgres(); err != nil {
+	if err := handler.ConnectMySQL(); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
