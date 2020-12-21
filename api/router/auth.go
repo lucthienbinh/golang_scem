@@ -49,7 +49,7 @@ func AppAuthRoutes(rg *gin.RouterGroup) {
 	rg.POST("/loginJSON", appLoginHandler)
 	rg.GET("/logout", appLogoutHandler)
 	// validate old token
-	accessToken := rg.Group("/app/access-token", middleware.ValidateAppTokenForRefresh())
+	accessToken := rg.Group("/access-token", middleware.ValidateAppTokenForRefresh())
 	accessToken.POST("/get-new", appReloginHandler)
 	accessToken.GET("/check-old", appOpenHandler)
 }

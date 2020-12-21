@@ -36,7 +36,7 @@ func MigrationDatabase() (err error) {
 		&model.EmployeeType{},
 		&model.DeliveryLocation{},
 		&model.OrderInfo{},
-		&model.OrderStatusJSON{},
+		// &model.OrderStatusJSON{},
 		&model.TransportType{},
 		&model.UserAuthenticate{},
 	)
