@@ -25,6 +25,56 @@ func ValidateUserAuth(email, password string) (uint, bool) {
 	return userAuth.ID, true
 }
 
+// -------------------- FCM HANDLER FUNTION --------------------
+
+// SaveFCMTokenWithUserAuthID to database
+func SaveFCMTokenWithUserAuthID(c *gin.Context, userAuthID uint, appToken string) {
+	customer := &model.Customer{}
+	err1 := db.Where("user_auth_id = ?", userAuthID).First(&customer).Error
+	employee := &model.Employee{}
+	err2 := db.Where("user_auth_id = ?", userAuthID).First(&employee).Error
+	if err1 != nil && err2 != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error1": err1.Error(), "error2": err2.Error()})
+	}
+	if *customer == (model.Customer{}) && err2 != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err2.Error()})
+	}
+	if *employee == (model.Employee{}) && err1 != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err1.Error()})
+	}
+	if *customer != (model.Customer{}) {
+		customerFCMToken := &model.CustomerFCMToken{}
+		customerFCMToken.CustomerID = customer.ID
+		customerFCMToken.Token = appToken
+		if db.Model(&customerFCMToken).Where("customer_id = ?", customer.ID).Updates(&customerFCMToken).RowsAffected == 0 {
+			if err := db.Create(&customerFCMToken).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusCreated, gin.H{"server_response": "App token has been created!"})
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{"server_response": "App token has been updated!"})
+		return
+	}
+
+	if *employee != (model.Employee{}) {
+		employeeFCMToken := &model.EmployeeFCMToken{}
+		employeeFCMToken.EmployeeID = employee.ID
+		employeeFCMToken.Token = appToken
+		if db.Model(&employeeFCMToken).Where("employee_id = ?", employee.ID).Updates(&employeeFCMToken).RowsAffected == 0 {
+			if err := db.Create(&employeeFCMToken).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusCreated, gin.H{"server_response": "App token has been created!"})
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{"server_response": "App token has been updated!"})
+		return
+	}
+}
+
 // -------------------- COMMON FUNTION --------------------
 func getIDFromParam(c *gin.Context) uint {
 	rawUint64, _ := strconv.ParseUint(c.Param("id"), 10, 32)

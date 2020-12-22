@@ -14,6 +14,8 @@ type loginRequest struct {
 	Password string `json:"password" validate:"nonzero"`
 }
 
+// ------------------------------------- Web auth -------------------------------------
+
 // WebAuthRoutes for login/logout web
 func WebAuthRoutes(rg *gin.RouterGroup) {
 	rg.POST("/loginJSON", webLoginHandler)
@@ -43,6 +45,8 @@ func webLogoutHandler(c *gin.Context) {
 	middleware.ClearWebSession(c)
 	return
 }
+
+// ------------------------------------- App auth -------------------------------------
 
 // AppAuthRoutes for login/logout app
 func AppAuthRoutes(rg *gin.RouterGroup) {
@@ -86,4 +90,33 @@ func appReloginHandler(c *gin.Context) {
 func appOpenHandler(c *gin.Context) {
 	middleware.CheckOldToken(c)
 	return
+}
+
+// ------------------------------------- FCM auth -------------------------------------
+
+type appTokenRequest struct {
+	Token string `json:"token" validate:"nonzero"`
+}
+
+// AppFMCToken for store FMC Token
+func AppFMCToken(rg *gin.RouterGroup) {
+	rg.POST("/save-token", saveFCMToken)
+}
+
+func saveFCMToken(c *gin.Context) {
+	var request appTokenRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if err := validator.Validate(&request); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	userAuthID, err := middleware.GetUserAuthIDInToken(c)
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	handler.SaveFCMTokenWithUserAuthID(c, userAuthID, request.Token)
 }

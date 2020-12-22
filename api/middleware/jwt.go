@@ -82,7 +82,8 @@ func ValidateAppTokenForRefresh() gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": err.Error()})
 			}
 
-		} else {
+		}
+		if err == nil {
 			c.Next()
 		}
 	}
@@ -181,6 +182,17 @@ func RefreshAppToken(c *gin.Context) {
 	}
 }
 
+// GetUserAuthIDInToken function
+func GetUserAuthIDInToken(c *gin.Context) (uint, error) {
+	//Extract the access token metadata
+	metadata, err := extractTokenMetadata(c.Request)
+	if err != nil {
+		return uint(0), err
+	}
+	userID, err := fetchAuth(metadata)
+	return uint(userID), nil
+}
+
 // -------------------- Private function --------------------
 
 type accessDetails struct {
@@ -199,7 +211,7 @@ type tokenDetails struct {
 
 func createToken(userid uint) (*tokenDetails, error) {
 	td := &tokenDetails{}
-	td.AtExpires = time.Now().Add(time.Second * 15).Unix()
+	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
 	td.AccessUUID = uuid.NewV4().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()

@@ -25,22 +25,14 @@ func main() {
 
 	r, err := c.Send(context.Background(), &proto.NotificationRequest{
 		Platform: 2,
-		Tokens:   []string{"1234567890"},
-		Message:  "test message",
-		Badge:    1,
-		Category: "test",
+		Tokens:   []string{"f09fih-jQ9GhMz3riGfmJv:APA91bH7opzi3nvIeY1GLvJb0zZClx19ZztB5-6Bgg4jIsBi-9fnZWHpqYo1Za78W93VbdyiQureIFkck0MA6AaFik7LwQ2gIburmRCV2eR4ZBIp-YjQKRhIUHAYbu6YyQmfEJPsDgbn"},
+		Message:  "Your package will arrive soon!",
+		Title:    "Attention!",
 		Sound:    "test",
-		Alert: &proto.Alert{
-			Title:    "Test Title",
-			Body:     "Test Alert Body",
-			Subtitle: "Test Alert Sub Title",
-			LocKey:   "Test loc key",
-			LocArgs:  []string{"test", "test"},
-		},
 		Data: &structpb.Struct{
 			Fields: map[string]*structpb.Value{
-				"key1": {
-					Kind: &structpb.Value_StringValue{StringValue: "welcome"},
+				"channelId": {
+					Kind: &structpb.Value_StringValue{StringValue: "channel_id_1"},
 				},
 				"key2": {
 					Kind: &structpb.Value_NumberValue{NumberValue: 2},

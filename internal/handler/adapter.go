@@ -39,6 +39,8 @@ func MigrationDatabase() (err error) {
 		// &model.OrderStatusJSON{},
 		&model.TransportType{},
 		&model.UserAuthenticate{},
+		&model.EmployeeFCMToken{},
+		&model.CustomerFCMToken{},
 	)
 }
 
@@ -81,6 +83,8 @@ func deleteDatabase() (err error) {
 		// &model.OrderStatusJSON{},
 		&model.TransportType{},
 		&model.UserAuthenticate{},
+		&model.EmployeeFCMToken{},
+		&model.CustomerFCMToken{},
 	)
 }
 

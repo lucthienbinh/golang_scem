@@ -85,6 +85,9 @@ func appRouter() http.Handler {
 	appAuth := e.Group("/app-auth")
 	router.AppAuthRoutes(appAuth)
 
+	fcmAuth := e.Group("/fcm-auth")
+	router.AppFMCToken(fcmAuth)
+
 	api := e.Group("/api")
 	router.UserRoutes(api)
 	router.OrderRoutes(api)
