@@ -4,17 +4,27 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/api/server"
 	"github.com/lucthienbinh/golang_scem/internal/handler"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	// Initial web auth middleware
-	middleware.RunWebAuth()
+	if os.Getenv("RUN_WEB_AUTH") == "yes" {
+		middleware.RunWebAuth()
+	}
 
 	// Initial app auth middleware
-	middleware.RunAppAuth()
+	if os.Getenv("RUN_APP_AUTH") == "yes" {
+		middleware.RunAppAuth()
+	}
 
 	// Connect Postgres database
 	if err := handler.ConnectPostgres(); err != nil {

@@ -19,7 +19,6 @@ func RunWorkerTaskA() {
 	if err != nil {
 		panic(err)
 	}
-
 	go client.NewJobWorker().JobType("taskA").Handler(handleJob).Open()
 }
 
@@ -41,7 +40,6 @@ func handleJob(client worker.JobClient, job entities.Job) {
 	}
 
 	fmt.Println(variables)
-
 	variables["workerStatus"] = 1
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {

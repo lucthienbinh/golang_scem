@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -22,14 +23,14 @@ func RunServer() {
 	// export GIN_MODE=debug
 
 	webServer := &http.Server{
-		Addr:         ":5000",
+		Addr:         os.Getenv("WEB_PORT"),
 		Handler:      webRouter(),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
 	appServer := &http.Server{
-		Addr:         ":5001",
+		Addr:         os.Getenv("APP_PORT"),
 		Handler:      appRouter(),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -58,11 +59,14 @@ func RunServer() {
 
 func webRouter() http.Handler {
 	e := gin.Default()
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://127.0.0.1:3000"}
-	config.AllowCredentials = true
-	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "X-CSRF-Token", "Accept"}
-	e.Use(cors.New(config))
+	if os.Getenv("RUN_WEB_AUTH") == "yes" {
+		config := cors.DefaultConfig()
+		config.AllowOrigins = []string{"http://127.0.0.1:3000"}
+		config.AllowCredentials = true
+		config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "X-CSRF-Token", "Accept"}
+		e.Use(cors.New(config))
+	}
+
 	e.Static("/api/images", "./public/upload/images")
 	// Set a lower memory limit for multipart forms (default is 32 MiB)
 	e.MaxMultipartMemory = 8 << 20 // 8 MiB
@@ -71,7 +75,10 @@ func webRouter() http.Handler {
 	router.WebAuthRoutes(webAuth)
 
 	api := e.Group("/api")
-	api.Use(middleware.ValidateWebSession())
+	// Active web auth
+	if os.Getenv("RUN_WEB_AUTH") == "yes" {
+		api.Use(middleware.ValidateWebSession())
+	}
 	router.UserRoutes(api)
 	router.OrderRoutes(api)
 
@@ -89,6 +96,11 @@ func appRouter() http.Handler {
 	router.AppFMCToken(fcmAuth)
 
 	api := e.Group("/api")
+
+	// Active app auth
+	if os.Getenv("RUN_APP_AUTH") == "yes" {
+		api.Use(middleware.ValidateAppToken())
+	}
 	router.UserRoutes(api)
 	router.OrderRoutes(api)
 
