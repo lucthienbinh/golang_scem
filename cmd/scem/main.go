@@ -26,12 +26,22 @@ func main() {
 		middleware.RunAppAuth()
 	}
 
-	// Connect Postgres database
-	if err := handler.ConnectPostgres(); err != nil {
-		// if err := handler.ConnectMySQL(); err != nil {
-		log.Print(err)
-		os.Exit(1)
+	// Select Postgres database
+	if os.Getenv("SELECT_DATABASE") == "1" {
+		if err := handler.ConnectPostgres(); err != nil {
+			log.Print(err)
+			os.Exit(1)
+		}
 	}
+
+	// Select MySQL database
+	if os.Getenv("SELECT_DATABASE") == "2" {
+		if err := handler.ConnectMySQL(); err != nil {
+			log.Print(err)
+			os.Exit(1)
+		}
+	}
+
 	log.Print("Connected with posgres database with: user=postgres dbname=scem_database port=543")
 	if err := handler.RefreshDatabase(); err != nil {
 		// if err := handlers.MigrationDatabase(); err != nil {
