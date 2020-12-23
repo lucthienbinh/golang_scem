@@ -4,14 +4,17 @@ package model
 
 // OrderLongShip structure
 type OrderLongShip struct {
-	ID              uint `gorm:"primary_key;<-:false" json:"id"`
-	OrderID         uint `json:"order_id"`
-	TrasnportTypeID uint `json:"trasnport_type_id"`
-	LastLocationID  uint `json:"last_location_id"`
-	EmplLoadID      uint `json:"empl_load_id"`
-	EmplUnloadID    uint `json:"empl_unload_id"`
-	EmplDriverID    uint `json:"empl_driveer_id"`
-	Finished        bool `gorm:"default:0" json:"finished"`
+	ID              uint   `gorm:"primary_key;<-:false" json:"id"`
+	OrderID         uint   `json:"order_id"`
+	CurrentLocation string `json:"current_location"`
+	PackageLoaded   bool   `gorm:"default:0" json:"package_loaded"`
+	VehicleStarted  bool   `gorm:"default:0" json:"vehicle_started"`
+	VehicleArrived  bool   `gorm:"default:0" json:"vehicle_arrived"`
+	PackageUnloaded bool   `gorm:"default:0" json:"package_unloaded"`
+	EmplLoadID      uint   `json:"empl_load_id"`
+	EmplUnloadID    uint   `json:"empl_unload_id"`
+	EmplDriverID    uint   `json:"empl_driver_id"`
+	Finished        bool   `gorm:"default:0" json:"finished"`
 }
 
 // OrderShortShip structure

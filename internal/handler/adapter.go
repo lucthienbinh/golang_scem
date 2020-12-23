@@ -291,6 +291,7 @@ func createExampleOrderShortShip() (err error) {
 		OrderID: 1, EmplShipID: 3, EmplShipReceived: true,
 		EmplShipCalled: true, EmplShipShipped: true,
 		TimeConfirmed: true, CusReceiveConfirmed: true,
+		Finished: true,
 	}
 	if err := db.Create(&orderShortShip).Error; err != nil {
 		return err
