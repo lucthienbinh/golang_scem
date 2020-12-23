@@ -11,6 +11,7 @@ type UserAuthenticate struct {
 	gorm.Model `json:"-"`
 	Email      string `json:"email"`
 	Password   string `json:"password"`
+	UserType   int    `json:"user_type"`
 	Active     bool   `gorm:"default:1" json:"active"`
 }
 

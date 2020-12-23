@@ -288,9 +288,9 @@ func createExampleOrderShip() (err error) {
 
 func createExampleOrderShortShip() (err error) {
 	orderShortShip := model.OrderShortShip{
-		OrderID: 1, EmplShipID: 3, EmplShipReceived: true,
-		EmplShipCalled: true, EmplShipShipped: true,
-		TimeConfirmed: true, CusReceiveConfirmed: true,
+		OrderID: 1, ShipperID: 3, ShipperReceived: true,
+		ShipperCalled: true, ShipperShipped: true,
+		TimeConfirmed: 1608743635, CusReceiveConfirmed: true,
 		Finished: true,
 	}
 	if err := db.Create(&orderShortShip).Error; err != nil {

@@ -1,9 +1,9 @@
-package zeebeclient
+package worker
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"os"
 
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
@@ -13,13 +13,13 @@ import (
 // RunWorkerTaskA to start this worker
 func RunWorkerTaskA() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
-		GatewayAddress:         brokerAddr,
+		GatewayAddress:         os.Getenv("BORKER_ADDRESS"),
 		UsePlaintextConnection: true,
 	})
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("taskA").Handler(handleJob).Open()
+	go client.NewJobWorker().JobType("bank_payment").Handler(handleJob).Open()
 }
 
 func handleJob(client worker.JobClient, job entities.Job) {
@@ -39,7 +39,6 @@ func handleJob(client worker.JobClient, job entities.Job) {
 		return
 	}
 
-	fmt.Println(variables)
 	variables["workerStatus"] = 1
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {
