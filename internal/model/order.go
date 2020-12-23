@@ -71,9 +71,10 @@ type OrderInfoFetchDB struct {
 	HasPackage          bool   `json:"has_package"`
 	CustomerSendName    string `json:"customer_send_name"`
 	CustomerReceiveName string `json:"customer_receive_name"`
-	TrasnportType       string `json:"trasnport_type"`
-	EmployeeName        string `json:"employee_name"`
+	EmplCreateName      string `json:"empl_create_name"`
+	EmplShipName        string `json:"empl_ship_name"`
 	Receiver            string `json:"receiver"`
+	TrasnportType       string `json:"trasnport_type"`
 	Detail              string `json:"detail"`
 	TotalPrice          int64  `json:"total_price"`
 	Note                string `json:"note"`
