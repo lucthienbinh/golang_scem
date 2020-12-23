@@ -1,7 +1,6 @@
 package model
 
 import (
-	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -14,33 +13,50 @@ type OrderInfo struct {
 	Volume            int16  `json:"volume"`
 	Type              string `json:"type"`
 	Image             string `json:"image"`
-	CustomerSendID    uint   `json:"customer_send_id" `
-	CustomerReceiveID uint   `json:"customer_receive_id"`
-	TrasnportTypeID   uint   `json:"trasnport_type_id" validate:"nonzero"`
 	HasPackage        bool   `json:"has_package"`
-	EmployeeID        uint   `json:"employee_id" validate:"nonzero"`
+	CustomerSendID    uint   `json:"customer_send_id" validate:"nonzero"`
+	CustomerReceiveID uint   `json:"customer_receive_id"`
+	EmplCreateID      uint   `json:"empl_create_id"`
+	EmplShipID        uint   `json:"empl_ship_id"`
 	Receiver          string `json:"receiver" validate:"nonzero"`
+	TrasnportTypeID   uint   `json:"trasnport_type_id" validate:"nonzero"`
 	Detail            string `json:"detail" validate:"nonzero"`
-	TotalPrice        int32  `json:"total_price" validate:"nonzero"`
+	TotalPrice        int64  `json:"total_price" validate:"nonzero"`
 	Note              string `json:"note"`
 	CreatedAt         int64  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt         int64  `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt         gorm.DeletedAt
 }
 
-// OrderStatusJSON save data of zeebe client
-type OrderStatusJSON struct {
-	gorm.Model
-	Name       string
-	Attributes datatypes.JSON
+// OrderPay structure
+type OrderPay struct {
+	ID            uint   `gorm:"primary_key;<-:false" json:"id"`
+	OrderID       uint   `json:"order_id"`
+	PayMethod     string `gorm:"default:'cash'" json:"pay_method"`
+	PayStatus     bool   `gorm:"default:0" json:"pay_status"`
+	PayEmployeeID uint   `json:"pay_employee_id"`
+	TotalPrice    int64  `json:"total_price"`
+	CreatedAt     int64  `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt     int64  `gorm:"autoUpdateTime" json:"updated_at"`
+}
+
+// OrderShip structure
+type OrderShip struct {
+	ID           uint `gorm:"primary_key;<-:false" json:"id"`
+	OrderID      uint `json:"order_id"`
+	UseShortShip bool `json:"use_short_ship"`
+	ShortShipID  uint `json:"short_ship_id"`
+	UseLongShip  bool `json:"use_long_ship"`
+	LongShipID   uint `json:"long_ship_id"`
 }
 
 // TransportType structure
 type TransportType struct {
 	ID              uint   `gorm:"primary_key;<-:false" json:"id"`
 	Name            string `json:"name"`
-	RouteFixedPrice int32  `json:"fixed_price"`
-	PricePerKm      int32  `json:"price_per_km"`
+	SameCity        bool   `json:"same_city"`
+	RouteFixedPrice int64  `json:"fixed_price"`
+	PricePerKm      int64  `json:"price_per_km"`
 }
 
 // -------------------- Struct uses to fetch data for frontend --------------------
@@ -59,7 +75,7 @@ type OrderInfoFetchDB struct {
 	EmployeeName        string `json:"employee_name"`
 	Receiver            string `json:"receiver"`
 	Detail              string `json:"detail"`
-	TotalPrice          int32  `json:"total_price"`
+	TotalPrice          int64  `json:"total_price"`
 	Note                string `json:"note"`
 	CreatedAt           int64  `json:"created_at"`
 	UpdatedAt           int64  `json:"updated_at"`

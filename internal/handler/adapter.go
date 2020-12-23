@@ -38,11 +38,14 @@ func MigrationDatabase() (err error) {
 		&model.EmployeeType{},
 		&model.DeliveryLocation{},
 		&model.OrderInfo{},
-		// &model.OrderStatusJSON{},
 		&model.TransportType{},
 		&model.UserAuthenticate{},
 		&model.EmployeeFCMToken{},
 		&model.CustomerFCMToken{},
+		&model.OrderPay{},
+		&model.OrderShip{},
+		&model.OrderLongShip{},
+		&model.OrderShortShip{},
 	)
 }
 
@@ -72,6 +75,15 @@ func RefreshDatabase() (err error) {
 	if err := createExampleOrder(); err != nil {
 		return err
 	}
+	if err := createExampleOrderPay(); err != nil {
+		return err
+	}
+	if err := createExampleOrderShip(); err != nil {
+		return err
+	}
+	if err := createExampleOrderShortShip(); err != nil {
+		return err
+	}
 	return
 }
 
@@ -82,11 +94,14 @@ func deleteDatabase() (err error) {
 		&model.EmployeeType{},
 		&model.DeliveryLocation{},
 		&model.OrderInfo{},
-		// &model.OrderStatusJSON{},
 		&model.TransportType{},
 		&model.UserAuthenticate{},
 		&model.EmployeeFCMToken{},
 		&model.CustomerFCMToken{},
+		&model.OrderPay{},
+		&model.OrderShip{},
+		&model.OrderLongShip{},
+		&model.OrderShortShip{},
 	)
 }
 
@@ -103,6 +118,10 @@ func createEmployeeType() (err error) {
 	if err := db.Create(&employeeType).Error; err != nil {
 		return err
 	}
+	employeeType = model.EmployeeType{Name: "Load package staff"}
+	if err := db.Create(&employeeType).Error; err != nil {
+		return err
+	}
 	return
 }
 
@@ -111,7 +130,7 @@ func createDefaultEmployee() (err error) {
 	if err := db.Create(&userAuth).Error; err != nil {
 		return err
 	}
-	employee := model.Employee{UserAuthID: userAuth.ID, Name: "Binh", Age: 18, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao", IdentityCard: "17687t562765786", EmployeeTypeID: 1, Avatar: "image1.jpg"}
+	employee := model.Employee{UserAuthID: userAuth.ID, Name: "Binh", Age: 40, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao", IdentityCard: "17687t562765786", EmployeeTypeID: 1, Avatar: "image1.jpg"}
 	if err := db.Create(&employee).Error; err != nil {
 		return err
 	}
@@ -119,7 +138,7 @@ func createDefaultEmployee() (err error) {
 	if err := db.Create(&userAuth).Error; err != nil {
 		return err
 	}
-	employee = model.Employee{UserAuthID: userAuth.ID, Name: "Hoa", Age: 18, Phone: 448883333, Gender: "male", Address: "21 Huynh Thuc Khang", IdentityCard: "17687t562765786", EmployeeTypeID: 2, Avatar: "image2.jpg"}
+	employee = model.Employee{UserAuthID: userAuth.ID, Name: "Huan", Age: 35, Phone: 448883333, Gender: "male", Address: "21 Huynh Thuc Khang", IdentityCard: "17687t562765786", EmployeeTypeID: 2, Avatar: "image2.jpg"}
 	if err := db.Create(&employee).Error; err != nil {
 		return err
 	}
@@ -127,7 +146,15 @@ func createDefaultEmployee() (err error) {
 	if err := db.Create(&userAuth).Error; err != nil {
 		return err
 	}
-	employee = model.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 18, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 4}
+	employee = model.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 37, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 4}
+	if err := db.Create(&employee).Error; err != nil {
+		return err
+	}
+	userAuth = model.UserAuthenticate{Email: "loadpackagestaff@gmail.com", Password: "12345678"}
+	if err := db.Create(&userAuth).Error; err != nil {
+		return err
+	}
+	employee = model.Employee{UserAuthID: userAuth.ID, Name: "Hung", Age: 47, Phone: 776334958, Gender: "male", Address: "84 Nguyen Trau", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg"}
 	if err := db.Create(&employee).Error; err != nil {
 		return err
 	}
@@ -162,7 +189,7 @@ func createDefaultCustomer() (err error) {
 }
 
 func createTransportType() (err error) {
-	transportType := model.TransportType{Name: "HCM", RouteFixedPrice: 0, PricePerKm: 30000}
+	transportType := model.TransportType{Name: "HCM", SameCity: true, RouteFixedPrice: 0, PricePerKm: 30000}
 	if err := db.Create(&transportType).Error; err != nil {
 		return err
 	}
@@ -229,10 +256,43 @@ func createExampleOrder() (err error) {
 	orderInfo := model.OrderInfo{
 		Weight: 2, Volume: 10, Type: "Normal", Image: "order1.png",
 		CustomerSendID: 1, TrasnportTypeID: 2, HasPackage: true,
-		EmployeeID: 3, Receiver: "253 Tran Hung Dao, 23114321412",
-		Detail: "May vi tinh ca nhan", TotalPrice: 200000, Note: "Giao hang vao buoi sang",
+		EmplShipID: 3, EmplCreateID: 2, Receiver: "253 Tran Hung Dao, Quan 1, SDT 23114321412",
+		Detail:     "May vi tinh ca nhan va ban phim may tinh",
+		TotalPrice: 200000, Note: "Giao hang vao buoi sang",
 	}
 	if err := db.Create(&orderInfo).Error; err != nil {
+		return err
+	}
+	return
+}
+
+func createExampleOrderPay() (err error) {
+	orderPay := model.OrderPay{
+		OrderID: 1, PayStatus: true, PayEmployeeID: 2, TotalPrice: 200000,
+	}
+	if err := db.Create(&orderPay).Error; err != nil {
+		return err
+	}
+	return
+}
+
+func createExampleOrderShip() (err error) {
+	orderShip := model.OrderShip{
+		OrderID: 1, UseShortShip: true, ShortShipID: 1,
+	}
+	if err := db.Create(&orderShip).Error; err != nil {
+		return err
+	}
+	return
+}
+
+func createExampleOrderShortShip() (err error) {
+	orderShortShip := model.OrderShortShip{
+		OrderID: 1, EmplShipID: 3, EmplShipReceived: true,
+		EmplShipCalled: true, EmplShipShipped: true,
+		TimeConfirmed: true, CusReceiveConfirmed: true,
+	}
+	if err := db.Create(&orderShortShip).Error; err != nil {
 		return err
 	}
 	return
