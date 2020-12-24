@@ -30,6 +30,16 @@ func getOrderLongShipOrNotFound(c *gin.Context) (*model.OrderLongShip, error) {
 	return orderLongShip, nil
 }
 
+// CreateOrderLongShip in database
+func CreateOrderLongShip(orderID uint) (uint, error) {
+	orderLongShip := &model.OrderLongShip{}
+	orderLongShip.OrderID = orderID
+	if err := db.Create(&orderLongShip).Error; err != nil {
+		return uint(0), err
+	}
+	return orderLongShip.ID, nil
+}
+
 // GetOrderLongShipHandler in database
 func GetOrderLongShipHandler(c *gin.Context) {
 	orderLongShip, err := getOrderLongShipOrNotFound(c)
@@ -164,6 +174,17 @@ func GetOrderShortShipHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"order_long_ship_info": &orderShortShip})
 	return
+}
+
+// CreateOrderShortShip in database
+func CreateOrderShortShip(orderID, shipperID uint) (uint, error) {
+	orderShortShip := &model.OrderShortShip{}
+	orderShortShip.OrderID = orderID
+	orderShortShip.ShipperID = shipperID
+	if err := db.Create(&orderShortShip).Error; err != nil {
+		return uint(0), err
+	}
+	return orderShortShip.ID, nil
 }
 
 // UpdateOSSShipperReceivedHandler in database

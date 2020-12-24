@@ -41,17 +41,24 @@ func handleJob2(client worker.JobClient, job entities.Job) {
 	}
 
 	time.Sleep(10 * time.Second)
-	var payStatus = variables["pay_status"]
-	var payEmployeeID = variables["pay_employee_id"]
+	_, ok := variables["order_id"].(uint)
+	if ok == false {
+		failJob(client, job)
+	}
+	payStatus, ok := variables["pay_status"].(bool)
+	if ok == false {
+		failJob(client, job)
+	}
+	payEmployeeID, ok := variables["pay_employee_id"].(uint)
+	if ok == false {
+		failJob(client, job)
+	}
 	var payServiceProvider = variables["pay_service_provider"]
-	if (payStatus == false) || (payEmployeeID == nil && payServiceProvider == nil) {
+	if (payStatus == false) || (payEmployeeID == 0 && payServiceProvider == nil) {
 		failJob(client, job)
 		return
 	}
-	if payEmployeeID != nil {
 
-	}
-	variables["pay_method"] = "zalo_pay"
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {
 		// failed to set the updated variables

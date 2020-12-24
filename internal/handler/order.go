@@ -230,13 +230,15 @@ func createOrderPay(orderID uint, payMethod string, totalPrice int64) (uint, err
 }
 
 // UpdateOrderPay in database
-func UpdateOrderPay(orderID, payEmployeeID uint, payServiceProvider string) {
-
-	// orderPay.ID = getIDFromParam(c)
-	// if err = db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
-	// return
+func UpdateOrderPay(orderID, payEmployeeID uint, payServiceProvider string) error {
+	orderPay := &model.OrderPay{}
+	orderPay.ID = orderID
+	orderPay.PayStatus = true
+	// If one of this field is not empty, gorm will update it with struct input!
+	orderPay.PayEmployeeID = payEmployeeID
+	orderPay.PayServiceProvider = payServiceProvider
+	if err := db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
+		return err
+	}
+	return nil
 }

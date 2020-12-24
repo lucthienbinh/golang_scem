@@ -60,6 +60,13 @@ type TransportType struct {
 	PricePerKm      int64  `json:"price_per_km"`
 }
 
+// OrderWorkflowData structure
+type OrderWorkflowData struct {
+	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
+	WorkflowKey         uint `json:"workflow_key"`
+	WorkflowInstanceKey uint `json:"workflow_instance_key"`
+}
+
 // -------------------- Struct uses to fetch data for frontend --------------------
 
 // OrderInfoFetchDB structure
