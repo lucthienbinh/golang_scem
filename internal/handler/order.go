@@ -57,8 +57,8 @@ func GetOrderInfoHandler(c *gin.Context) {
 	return
 }
 
-// CreateOrderInfoHandler in database
-func CreateOrderInfoHandler(c *gin.Context) {
+// CreateOrderInfoWebHandler in database
+func CreateOrderInfoWebHandler(c *gin.Context) {
 	orderInfo := &model.OrderInfo{}
 	if err := c.ShouldBindJSON(&orderInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -68,7 +68,15 @@ func CreateOrderInfoHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"server_response": "An order info has been created!"})
+	orderPayID, err := createOrderPay(orderInfo.ID, "cash", orderInfo.TotalPrice)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"server_response": "An order info has been created!",
+		"order_pay_id":    orderPayID,
+	})
 	return
 }
 
@@ -104,7 +112,7 @@ func DeleteOrderInfoHandler(c *gin.Context) {
 	return
 }
 
-// // -------------------- TRANSPORT TYPE HANDLER FUNTION --------------------
+// -------------------- TRANSPORT TYPE HANDLER FUNTION --------------------
 
 // GetTransportTypeListHandler in database
 func GetTransportTypeListHandler(c *gin.Context) {
@@ -179,4 +187,56 @@ func DeleteTransportTypeHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
 	return
+}
+
+// -------------------- ORDER PAYMENT HANDLER FUNTION --------------------
+
+// GetOrderPayListHandler in database
+func GetOrderPayListHandler(c *gin.Context) {
+	orderPays := []model.OrderPay{}
+	db.Order("id asc").Find(&orderPays)
+	c.JSON(http.StatusOK, gin.H{"order_pay_list": &orderPays})
+	return
+}
+
+func getOrderPayOrNotFound(c *gin.Context) (*model.OrderPay, error) {
+	orderPay := &model.OrderPay{}
+	if err := db.First(&orderPay, c.Param("id")).Error; err != nil {
+		return orderPay, err
+	}
+	return orderPay, nil
+}
+
+// GetOrderPayHandler in database
+func GetOrderPayHandler(c *gin.Context) {
+	orderPay, err := getOrderPayOrNotFound(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"order_pay_info": &orderPay})
+	return
+}
+
+func createOrderPay(orderID uint, payMethod string, totalPrice int64) (uint, error) {
+	orderPay := &model.OrderPay{}
+	orderPay.OrderID = orderID
+	orderPay.PayMethod = payMethod
+	orderPay.TotalPrice = totalPrice
+	if err := db.Create(&orderPay).Error; err != nil {
+		return uint(0), err
+	}
+	return orderPay.ID, nil
+}
+
+// UpdateOrderPay in database
+func UpdateOrderPay(orderID, payEmployeeID uint, payServiceProvider string) {
+
+	// orderPay.ID = getIDFromParam(c)
+	// if err = db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
+	// c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
+	// return
 }

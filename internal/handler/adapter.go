@@ -268,7 +268,7 @@ func createExampleOrder() (err error) {
 
 func createExampleOrderPay() (err error) {
 	orderPay := model.OrderPay{
-		OrderID: 1, PayStatus: true, PayEmployeeID: 2, TotalPrice: 200000,
+		OrderID: 1, PayStatus: true, PayEmployeeID: 2, TotalPrice: 200000, PayMethod: "cash",
 	}
 	if err := db.Create(&orderPay).Error; err != nil {
 		return err

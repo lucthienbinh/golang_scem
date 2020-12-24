@@ -12,7 +12,7 @@ import (
 )
 
 // RunBankPayment to start this worker
-func RunBankPayment() {
+func RunOrderPayment() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         os.Getenv("BROKER_ADDRESS"),
 		UsePlaintextConnection: true,
@@ -20,10 +20,10 @@ func RunBankPayment() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("bank_payment").Handler(handleJob).Open()
+	go client.NewJobWorker().JobType("order_payment").Handler(handleJob2).Open()
 }
 
-func handleJob(client worker.JobClient, job entities.Job) {
+func handleJob2(client worker.JobClient, job entities.Job) {
 	jobKey := job.GetKey()
 
 	// headers, err := job.GetCustomHeadersAsMap()
@@ -41,8 +41,17 @@ func handleJob(client worker.JobClient, job entities.Job) {
 	}
 
 	time.Sleep(10 * time.Second)
-	variables["pay_status"] = true
-	variables["pay_service_provider"] = "zalo_pay"
+	var payStatus = variables["pay_status"]
+	var payEmployeeID = variables["pay_employee_id"]
+	var payServiceProvider = variables["pay_service_provider"]
+	if (payStatus == false) || (payEmployeeID == nil && payServiceProvider == nil) {
+		failJob(client, job)
+		return
+	}
+	if payEmployeeID != nil {
+
+	}
+	variables["pay_method"] = "zalo_pay"
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {
 		// failed to set the updated variables
@@ -61,14 +70,4 @@ func handleJob(client worker.JobClient, job entities.Job) {
 	}
 
 	log.Println("Successfully completed job")
-}
-
-func failJob(client worker.JobClient, job entities.Job) {
-	log.Println("Failed to complete job", job.GetKey())
-
-	ctx := context.Background()
-	_, err := client.NewFailJobCommand().JobKey(job.GetKey()).Retries(job.Retries - 1).Send(ctx)
-	if err != nil {
-		panic(err)
-	}
 }

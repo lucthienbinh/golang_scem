@@ -18,7 +18,7 @@ func OrderRoutes(rg *gin.RouterGroup) {
 	order := rg.Group("/order")
 	order.GET("/list", handler.GetOrderInfoListHandler)
 	order.GET("/id/:id", handler.GetOrderInfoHandler)
-	order.POST("/create", handler.CreateOrderInfoHandler)
+	order.POST("/create", handler.CreateOrderInfoWebHandler)
 	order.PUT("/update/:id", handler.UpdateOrderInfoHandler)
 	order.DELETE("/delete/:id", handler.DeleteOrderInfoHandler)
 

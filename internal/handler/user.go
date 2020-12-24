@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -155,7 +156,9 @@ func UpdateCustomerHandler(c *gin.Context) {
 		return
 	}
 	customer.ID = getIDFromParam(c)
-	if err = db.Model(&customer).Omit("point").Updates(&customer).Error; err != nil {
+	customer2 := &model.Customer{}
+	customer2.ID = 2
+	if err = db.Model(&customer2).Omit("point").Updates(&customer).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -237,7 +240,7 @@ func ImageEmployeeHandler(c *gin.Context) {
 	newName := fmt.Sprintf("%x", b)
 	createTime := fmt.Sprintf("%d", time.Now().Unix())
 	newName = createTime + "_" + newName + "." + extension[1]
-	filepath := "public/upload/images/" + newName
+	filepath := os.Getenv("IMAGE_FILE_PATH") + newName
 
 	// Upload the file to specific dst.
 	if err := c.SaveUploadedFile(file, filepath); err != nil {

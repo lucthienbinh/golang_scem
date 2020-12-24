@@ -34,7 +34,7 @@ type Customer struct {
 	ID         uint   `gorm:"primary_key;<-:false" json:"id"`
 	UserAuthID uint   `gorm:"<-:create" json:"-"`
 	Name       string `json:"name" validate:"nonzero"`
-	Age        uint8  `json:"age" validate:"nonzero"`
+	Age        uint16 `json:"age" validate:"nonzero"`
 	Phone      int64  `json:"phone" validate:"nonzero"`
 	Gender     string `json:"gender" validate:"nonzero"`
 	Address    string `json:"address" validate:"nonzero"`
@@ -47,7 +47,7 @@ type Employee struct {
 	ID                 uint   `gorm:"primary_key;<-:false" json:"id"`
 	UserAuthID         uint   `gorm:"<-:create" json:"-"`
 	Name               string `json:"name" validate:"nonzero"`
-	Age                uint8  `json:"age" validate:"nonzero"`
+	Age                uint16 `json:"age" validate:"nonzero"`
 	Phone              int64  `json:"phone" validate:"nonzero"`
 	Gender             string `json:"gender" validate:"nonzero"`
 	Address            string `json:"address" validate:"nonzero"`
@@ -95,7 +95,7 @@ type CustomerWithAuth struct {
 	Email    string `json:"email" validate:"nonzero"`
 	Password string `json:"password" validate:"nonzero"`
 	Name     string `json:"name" validate:"nonzero"`
-	Age      uint8  `json:"age" validate:"nonzero"`
+	Age      uint16 `json:"age" validate:"nonzero"`
 	Phone    int64  `json:"phone" validate:"nonzero"`
 	Gender   string `json:"gender" validate:"nonzero"`
 	Address  string `json:"address" validate:"nonzero"`
@@ -106,7 +106,7 @@ type EmployeeWithAuth struct {
 	Email              string `json:"email" validate:"nonzero"`
 	Password           string `json:"password" validate:"nonzero"`
 	Name               string `json:"name" validate:"nonzero"`
-	Age                uint8  `json:"age" validate:"nonzero"`
+	Age                uint16 `json:"age" validate:"nonzero"`
 	Phone              int64  `json:"phone" validate:"nonzero"`
 	Gender             string `json:"gender" validate:"nonzero"`
 	Address            string `json:"address" validate:"nonzero"`
@@ -120,7 +120,7 @@ type EmployeeWithAuth struct {
 type EmployeeInfoFetchDB struct {
 	ID                       uint   `json:"id"`
 	Name                     string `json:"name"`
-	Age                      uint8  `json:"age"`
+	Age                      uint16 `json:"age"`
 	Phone                    int64  `json:"phone"`
 	Gender                   string `json:"gender"`
 	Address                  string `json:"address"`

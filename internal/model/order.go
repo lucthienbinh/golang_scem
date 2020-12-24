@@ -30,14 +30,15 @@ type OrderInfo struct {
 
 // OrderPay structure
 type OrderPay struct {
-	ID            uint   `gorm:"primary_key;<-:false" json:"id"`
-	OrderID       uint   `json:"order_id"`
-	PayMethod     string `gorm:"default:'cash'" json:"pay_method"`
-	PayStatus     bool   `gorm:"default:0" json:"pay_status"`
-	PayEmployeeID uint   `json:"pay_employee_id"`
-	TotalPrice    int64  `json:"total_price"`
-	CreatedAt     int64  `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt     int64  `gorm:"autoUpdateTime" json:"updated_at"`
+	ID                 uint   `gorm:"primary_key;<-:false" json:"id"`
+	OrderID            uint   `json:"order_id"`
+	PayMethod          string `json:"pay_method"`
+	PayServiceProvider string `json:"pay_service_provider"`
+	PayStatus          bool   `json:"pay_status"`
+	PayEmployeeID      uint   `json:"pay_employee_id"`
+	TotalPrice         int64  `json:"total_price"`
+	CreatedAt          int64  `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt          int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // OrderShip structure
