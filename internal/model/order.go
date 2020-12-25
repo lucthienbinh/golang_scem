@@ -62,9 +62,16 @@ type TransportType struct {
 
 // OrderWorkflowData structure
 type OrderWorkflowData struct {
-	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
-	WorkflowKey         uint `json:"workflow_key"`
-	WorkflowInstanceKey uint `json:"workflow_instance_key"`
+	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
+	WorkflowKey         uint   `json:"workflow_key"`
+	WorkflowInstanceKey uint   `json:"workflow_instance_key"`
+	OrderID             uint   `json:"order_id"`
+	CustomerReceiveID   uint   `json:"customer_receive_id"`
+	PayMethod           string `json:"pay_method"`
+	UseShortShip        bool   `json:"use_short_ship"`
+	ShortShipID         uint   `json:"short_ship_id"`
+	UseLongShip         bool   `json:"use_long_ship"`
+	LongShipID          uint   `json:"long_ship_id"`
 }
 
 // -------------------- Struct uses to fetch data for frontend --------------------
