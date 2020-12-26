@@ -57,8 +57,8 @@ func GetOrderInfoHandler(c *gin.Context) {
 	return
 }
 
-// CreateOrderInfoWebHandler in database
-func CreateOrderInfoWebHandler(c *gin.Context) {
+// CreateOrderInfoHandler in database
+func CreateOrderInfoHandler(c *gin.Context) {
 	orderInfo := &model.OrderInfo{}
 	if err := c.ShouldBindJSON(&orderInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -68,14 +68,9 @@ func CreateOrderInfoWebHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderPayID, err := createOrderPay(orderInfo.ID, "cash", orderInfo.TotalPrice)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
 	c.JSON(http.StatusCreated, gin.H{
 		"server_response": "An order info has been created!",
-		"order_pay_id":    orderPayID,
+		"order_id":        orderInfo.ID,
 	})
 	return
 }
@@ -218,7 +213,8 @@ func GetOrderPayHandler(c *gin.Context) {
 	return
 }
 
-func createOrderPay(orderID uint, payMethod string, totalPrice int64) (uint, error) {
+// CreateOrderPayHandler in database
+func CreateOrderPayHandler(orderID uint, payMethod string, totalPrice int64) (uint, error) {
 	orderPay := &model.OrderPay{}
 	orderPay.OrderID = orderID
 	orderPay.PayMethod = payMethod
@@ -229,15 +225,69 @@ func createOrderPay(orderID uint, payMethod string, totalPrice int64) (uint, err
 	return orderPay.ID, nil
 }
 
-// UpdateOrderPay in database
-func UpdateOrderPay(orderID, payEmployeeID uint, payServiceProvider string) error {
+// UpdateOrderPayHandler in database
+func UpdateOrderPayHandler(payStatus bool, orderID, payEmployeeID uint, payServiceProvider string) error {
 	orderPay := &model.OrderPay{}
 	orderPay.ID = orderID
-	orderPay.PayStatus = true
-	// If one of this field is not empty, gorm will update it with struct input!
+	orderPay.PayStatus = payStatus
+	// If one of these fields is not empty, gorm will update it (struct input regulation)!
 	orderPay.PayEmployeeID = payEmployeeID
 	orderPay.PayServiceProvider = payServiceProvider
 	if err := db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// -------------------- ORDER SHIPMENT HANDLER FUNTION --------------------
+
+// GetOrderShipListHandler in database
+func GetOrderShipListHandler(c *gin.Context) {
+	orderShips := []model.OrderShip{}
+	db.Order("id asc").Find(&orderShips)
+	c.JSON(http.StatusOK, gin.H{"order_ship_list": &orderShips})
+	return
+}
+
+func getOrderShipOrNotFound(c *gin.Context) (*model.OrderShip, error) {
+	orderShip := &model.OrderShip{}
+	if err := db.First(&orderShip, c.Param("id")).Error; err != nil {
+		return orderShip, err
+	}
+	return orderShip, nil
+}
+
+// GetOrderShipHandler in database
+func GetOrderShipHandler(c *gin.Context) {
+	orderShip, err := getOrderShipOrNotFound(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"order_ship_info": &orderShip})
+	return
+}
+
+// CreateOrderShipHandler in database
+func CreateOrderShipHandler(orderID uint, useShortShip, useLongShip bool) (uint, error) {
+	orderShip := &model.OrderShip{}
+	orderShip.OrderID = orderID
+	orderShip.UseShortShip = useShortShip
+	orderShip.UseLongShip = useLongShip
+	if err := db.Create(&orderShip).Error; err != nil {
+		return uint(0), err
+	}
+	return orderShip.ID, nil
+}
+
+// UpdateOrderShipHandler in database
+func UpdateOrderShipHandler(orderID, shortShipID, longShipID uint) error {
+	orderShip := &model.OrderShip{}
+	orderShip.ID = orderID
+	// If one of these fields is not empty, gorm will update it (struct input regulation)!
+	orderShip.ShortShipID = shortShipID
+	orderShip.LongShipID = longShipID
+	if err := db.Model(&orderShip).Updates(&orderShip).Error; err != nil {
 		return err
 	}
 	return nil

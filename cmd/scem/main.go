@@ -8,11 +8,12 @@ import (
 	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/api/server"
 	"github.com/lucthienbinh/golang_scem/internal/handler"
-	ZBMessage "github.com/lucthienbinh/golang_scem/service/zeebe/message"
-	ZBWorkflow "github.com/lucthienbinh/golang_scem/service/zeebe/workflow"
+	ZBMessage "github.com/lucthienbinh/golang_scem/internal/service/zeebe/message"
+	ZBWorker "github.com/lucthienbinh/golang_scem/internal/service/zeebe/worker"
+	ZBWorkflow "github.com/lucthienbinh/golang_scem/internal/service/zeebe/workflow"
 )
 
-func main2() {
+func main() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -53,19 +54,16 @@ func main2() {
 	}
 	log.Print("Refreshed database!")
 
-	// Our servers will live in the routes package
-	server.RunServer()
-}
-
-func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 	ZBWorkflow.ConnectZeebeEngine()
 	// ZBWorkflow.DeployNewWorkflow()
-	// ZBWorkflow.CreateNewInstance(334, 334, "cash", true, true)
+	// ZBWorkflow.CreateNewInstance(1, 2, "cash", true, true)
 
 	ZBMessage.ConnectZeebeEngine()
-	ZBMessage.MoneyReceived(334, 334)
+	// ZBMessage.MoneyReceived(1, 1)
+
+	ZBWorker.RunBankPayment()
+	ZBWorker.RunSavePayment()
+
+	// Our servers will live in the routes package
+	server.RunServer()
 }

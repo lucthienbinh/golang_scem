@@ -20,10 +20,16 @@ func RunBankPayment() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("bank_payment").Handler(handleJob).Open()
+	go client.NewJobWorker().JobType("bank_payment").Handler(handleJobBankPayment).Open()
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Recovered in RunBankPayment", r)
+		}
+	}()
 }
 
-func handleJob(client worker.JobClient, job entities.Job) {
+func handleJobBankPayment(client worker.JobClient, job entities.Job) {
 	jobKey := job.GetKey()
 
 	// headers, err := job.GetCustomHeadersAsMap()
@@ -40,9 +46,14 @@ func handleJob(client worker.JobClient, job entities.Job) {
 		return
 	}
 
-	time.Sleep(10 * time.Second)
-	variables["pay_status"] = true
-	variables["pay_service_provider"] = "zalo_pay"
+	// To emulates pay service provider responses after receive customer payment info
+	time.Sleep(5 * time.Second)
+	payStatus := true
+	payServiceProvider := "zalo_pay"
+
+	variables["pay_status"] = payStatus
+	variables["pay_service_provider"] = payServiceProvider
+
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {
 		// failed to set the updated variables
@@ -51,7 +62,7 @@ func handleJob(client worker.JobClient, job entities.Job) {
 	}
 
 	log.Println("Complete job", jobKey, "of type", job.Type)
-	log.Println("Processing order:", variables["workerStatus"])
+	log.Println("Processing order:")
 	// log.Println("Collect money using payment method:", headers["method"])
 
 	ctx := context.Background()

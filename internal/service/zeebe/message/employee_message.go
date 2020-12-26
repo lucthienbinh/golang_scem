@@ -3,30 +3,7 @@ package message
 import (
 	"context"
 	"fmt"
-	"os"
-
-	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
 )
-
-var (
-	// ZbClient client to connect with zeebe engine
-	zbClient zbc.Client
-)
-
-// ConnectZeebeEngine function
-func ConnectZeebeEngine() {
-	gatewayAddress := os.Getenv("BROKER_ADDRESS")
-	newZbClient, err := zbc.NewClient(&zbc.ClientConfig{
-		GatewayAddress:         gatewayAddress,
-		UsePlaintextConnection: true,
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
-	zbClient = newZbClient
-}
 
 // MoneyReceived send mesage to zeebe engine
 func MoneyReceived(payEmployeeID, orderID uint) error {
@@ -42,25 +19,6 @@ func MoneyReceived(payEmployeeID, orderID uint) error {
 
 	ctx := context.Background()
 	_, err = request.Send(ctx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// MoneyReceived2 send mesage to zeebe engine
-func MoneyReceived2(payEmployeeID, orderID uint) error {
-	variables := make(map[string]interface{})
-	variables["pay_employee_id"] = payEmployeeID
-	variables["pay_status"] = true
-
-	ctx := context.Background()
-	request, err := zbClient.NewSetVariablesCommand().ElementInstanceKey(2251799813685251).VariablesFromMap(variables)
-	_, err = request.Send(ctx)
-	if err != nil {
-		return err
-	}
-	_, err = zbClient.NewResolveIncidentCommand().IncidentKey(2251799813685251).Send(ctx)
 	if err != nil {
 		return err
 	}
@@ -86,7 +44,7 @@ func PaymentInfoUpdated(orderID uint) error {
 }
 
 // PackageLoaded send mesage to zeebe engine
-func PackageLoaded(emplLoadID, orderID uint) error {
+func PackageLoaded(orderID, emplLoadID uint) error {
 	variables := make(map[string]interface{})
 	variables["empl_load_id"] = emplLoadID
 	variables["package_loaded"] = true
@@ -106,7 +64,7 @@ func PackageLoaded(emplLoadID, orderID uint) error {
 }
 
 // VehicleStarted send mesage to zeebe engine
-func VehicleStarted(emplDriverID, orderID uint) error {
+func VehicleStarted(orderID, emplDriverID uint) error {
 	variables := make(map[string]interface{})
 	variables["empl_driver_id"] = emplDriverID
 	variables["package_loaded"] = true
@@ -144,7 +102,7 @@ func VehicleArrived(orderID uint) error {
 }
 
 // PackageUnloaded send mesage to zeebe engine
-func PackageUnloaded(emplUnloadID, orderID uint) error {
+func PackageUnloaded(orderID, emplUnloadID uint) error {
 	variables := make(map[string]interface{})
 	variables["empl_unload_id"] = emplUnloadID
 	variables["package_unloaded"] = true
@@ -183,7 +141,7 @@ func ShipperReceived(orderID uint) error {
 }
 
 // ShipperCalled send mesage to zeebe engine
-func ShipperCalled(timeConfirmed int64, orderID uint) error {
+func ShipperCalled(orderID uint, timeConfirmed int64) error {
 	variables := make(map[string]interface{})
 	variables["shipper_called"] = true
 	variables["time_confirmed"] = timeConfirmed
@@ -221,7 +179,7 @@ func ShipperShipped(orderID uint) error {
 }
 
 // ShipperConfirmed send mesage to zeebe engine
-func ShipperConfirmed(shipperConfirmed string, orderID uint) error {
+func ShipperConfirmed(orderID uint, shipperConfirmed string) error {
 	variables := make(map[string]interface{})
 	variables["shipper_confirmed"] = shipperConfirmed
 

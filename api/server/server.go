@@ -80,7 +80,8 @@ func webRouter() http.Handler {
 		api.Use(middleware.ValidateWebSession())
 	}
 	router.UserRoutes(api)
-	router.OrderRoutes(api)
+	router.WebOrderRoutes(api)
+	router.ZeebeRoutes(api)
 
 	return e
 }
@@ -102,7 +103,6 @@ func appRouter() http.Handler {
 		api.Use(middleware.ValidateAppToken())
 	}
 	router.UserRoutes(api)
-	router.OrderRoutes(api)
 
 	return e
 }

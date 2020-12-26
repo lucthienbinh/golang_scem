@@ -4,15 +4,15 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
 
+	"github.com/lucthienbinh/golang_scem/internal/handler"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
 )
 
-// RunBankPayment to start this worker
-func RunOrderPayment() {
+// RunSavePayment to start this worker
+func RunSavePayment() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         os.Getenv("BROKER_ADDRESS"),
 		UsePlaintextConnection: true,
@@ -20,18 +20,11 @@ func RunOrderPayment() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("order_payment").Handler(handleJob2).Open()
+	go client.NewJobWorker().JobType("save_payment").Handler(handleJobSavePayment).Open()
 }
 
-func handleJob2(client worker.JobClient, job entities.Job) {
+func handleJobSavePayment(client worker.JobClient, job entities.Job) {
 	jobKey := job.GetKey()
-
-	// headers, err := job.GetCustomHeadersAsMap()
-	// if err != nil {
-	// 	// failed to handle job as we require the custom job headers
-	// 	failJob(client, job)
-	// 	return
-	// }
 
 	variables, err := job.GetVariablesAsMap()
 	if err != nil {
@@ -40,21 +33,27 @@ func handleJob2(client worker.JobClient, job entities.Job) {
 		return
 	}
 
-	time.Sleep(10 * time.Second)
-	_, ok := variables["order_id"].(uint)
-	if ok == false {
+	var uintOrderID uint
+	orderID, ok := variables["order_id"].(float64)
+	if ok == true {
+		uintOrderID = uint(orderID)
+	} else {
 		failJob(client, job)
+		return
 	}
 	payStatus, ok := variables["pay_status"].(bool)
 	if ok == false {
 		failJob(client, job)
+		return
 	}
-	payEmployeeID, ok := variables["pay_employee_id"].(uint)
+	payServiceProvider, ok := variables["pay_service_provider"].(string)
 	if ok == false {
 		failJob(client, job)
+		return
 	}
-	var payServiceProvider = variables["pay_service_provider"]
-	if (payStatus == false) || (payEmployeeID == 0 && payServiceProvider == nil) {
+
+	err = handler.UpdateOrderPayHandler(payStatus, uintOrderID, 0, payServiceProvider)
+	if err != nil {
 		failJob(client, job)
 		return
 	}
@@ -67,8 +66,7 @@ func handleJob2(client worker.JobClient, job entities.Job) {
 	}
 
 	log.Println("Complete job", jobKey, "of type", job.Type)
-	log.Println("Processing order:", variables["workerStatus"])
-	// log.Println("Collect money using payment method:", headers["method"])
+	log.Println("Processing order:", variables["order_id"])
 
 	ctx := context.Background()
 	_, err = request.Send(ctx)

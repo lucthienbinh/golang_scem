@@ -6,7 +6,7 @@ import (
 )
 
 // OrderRoutes to manage order model
-func OrderRoutes(rg *gin.RouterGroup) {
+func WebOrderRoutes(rg *gin.RouterGroup) {
 
 	transportType := rg.Group("/transport-type")
 	transportType.GET("/list", handler.GetTransportTypeListHandler)
@@ -18,7 +18,7 @@ func OrderRoutes(rg *gin.RouterGroup) {
 	order := rg.Group("/order")
 	order.GET("/list", handler.GetOrderInfoListHandler)
 	order.GET("/id/:id", handler.GetOrderInfoHandler)
-	order.POST("/create", handler.CreateOrderInfoWebHandler)
+	order.POST("/create", handler.CreateOrderInfoHandler)
 	order.PUT("/update/:id", handler.UpdateOrderInfoHandler)
 	order.DELETE("/delete/:id", handler.DeleteOrderInfoHandler)
 

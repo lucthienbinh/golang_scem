@@ -96,3 +96,12 @@ type OrderInfoFetchDB struct {
 	CreatedAt           int64  `json:"created_at"`
 	UpdatedAt           int64  `json:"updated_at"`
 }
+
+// OrderWorkflowCreate structure
+type OrderWorkflowCreate struct {
+	OrderID      uint   `json:"order_id" validate:"nonzero"`
+	PayMethod    string `json:"pay_method" validate:"nonzero"`
+	TotalPrice   int64  `json:"total_price" validate:"nonzero"`
+	UseShortShip bool   `json:"use_short_ship"`
+	UseLongShip  bool   `json:"use_long_ship"`
+}
