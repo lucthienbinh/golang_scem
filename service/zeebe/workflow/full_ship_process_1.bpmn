@@ -12,8 +12,8 @@
     <bpmn:intermediateCatchEvent id="Event_1gywvye" name="Money&#10;Received &#10;">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="= pay_employee_id" target="pay_employee_id" />
-          <zeebe:output source="= pay_status" target="pay_status" />
+          <zeebe:output source="=pay_employee_id" target="pay_employee_id" />
+          <zeebe:output source="=pay_status" target="pay_status" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1t91jh5</bpmn:incoming>
@@ -49,10 +49,10 @@
     <bpmn:sequenceFlow id="Flow_1qyb3x5" name="No" sourceRef="Gateway_1cu7jax" targetRef="Activity_14vb6so" />
     <bpmn:sequenceFlow id="Flow_0kvucct" sourceRef="Activity_14vb6so" targetRef="Gateway_030jwa0" />
     <bpmn:sequenceFlow id="Flow_12geoad" name="Yes" sourceRef="Gateway_030jwa0" targetRef="Activity_04ojwwf">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">pay_status == true</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=pay_status = true</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1t91jh5" name="Yes" sourceRef="Gateway_1cu7jax" targetRef="Event_1gywvye">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">pay_method == "cash"</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=pay_method = "cash"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1w7034a" sourceRef="Event_1gywvye" targetRef="Activity_04ojwwf" />
     <bpmn:sequenceFlow id="Flow_19nx0yu" sourceRef="Event_19rdp6n" targetRef="Activity_14vb6so" />
@@ -73,7 +73,7 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_1hdauuc" sourceRef="Activity_04ojwwf" targetRef="Gateway_0jaj2mt" />
     <bpmn:sequenceFlow id="Flow_0t6xfxq" name="No" sourceRef="Gateway_0jaj2mt" targetRef="Activity_0uz6fv7">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">use_long_ship == false</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=use_long_ship = false</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_08ahrhx" name="Yes" sourceRef="Gateway_0jaj2mt" targetRef="Activity_00tmm2t" />
     <bpmn:serviceTask id="Activity_0uz6fv7" name="Short Ship Serv.">
@@ -86,11 +86,21 @@
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="Flow_1nr1a0e" sourceRef="Activity_0uz6fv7" targetRef="Event_17lgbhq" />
     <bpmn:intermediateCatchEvent id="Event_17lgbhq" name="Shipper&#10;Received">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="= shipper_received" target="shipper_received" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1nr1a0e</bpmn:incoming>
       <bpmn:outgoing>Flow_0o0aihs</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_00kjmd6" messageRef="Message_01jmbqj" />
     </bpmn:intermediateCatchEvent>
     <bpmn:intermediateCatchEvent id="Event_10tfjly" name="CustomerReceive&#10;Confirmed">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="= cus_receive_confirmed" target="cus_receive_confirmed" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1spwa8t</bpmn:incoming>
       <bpmn:outgoing>Flow_1xw9mcz</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0lrvodk" messageRef="Message_0gxhd9b" />
@@ -101,7 +111,7 @@
       <bpmn:outgoing>Flow_0ult430</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_1spwa8t" name="Yes" sourceRef="Gateway_1ag1nvh" targetRef="Event_10tfjly">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">customer_receive_id != 0</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=customer_receive_id != 0</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0ult430" name="No" sourceRef="Gateway_1ag1nvh" targetRef="Event_0n0o7de" />
     <bpmn:endEvent id="Event_16s0zsc" name="Customer&#10;Received">
@@ -121,7 +131,7 @@
       <bpmn:outgoing>Flow_1lbfk0s</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0si4udt" name="Yes" sourceRef="Gateway_1g96ahe" targetRef="Event_1rnzblu">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">time_confirmed == true</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=time_confirmed &gt; 0</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:intermediateCatchEvent id="Event_1rnzblu" name="Shiper Shipped">
       <bpmn:incoming>Flow_0si4udt</bpmn:incoming>
@@ -135,6 +145,11 @@
     <bpmn:sequenceFlow id="Flow_1lbfk0s" name="No" sourceRef="Gateway_1g96ahe" targetRef="Event_1ank4z4" />
     <bpmn:sequenceFlow id="Flow_0o0aihs" sourceRef="Event_17lgbhq" targetRef="Event_1bijcaf" />
     <bpmn:intermediateCatchEvent id="Event_1bijcaf" name="Shipper&#10;Called">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="= shipper_called" target="shipper_called" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_0o0aihs</bpmn:incoming>
       <bpmn:outgoing>Flow_07jtad0</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0xovkt8" messageRef="Message_0cgwnzu" />
@@ -146,7 +161,7 @@
       <bpmn:outgoing>Flow_1j6ucrs</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0fsyv9p" name="Yes" sourceRef="Gateway_1vhi5uw" targetRef="Activity_0uz6fv7">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">use_short_ship == true</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=use_short_ship = true</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:endEvent id="Event_1ehgu2h" name="Customer&#10;Received">
       <bpmn:incoming>Flow_1j6ucrs</bpmn:incoming>
@@ -156,7 +171,7 @@
     <bpmn:intermediateCatchEvent id="Event_1b0q6gz" name="Package&#10;Loaded">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="= empl_load_id" target="empl_load_id" />
+          <zeebe:output source="=empl_load_id" target="empl_load_id" />
           <zeebe:output source="= package_loaded" target="package_loaded" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
@@ -171,6 +186,12 @@
     </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="Flow_1ruefrh" sourceRef="Event_15ylolv" targetRef="Event_0ofi2fi" />
     <bpmn:intermediateCatchEvent id="Event_0ofi2fi" name="Package &#10;Unloaded">
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=empl_unload_id" target="empl_unload_id" />
+          <zeebe:output source="=package_unloaded" target="package_unloaded" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1ruefrh</bpmn:incoming>
       <bpmn:outgoing>Flow_114vk3m</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_16osyu4" messageRef="Message_0ybsjys" />
@@ -180,7 +201,7 @@
     <bpmn:intermediateCatchEvent id="Event_0lbw64u" name="Vehicle&#10;Started">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="= empl_driver_id" target="empl_driver_id" />
+          <zeebe:output source="=empl_driver_id" target="empl_driver_id" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0dtt9x8</bpmn:incoming>
@@ -197,61 +218,73 @@
   </bpmn:process>
   <bpmn:message id="Message_0lhehrs" name="PaymentInfoUpdated">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_15hbep0" name="MoneyReceived">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_1so3805" name="PackageLoaded">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_0c26sdm" name="VehicleStarted">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_0m6dc5m" name="VehicleArrived">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_0ybsjys" name="PackageUnloaded">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_01jmbqj" name="ShipperReceived">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_0cgwnzu" name="ShipperCalled">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_03xga4j" name="ShipperShipped">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_0gxhd9b" name="CustomerReceiveConfirmed">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmn:message id="Message_1a5ty3s" name="ShipperConfirmed">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="order_id" />
+      <zeebe:subscription correlationKey="=order_id" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="full_ship_process_1">
+      <bpmndi:BPMNEdge id="Flow_0a22lse_di" bpmnElement="Flow_0a22lse">
+        <di:waypoint x="798" y="380" />
+        <di:waypoint x="842" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15mf3z6_di" bpmnElement="Flow_15mf3z6">
+        <di:waypoint x="440" y="295" />
+        <di:waypoint x="440" y="350" />
+        <di:waypoint x="388" y="350" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="448" y="303" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0dtt9x8_di" bpmnElement="Flow_0dtt9x8">
         <di:waypoint x="708" y="380" />
         <di:waypoint x="762" y="380" />
@@ -362,14 +395,6 @@
         <di:waypoint x="610" y="130" />
         <di:waypoint x="675" y="130" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_15mf3z6_di" bpmnElement="Flow_15mf3z6">
-        <di:waypoint x="440" y="295" />
-        <di:waypoint x="440" y="350" />
-        <di:waypoint x="388" y="350" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="448" y="303" width="15" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_19nx0yu_di" bpmnElement="Flow_19nx0yu">
         <di:waypoint x="352" y="350" />
         <di:waypoint x="290" y="350" />
@@ -408,10 +433,6 @@
       <bpmndi:BPMNEdge id="Flow_1mbh26m_di" bpmnElement="Flow_1mbh26m">
         <di:waypoint x="188" y="130" />
         <di:waypoint x="265" y="130" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0a22lse_di" bpmnElement="Flow_0a22lse">
-        <di:waypoint x="798" y="380" />
-        <di:waypoint x="842" y="380" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Gateway_1cu7jax_di" bpmnElement="Gateway_1cu7jax" isMarkerVisible="true">
         <dc:Bounds x="265" y="105" width="50" height="50" />

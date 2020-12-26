@@ -8,6 +8,7 @@ import (
 	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/api/server"
 	"github.com/lucthienbinh/golang_scem/internal/handler"
+	ZBMessage "github.com/lucthienbinh/golang_scem/service/zeebe/message"
 	ZBWorkflow "github.com/lucthienbinh/golang_scem/service/zeebe/workflow"
 )
 
@@ -52,13 +53,7 @@ func main2() {
 	}
 	log.Print("Refreshed database!")
 
-	// Zeebe service
-	ZBWorkflow.RunZeebeService()
-
-	// Start Bank Payment Zeebe Worker
-	// ZeebeWorker.RunBankPayment()
-
-	// Our server will live in the routes package
+	// Our servers will live in the routes package
 	server.RunServer()
 }
 
@@ -67,6 +62,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	ZBWorkflow.RunZeebeService()
-	ZBWorkflow.CreateNewInstance(123, 321, "cash", true, true)
+	ZBWorkflow.ConnectZeebeEngine()
+	// ZBWorkflow.DeployNewWorkflow()
+	// ZBWorkflow.CreateNewInstance(334, 334, "cash", true, true)
+
+	ZBMessage.ConnectZeebeEngine()
+	ZBMessage.MoneyReceived(334, 334)
 }

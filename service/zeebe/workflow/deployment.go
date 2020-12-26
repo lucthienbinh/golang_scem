@@ -11,12 +11,13 @@ import (
 
 var (
 	// ZbClient client to connect with zeebe engine
-	ZbClient zbc.Client
+	zbClient zbc.Client
 )
 
-func connectZeebeEngine() {
+// ConnectZeebeEngine function
+func ConnectZeebeEngine() {
 	gatewayAddress := os.Getenv("BROKER_ADDRESS")
-	zbClient, err := zbc.NewClient(&zbc.ClientConfig{
+	newZbClient, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         gatewayAddress,
 		UsePlaintextConnection: true,
 	})
@@ -25,24 +26,19 @@ func connectZeebeEngine() {
 		panic(err)
 	}
 
-	ZbClient = zbClient
+	zbClient = newZbClient
 }
 
-func deployNewWorkflow() {
+// DeployNewWorkflow function
+func DeployNewWorkflow() {
 
 	ctx := context.Background()
-	response, err := ZbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("WORKFLOW_FILE_NAME_1")).Send(ctx)
+	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("WORKFLOW_FILE_NAME_1")).Send(ctx)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(response.String())
-}
-
-// RunZeebeService to coonect zeebe and deploy workflow
-func RunZeebeService() {
-	connectZeebeEngine()
-	deployNewWorkflow()
 }
 
 // CreateNewInstance of workflow
@@ -56,7 +52,7 @@ func CreateNewInstance(orderID, customerReceiveID uint, payMethod string, useLon
 	variables["use_long_ship"] = useLongShip
 	variables["use_short_ship"] = useShortShip
 
-	request, err := ZbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("WORKFLOW_ID_1")).LatestVersion().VariablesFromMap(variables)
+	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("WORKFLOW_ID_1")).LatestVersion().VariablesFromMap(variables)
 	if err != nil {
 		panic(err)
 	}
