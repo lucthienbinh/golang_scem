@@ -6,13 +6,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/lucthienbinh/golang_scem/internal/handler"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
 )
 
-// RunBankPayment to start this worker
-func RunBankPayment() {
+// RunShortShip to start this worker
+func RunShortShip() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         os.Getenv("BROKER_ADDRESS"),
 		UsePlaintextConnection: true,
@@ -20,24 +21,11 @@ func RunBankPayment() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("bank_payment").Handler(handleJobBankPayment).Open()
-
-	defer func() {
-		if r := recover(); r != nil {
-			log.Println("Recovered in RunBankPayment", r)
-		}
-	}()
+	go client.NewJobWorker().JobType("long_ship").Handler(handleJobShortShip).Open()
 }
 
-func handleJobBankPayment(client worker.JobClient, job entities.Job) {
+func handleJobShortShip(client worker.JobClient, job entities.Job) {
 	jobKey := job.GetKey()
-
-	// headers, err := job.GetCustomHeadersAsMap()
-	// if err != nil {
-	// 	// failed to handle job as we require the custom job headers
-	// 	failJob(client, job)
-	// 	return
-	// }
 
 	variables, err := job.GetVariablesAsMap()
 	if err != nil {
@@ -45,15 +33,40 @@ func handleJobBankPayment(client worker.JobClient, job entities.Job) {
 		failJob(client, job)
 		return
 	}
+	var uintOrderID uint
+	orderID, ok := variables["order_id"].(float64)
+	if ok == true {
+		uintOrderID = uint(orderID)
+	} else {
+		failJob(client, job)
+		return
+	}
+	var uintOrderShipID uint
+	orderShipID, ok := variables["order_ship_id"].(float64)
+	if ok == true {
+		uintOrderShipID = uint(orderShipID)
+	} else {
+		failJob(client, job)
+		return
+	}
 
-	// To emulates pay service provider responses after receive customer payment info
+	// To emulates server provide  responses after receive customer payment info
 	time.Sleep(5 * time.Second)
 	payStatus := true
 	payServiceProvider := "zalo_pay"
 
-	variables["pay_status"] = payStatus
-	variables["pay_service_provider"] = payServiceProvider
+	orderShortShipID, err := handler.CreateOrderShortShip(uintOrderID)
+	if err != nil {
+		failJob(client, job)
+		return
+	}
+	err = handler.UpdateOrderShipHandler(uintOrderShipID, orderShortShipID, 0)
+	if err != nil {
+		failJob(client, job)
+		return
+	}
 
+	variables["short_ship_saved"] = true
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {
 		// failed to set the updated variables
@@ -63,7 +76,6 @@ func handleJobBankPayment(client worker.JobClient, job entities.Job) {
 
 	log.Println("Complete job", jobKey, "of type", job.Type)
 	log.Println("Processing order:", variables["order_id"])
-	// log.Println("Collect money using payment method:", headers["method"])
 
 	ctx := context.Background()
 	_, err = request.Send(ctx)
@@ -72,14 +84,4 @@ func handleJobBankPayment(client worker.JobClient, job entities.Job) {
 	}
 
 	log.Println("Successfully completed job")
-}
-
-func failJob(client worker.JobClient, job entities.Job) {
-	log.Println("Failed to complete job", job.GetKey())
-
-	ctx := context.Background()
-	_, err := client.NewFailJobCommand().JobKey(job.GetKey()).Retries(job.Retries - 1).Send(ctx)
-	if err != nil {
-		panic(err)
-	}
 }

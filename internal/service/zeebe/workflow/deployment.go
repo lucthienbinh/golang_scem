@@ -42,13 +42,15 @@ func DeployNewWorkflow() {
 }
 
 // CreateNewInstance of workflow
-func CreateNewInstance(orderID, customerReceiveID uint, payMethod string, useLongShip, useShortShip bool) uint {
+func CreateNewInstance(orderID, customerReceiveID, orderPayID, orderShipID uint, payMethod string, useLongShip, useShortShip bool) uint {
 
 	// After the workflow is deployed.
 	variables := make(map[string]interface{})
 	variables["order_id"] = orderID
 	variables["customer_receive_id"] = customerReceiveID
+	variables["order_pay_id"] = orderPayID
 	variables["pay_method"] = payMethod
+	variables["order_ship_id"] = orderShipID
 	variables["use_long_ship"] = useLongShip
 	variables["use_short_ship"] = useShortShip
 

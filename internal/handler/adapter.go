@@ -43,7 +43,6 @@ func MigrationDatabase() (err error) {
 		&model.EmployeeFCMToken{},
 		&model.CustomerFCMToken{},
 		&model.OrderPay{},
-		&model.OrderShip{},
 		&model.OrderLongShip{},
 		&model.OrderShortShip{},
 	)
@@ -78,10 +77,10 @@ func RefreshDatabase() (err error) {
 	if err := createExampleOrderPay(); err != nil {
 		return err
 	}
-	if err := createExampleOrderShip(); err != nil {
+	if err := createExampleOrderShortShip(); err != nil {
 		return err
 	}
-	if err := createExampleOrderShortShip(); err != nil {
+	if err := createExampleOrder2(); err != nil {
 		return err
 	}
 	return
@@ -99,7 +98,6 @@ func deleteDatabase() (err error) {
 		&model.EmployeeFCMToken{},
 		&model.CustomerFCMToken{},
 		&model.OrderPay{},
-		&model.OrderShip{},
 		&model.OrderLongShip{},
 		&model.OrderShortShip{},
 	)
@@ -189,19 +187,19 @@ func createDefaultCustomer() (err error) {
 }
 
 func createTransportType() (err error) {
-	transportType := model.TransportType{Name: "HCM", SameCity: true, RouteFixedPrice: 0, PricePerKm: 30000}
+	transportType := model.TransportType{Name: "HCM", SameCity: true, ShortShipPricePerKm: 30000}
 	if err := db.Create(&transportType).Error; err != nil {
 		return err
 	}
-	transportType = model.TransportType{Name: "HCM-DL", RouteFixedPrice: 100000, PricePerKm: 40000}
+	transportType = model.TransportType{Name: "DL", SameCity: true, ShortShipPricePerKm: 26000}
 	if err := db.Create(&transportType).Error; err != nil {
 		return err
 	}
-	transportType = model.TransportType{Name: "HCM-VT", RouteFixedPrice: 120000, PricePerKm: 25000}
+	transportType = model.TransportType{Name: "HCM-DL", LongShipPrice: 100000, BusStationFrom: "231-233 Le Hong Phong", BusStationTo: "695-697 Quoc lo 20, Thi tran Lien Nghia, Huyen Duc Trong, Lam Dong", ShortShipPricePerKm: 30000}
 	if err := db.Create(&transportType).Error; err != nil {
 		return err
 	}
-	transportType = model.TransportType{Name: "HCM-CT", RouteFixedPrice: 70000, PricePerKm: 30000}
+	transportType = model.TransportType{Name: "HCM-VT", LongShipPrice: 120000, BusStationFrom: "231-233 Le Hong Phong", BusStationTo: "192 Nam Ky Khoi Nghia, Phuong Thang Tam", ShortShipPricePerKm: 26000}
 	if err := db.Create(&transportType).Error; err != nil {
 		return err
 	}
@@ -255,9 +253,11 @@ func createDeliveryLocation() (err error) {
 func createExampleOrder() (err error) {
 	orderInfo := model.OrderInfo{
 		Weight: 2, Volume: 10, Type: "Normal", Image: "order1.png",
-		CustomerSendID: 1, TrasnportTypeID: 2, HasPackage: true,
-		EmplShipID: 3, EmplCreateID: 2, Receiver: "253 Tran Hung Dao, Quan 1, SDT 23114321412",
-		Detail:     "May vi tinh ca nhan va ban phim may tinh",
+		CustomerSendID: 1, EmplShipID: 3, EmplCreateID: 2,
+		Sender:       "269 Ngo Quyen, Quan 5, HCM",
+		Receiver:     "38 Tran Hung Dao, Quan 1,HCM",
+		Detail:       "May vi tinh ca nhan va ban phim may tinh",
+		UseShortShip: true, ShortShipID: 1, TransportTypeID: 1,
 		TotalPrice: 200000, Note: "Giao hang vao buoi sang",
 	}
 	if err := db.Create(&orderInfo).Error; err != nil {
@@ -276,16 +276,6 @@ func createExampleOrderPay() (err error) {
 	return
 }
 
-func createExampleOrderShip() (err error) {
-	orderShip := model.OrderShip{
-		OrderID: 1, UseShortShip: true, ShortShipID: 1,
-	}
-	if err := db.Create(&orderShip).Error; err != nil {
-		return err
-	}
-	return
-}
-
 func createExampleOrderShortShip() (err error) {
 	orderShortShip := model.OrderShortShip{
 		OrderID: 1, ShipperID: 3, ShipperReceived: true,
@@ -294,6 +284,22 @@ func createExampleOrderShortShip() (err error) {
 		Finished: true,
 	}
 	if err := db.Create(&orderShortShip).Error; err != nil {
+		return err
+	}
+	return
+}
+
+func createExampleOrder2() (err error) {
+	orderInfo := model.OrderInfo{
+		Weight: 3, Volume: 50, Type: "Special", Image: "order1.png",
+		CustomerSendID: 1, EmplShipID: 3, EmplCreateID: 2,
+		Sender:   "12 Hai Ba Trung, Quan 2, HCM",
+		Receiver: "74 Phan Chau Trinh, Quan 3, DL",
+		Detail:   "May xay thit", UseLongShip: true,
+		UseShortShip: true, ShortShipID: 1, TransportTypeID: 3,
+		TotalPrice: 200000, Note: "Giao hang vao buoi trua",
+	}
+	if err := db.Create(&orderInfo).Error; err != nil {
 		return err
 	}
 	return

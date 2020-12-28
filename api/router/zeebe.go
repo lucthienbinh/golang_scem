@@ -51,17 +51,12 @@ func createWorkflowInstanceHandler(c *gin.Context) {
 	// 	c.AbortWithStatus(http.StatusBadRequest)
 	// 	return
 	// }
-	orderWorkflowCreate.OrderID = 1
-	orderWorkflowCreate.PayMethod = "Credit"
+	orderWorkflowCreate.OrderID = 2
+	orderWorkflowCreate.PayMethod = "credit"
 	orderWorkflowCreate.TotalPrice = 12000
 	orderWorkflowCreate.UseLongShip = true
 	orderWorkflowCreate.UseShortShip = true
-	_, err := handler.CreateOrderPayHandler(orderWorkflowCreate.OrderID, orderWorkflowCreate.PayMethod, orderWorkflowCreate.TotalPrice)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	_, err = handler.CreateOrderShipHandler(orderWorkflowCreate.OrderID, orderWorkflowCreate.UseShortShip, orderWorkflowCreate.UseShortShip)
+	orderPayID, err := handler.CreateOrderPayHandler(orderWorkflowCreate.OrderID, orderWorkflowCreate.PayMethod, orderWorkflowCreate.TotalPrice)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

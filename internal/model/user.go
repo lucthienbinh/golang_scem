@@ -7,6 +7,8 @@ import (
 // -------------------- Table in database --------------------
 
 // UserAuthenticate structure for authentication ONLY
+// UserType = 1 for employee
+// UserType = 2 for customer
 type UserAuthenticate struct {
 	gorm.Model `json:"-"`
 	Email      string `json:"email"`

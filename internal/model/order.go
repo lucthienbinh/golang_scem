@@ -13,16 +13,21 @@ type OrderInfo struct {
 	Volume            int16  `json:"volume"`
 	Type              string `json:"type"`
 	Image             string `json:"image"`
-	HasPackage        bool   `json:"has_package"`
 	CustomerSendID    uint   `json:"customer_send_id" validate:"nonzero"`
 	CustomerReceiveID uint   `json:"customer_receive_id"`
 	EmplCreateID      uint   `json:"empl_create_id"`
 	EmplShipID        uint   `json:"empl_ship_id"`
+	OriginalSender    string `json:"original_sender" validate:"nonzero"`
+	Sender            string `json:"sender" validate:"nonzero"`
 	Receiver          string `json:"receiver" validate:"nonzero"`
-	TrasnportTypeID   uint   `json:"trasnport_type_id" validate:"nonzero"`
+	TransportTypeID   uint   `json:"transport_type_id" validate:"nonzero"`
 	Detail            string `json:"detail" validate:"nonzero"`
-	TotalPrice        int64  `json:"total_price" validate:"nonzero"`
 	Note              string `json:"note"`
+	UseShortShip      bool   `json:"use_short_ship"`
+	ShortShipID       uint   `json:"short_ship_id"`
+	UseLongShip       bool   `json:"use_long_ship"`
+	LongShipID        uint   `json:"long_ship_id"`
+	TotalPrice        int64  `json:"total_price"`
 	CreatedAt         int64  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt         int64  `gorm:"autoUpdateTime" json:"updated_at"`
 	DeletedAt         gorm.DeletedAt
@@ -41,23 +46,15 @@ type OrderPay struct {
 	UpdatedAt          int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
-// OrderShip structure
-type OrderShip struct {
-	ID           uint `gorm:"primary_key;<-:false" json:"id"`
-	OrderID      uint `json:"order_id"`
-	UseShortShip bool `json:"use_short_ship"`
-	ShortShipID  uint `json:"short_ship_id"`
-	UseLongShip  bool `json:"use_long_ship"`
-	LongShipID   uint `json:"long_ship_id"`
-}
-
 // TransportType structure
 type TransportType struct {
-	ID              uint   `gorm:"primary_key;<-:false" json:"id"`
-	Name            string `json:"name"`
-	SameCity        bool   `json:"same_city"`
-	RouteFixedPrice int64  `json:"fixed_price"`
-	PricePerKm      int64  `json:"price_per_km"`
+	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
+	Name                string `json:"name"`
+	SameCity            bool   `json:"same_city"`
+	BusStationFrom      string `json:"bus_station_from"`
+	BusStationTo        string `json:"bus_station_to"`
+	LongShipPrice       int64  `json:"long_ship_price"`
+	ShortShipPricePerKm int64  `json:"short_ship_price_per_km"`
 }
 
 // OrderWorkflowData structure
@@ -83,13 +80,12 @@ type OrderInfoFetchDB struct {
 	Volume              int16  `json:"volume"`
 	Type                string `json:"type"`
 	Image               string `json:"image"`
-	HasPackage          bool   `json:"has_package"`
 	CustomerSendName    string `json:"customer_send_name"`
 	CustomerReceiveName string `json:"customer_receive_name"`
 	EmplCreateName      string `json:"empl_create_name"`
 	EmplShipName        string `json:"empl_ship_name"`
 	Receiver            string `json:"receiver"`
-	TrasnportType       string `json:"trasnport_type"`
+	TransportType       string `json:"transport_type"`
 	Detail              string `json:"detail"`
 	TotalPrice          int64  `json:"total_price"`
 	Note                string `json:"note"`

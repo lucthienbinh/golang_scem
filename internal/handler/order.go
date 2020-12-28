@@ -2,9 +2,11 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/model"
+	"gopkg.in/validator.v2"
 )
 
 // -------------------- ORDER HANDLER FUNTION --------------------
@@ -12,12 +14,12 @@ import (
 // GetOrderInfoListHandler in database
 func GetOrderInfoListHandler(c *gin.Context) {
 	orderInfoList := []model.OrderInfoFetchDB{}
-	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, ord.has_package, " +
-		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as trasnport_type, " +
+	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, " +
+		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as transport_type, " +
 		"e1.name as empl_create_name, e2.name as empl_ship_name, ord.receiver, ord.detail, ord.total_price, ord.note, ord.created_at"
 	leftJoin1 := "left join customers as c1 on ord.customer_send_id = c1.id"
 	leftJoin2 := "left join customers as c2 on ord.customer_receive_id = c2.id"
-	leftJoin3 := "left join transport_types as t on ord.trasnport_type_id = t.id"
+	leftJoin3 := "left join transport_types as t on ord.transport_type_id = t.id"
 	leftJoin4 := "left join employees as e1 on ord.empl_create_id = e1.id"
 	leftJoin5 := "left join employees as e2 on ord.empl_ship_id = e2.id"
 
@@ -30,12 +32,12 @@ func GetOrderInfoListHandler(c *gin.Context) {
 
 func getOrderInfoOrNotFound(c *gin.Context) (*model.OrderInfoFetchDB, error) {
 	orderInfoFetchDB := &model.OrderInfoFetchDB{}
-	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, ord.has_package, " +
-		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as trasnport_type, " +
+	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, " +
+		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as transport_type, " +
 		"e1.name as empl_create_name, e2.name as empl_ship_name, ord.receiver, ord.detail, ord.total_price, ord.note"
 	leftJoin1 := "left join customers as c1 on ord.customer_send_id = c1.id"
 	leftJoin2 := "left join customers as c2 on ord.customer_receive_id = c2.id"
-	leftJoin3 := "left join transport_types as t on ord.trasnport_type_id = t.id"
+	leftJoin3 := "left join transport_types as t on ord.transport_type_id = t.id"
 	leftJoin4 := "left join employees as e1 on ord.empl_create_id = e1.id"
 	leftJoin5 := "left join employees as e2 on ord.empl_ship_id = e2.id"
 
@@ -57,13 +59,54 @@ func GetOrderInfoHandler(c *gin.Context) {
 	return
 }
 
+func calculateShortShipDistance(orderInfo *model.OrderInfo) (int64, error) {
+
+	// From Location: orderInfo.Sender
+	// To Location: orderInfo.Receiver
+	// To emulates google api distance calculation responses after receive sender and receiver info
+	// By example, we will give the distance by default is 10 km
+	time.Sleep(5 * time.Second)
+	return 10, nil
+}
+
+func calculateTotalPrice(orderInfo *model.OrderInfo) (int64, error) {
+	transportType := &model.TransportType{}
+	if err := db.First(&transportType, orderInfo.TransportTypeID).Error; err != nil {
+		return 0, err
+	}
+	var totalPrice int64
+	if orderInfo.UseLongShip == true {
+		totalPrice += transportType.LongShipPrice
+	}
+	if orderInfo.UseShortShip == true {
+		shortShipDistance, err := calculateShortShipDistance(orderInfo)
+		if err != nil {
+			return 0, err
+		}
+		totalPrice += (transportType.ShortShipPricePerKm * shortShipDistance)
+	}
+	return totalPrice, nil
+}
+
 // CreateOrderInfoHandler in database
 func CreateOrderInfoHandler(c *gin.Context) {
 	orderInfo := &model.OrderInfo{}
 	if err := c.ShouldBindJSON(&orderInfo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	if err := validator.Validate(&orderInfo); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	// Clear frontend data if user try to send TotalPrice illegibly
+	orderInfo.TotalPrice = 0
+	totalPrice, err := calculateTotalPrice(orderInfo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	orderInfo.TotalPrice = totalPrice
 	if err := db.Create(&orderInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -226,7 +269,7 @@ func CreateOrderPayHandler(orderID uint, payMethod string, totalPrice int64) (ui
 }
 
 // UpdateOrderPayHandler in database
-func UpdateOrderPayHandler(payStatus bool, orderID, payEmployeeID uint, payServiceProvider string) error {
+func UpdateOrderPayHandler(orderID, orderPayID, payEmployeeID uint, payStatus bool, payServiceProvider string) error {
 	orderPay := &model.OrderPay{}
 	orderPay.ID = orderID
 	orderPay.PayStatus = payStatus
@@ -234,60 +277,6 @@ func UpdateOrderPayHandler(payStatus bool, orderID, payEmployeeID uint, payServi
 	orderPay.PayEmployeeID = payEmployeeID
 	orderPay.PayServiceProvider = payServiceProvider
 	if err := db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-// -------------------- ORDER SHIPMENT HANDLER FUNTION --------------------
-
-// GetOrderShipListHandler in database
-func GetOrderShipListHandler(c *gin.Context) {
-	orderShips := []model.OrderShip{}
-	db.Order("id asc").Find(&orderShips)
-	c.JSON(http.StatusOK, gin.H{"order_ship_list": &orderShips})
-	return
-}
-
-func getOrderShipOrNotFound(c *gin.Context) (*model.OrderShip, error) {
-	orderShip := &model.OrderShip{}
-	if err := db.First(&orderShip, c.Param("id")).Error; err != nil {
-		return orderShip, err
-	}
-	return orderShip, nil
-}
-
-// GetOrderShipHandler in database
-func GetOrderShipHandler(c *gin.Context) {
-	orderShip, err := getOrderShipOrNotFound(c)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"order_ship_info": &orderShip})
-	return
-}
-
-// CreateOrderShipHandler in database
-func CreateOrderShipHandler(orderID uint, useShortShip, useLongShip bool) (uint, error) {
-	orderShip := &model.OrderShip{}
-	orderShip.OrderID = orderID
-	orderShip.UseShortShip = useShortShip
-	orderShip.UseLongShip = useLongShip
-	if err := db.Create(&orderShip).Error; err != nil {
-		return uint(0), err
-	}
-	return orderShip.ID, nil
-}
-
-// UpdateOrderShipHandler in database
-func UpdateOrderShipHandler(orderID, shortShipID, longShipID uint) error {
-	orderShip := &model.OrderShip{}
-	orderShip.ID = orderID
-	// If one of these fields is not empty, gorm will update it (struct input regulation)!
-	orderShip.ShortShipID = shortShipID
-	orderShip.LongShipID = longShipID
-	if err := db.Model(&orderShip).Updates(&orderShip).Error; err != nil {
 		return err
 	}
 	return nil

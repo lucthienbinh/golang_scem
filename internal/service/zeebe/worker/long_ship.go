@@ -11,8 +11,8 @@ import (
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
 )
 
-// RunSavePayment to start this worker
-func RunSavePayment() {
+// RunLongShip to start this worker
+func RunLongShip() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         os.Getenv("BROKER_ADDRESS"),
 		UsePlaintextConnection: true,
@@ -20,10 +20,10 @@ func RunSavePayment() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("save_payment").Handler(handleJobSavePayment).Open()
+	go client.NewJobWorker().JobType("long_ship").Handler(handleJobLongShip).Open()
 }
 
-func handleJobSavePayment(client worker.JobClient, job entities.Job) {
+func handleJobLongShip(client worker.JobClient, job entities.Job) {
 	jobKey := job.GetKey()
 
 	variables, err := job.GetVariablesAsMap()
@@ -40,32 +40,27 @@ func handleJobSavePayment(client worker.JobClient, job entities.Job) {
 		failJob(client, job)
 		return
 	}
-	var uintOrderPayID uint
-	orderPayID, ok := variables["order_pay_id"].(float64)
+	var uintOrderShipID uint
+	orderShipID, ok := variables["order_ship_id"].(float64)
 	if ok == true {
-		uintOrderPayID = uint(orderPayID)
+		uintOrderShipID = uint(orderShipID)
 	} else {
 		failJob(client, job)
 		return
 	}
-	payStatus, ok := variables["pay_status"].(bool)
-	if ok == false {
-		failJob(client, job)
-		return
-	}
-	payServiceProvider, ok := variables["pay_service_provider"].(string)
-	if ok == false {
-		failJob(client, job)
-		return
-	}
 
-	err = handler.UpdateOrderPayHandler(uintOrderID, uintOrderPayID, 0, payStatus, payServiceProvider)
+	orderLongShipID, err := handler.CreateOrderLongShip(uintOrderID)
+	if err != nil {
+		failJob(client, job)
+		return
+	}
+	err = handler.UpdateOrderShipHandler(uintOrderShipID, 0, orderLongShipID)
 	if err != nil {
 		failJob(client, job)
 		return
 	}
 
-	variables["pay_saved"] = true
+	variables["long_ship_saved"] = true
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {
 		// failed to set the updated variables
