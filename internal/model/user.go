@@ -13,7 +13,8 @@ type UserAuthenticate struct {
 	gorm.Model `json:"-"`
 	Email      string `json:"email"`
 	Password   string `json:"password"`
-	UserType   int    `json:"user_type"`
+	EmployeeID uint   `json:"emloyee_id"`
+	CustomerID uint   `json:"customer_id"`
 	Active     bool   `gorm:"default:1" json:"active"`
 }
 
@@ -42,6 +43,16 @@ type Customer struct {
 	Address    string `json:"address" validate:"nonzero"`
 	Point      int16  `json:"point"`
 	DeletedAt  gorm.DeletedAt
+}
+
+// CustomerCredit structure
+type CustomerCredit struct {
+	ID             uint  `gorm:"primary_key;<-:false" json:"id"`
+	CustomerID     uint  `json:"customer_id"`
+	Phone          int64 `json:"phone"`
+	ValidatePhone  bool  `json:"validate_phone"`
+	AccountBalance int64 `json:"account_balance"`
+	UpdatedAt      int64 `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // Employee structure

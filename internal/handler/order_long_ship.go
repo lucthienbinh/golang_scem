@@ -77,7 +77,7 @@ func UpdateOLSStartVehicleHandler(c *gin.Context) {
 	}
 
 	orderLongShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderLongShip).Updates(model.OrderLongShip{VehicleStarted: true, EmplDriverID: 3}).Error; err != nil {
+	if err = db.Model(&orderLongShip).Updates(model.OrderLongShip{VehicleStarted: true, EmplDriver1ID: 3}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -99,7 +99,7 @@ func UpdateOLSVehicleArrivedHandler(c *gin.Context) {
 	}
 
 	orderLongShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderLongShip).Updates(model.OrderLongShip{VehicleArrived: true, CurrentLocation: "Location2", EmplDriverID: 3}).Error; err != nil {
+	if err = db.Model(&orderLongShip).Updates(model.OrderLongShip{VehicleArrived: true, CurrentLocation: "Location2", EmplDriver2ID: 3}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -121,7 +121,7 @@ func UpdateOLSUnloadPackageHandler(c *gin.Context) {
 	}
 
 	orderLongShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderLongShip).Updates(model.OrderLongShip{PackageUnloaded: true, EmplDriverID: 4, Finished: true}).Error; err != nil {
+	if err = db.Model(&orderLongShip).Updates(model.OrderLongShip{PackageUnloaded: true, EmplUnloadID: 4, Finished: true}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

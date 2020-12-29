@@ -33,17 +33,32 @@ type OrderInfo struct {
 	DeletedAt         gorm.DeletedAt
 }
 
+// OrderInfoForPayment structure
+type OrderInfoForPayment struct {
+	ID                uint  `json:"id"`
+	CustomerSendID    uint  `json:"customer_send_id" validate:"nonzero"`
+	CustomerReceiveID uint  `json:"customer_receive_id"`
+	UseShortShip      bool  `json:"use_short_ship"`
+	UseLongShip       bool  `json:"use_long_ship"`
+	TotalPrice        int64 `json:"total_price"`
+}
+
 // OrderPay structure
 type OrderPay struct {
-	ID                 uint   `gorm:"primary_key;<-:false" json:"id"`
-	OrderID            uint   `json:"order_id"`
-	PayMethod          string `json:"pay_method"`
-	PayServiceProvider string `json:"pay_service_provider"`
-	PayStatus          bool   `json:"pay_status"`
-	PayEmployeeID      uint   `json:"pay_employee_id"`
-	TotalPrice         int64  `json:"total_price"`
-	CreatedAt          int64  `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt          int64  `gorm:"autoUpdateTime" json:"updated_at"`
+	ID              uint   `gorm:"primary_key;<-:false" json:"id"`
+	OrderID         uint   `json:"order_id"`
+	PayMethod       string `json:"pay_method"`
+	PayStatus       bool   `json:"pay_status"`
+	TotalPrice      int64  `json:"total_price"`
+	FinishedStepOne bool   `json:"finished_step_one"`
+	FinishedStepTwo bool   `json:"finished_step_two"`
+	ConfirmString   string `json:"confirm_string"`
+	// If customer pay method is cash, we will need an employee to confirm
+	PayEmployeeID uint `json:"pay_employee_id"`
+	// If customer pay method is credit, we will need customer confirmation
+	PayCustomerID uint  `json:"pay_customer_id"`
+	CreatedAt     int64 `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt     int64 `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // TransportType structure
@@ -59,16 +74,20 @@ type TransportType struct {
 
 // OrderWorkflowData structure
 type OrderWorkflowData struct {
-	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
-	WorkflowKey         uint   `json:"workflow_key"`
-	WorkflowInstanceKey uint   `json:"workflow_instance_key"`
-	OrderID             uint   `json:"order_id"`
-	CustomerReceiveID   uint   `json:"customer_receive_id"`
+	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
+	WorkflowKey         uint `json:"workflow_key"`
+	WorkflowInstanceKey uint `json:"workflow_instance_key"`
+	// Mapping ID for data
+	OrderID     uint `json:"order_id"`
+	OrderPayID  uint `json:"order_pay_id"`
+	ShortShipID uint `json:"short_ship_id"`
+	LongShipID  uint `json:"long_ship_id"`
+	// Variable use for Zeebe gateway
 	PayMethod           string `json:"pay_method"`
+	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
 	UseShortShip        bool   `json:"use_short_ship"`
-	ShortShipID         uint   `json:"short_ship_id"`
 	UseLongShip         bool   `json:"use_long_ship"`
-	LongShipID          uint   `json:"long_ship_id"`
+	CustomerReceiveID   uint   `json:"customer_receive_id"`
 }
 
 // -------------------- Struct uses to fetch data for frontend --------------------
@@ -91,13 +110,4 @@ type OrderInfoFetchDB struct {
 	Note                string `json:"note"`
 	CreatedAt           int64  `json:"created_at"`
 	UpdatedAt           int64  `json:"updated_at"`
-}
-
-// OrderWorkflowCreate structure
-type OrderWorkflowCreate struct {
-	OrderID      uint   `json:"order_id" validate:"nonzero"`
-	PayMethod    string `json:"pay_method" validate:"nonzero"`
-	TotalPrice   int64  `json:"total_price" validate:"nonzero"`
-	UseShortShip bool   `json:"use_short_ship"`
-	UseLongShip  bool   `json:"use_long_ship"`
 }

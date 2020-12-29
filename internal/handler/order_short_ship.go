@@ -195,7 +195,7 @@ func CancelOrderShortShipHandler(c *gin.Context) {
 	canceleReason := c.PostForm("canceled_reason")
 
 	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{Canceled: true, CanceleReason: canceleReason}).Error; err != nil {
+	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{Canceled: true, CanceledReason: canceleReason}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

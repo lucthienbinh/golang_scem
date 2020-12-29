@@ -35,16 +35,11 @@ func SaveFCMTokenWithUserAuthID(c *gin.Context, userAuthID uint, appToken string
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
-	if userAuthenticate.UserType == 1 {
-		employee := &model.Employee{}
-		if err := db.Where("user_auth_id = ?", userAuthID).First(&employee).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
-			return
-		}
+	if userAuthenticate.EmployeeID != 0 {
 		employeeFCMToken := &model.EmployeeFCMToken{}
-		employeeFCMToken.EmployeeID = employee.ID
+		employeeFCMToken.EmployeeID = userAuthenticate.EmployeeID
 		employeeFCMToken.Token = appToken
-		if db.Model(&employeeFCMToken).Where("employee_id = ?", employee.ID).Updates(&employeeFCMToken).RowsAffected == 0 {
+		if db.Model(&employeeFCMToken).Where("employee_id = ?", userAuthenticate.EmployeeID).Updates(&employeeFCMToken).RowsAffected == 0 {
 			if err := db.Create(&employeeFCMToken).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
@@ -55,16 +50,11 @@ func SaveFCMTokenWithUserAuthID(c *gin.Context, userAuthID uint, appToken string
 		c.JSON(http.StatusCreated, gin.H{"server_response": "App token has been updated!"})
 		return
 	}
-	if userAuthenticate.UserType == 2 {
-		customer := &model.Customer{}
-		if err := db.Where("user_auth_id = ?", userAuthID).First(&customer).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
-			return
-		}
+	if userAuthenticate.CustomerID != 0 {
 		customerFCMToken := &model.CustomerFCMToken{}
-		customerFCMToken.CustomerID = customer.ID
+		customerFCMToken.CustomerID = userAuthenticate.CustomerID
 		customerFCMToken.Token = appToken
-		if db.Model(&customerFCMToken).Where("customer_id = ?", customer.ID).Updates(&customerFCMToken).RowsAffected == 0 {
+		if db.Model(&customerFCMToken).Where("customer_id = ?", userAuthenticate.CustomerID).Updates(&customerFCMToken).RowsAffected == 0 {
 			if err := db.Create(&customerFCMToken).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
@@ -79,7 +69,7 @@ func SaveFCMTokenWithUserAuthID(c *gin.Context, userAuthID uint, appToken string
 
 // -------------------- COMMON FUNTION --------------------
 func getIDFromParam(c *gin.Context) uint {
-	rawUint64, _ := strconv.ParseUint(c.Param("id"), 10, 32)
+	rawUint64, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 	return uint(rawUint64)
 }
 
@@ -124,17 +114,28 @@ func CreateCustomerHandler(c *gin.Context) {
 		return
 	}
 	customer, userAuth := customerWithAuth.ConvertCWAToNormal()
-	userAuth.UserType = 2
+	// Create customer authenticate
 	if err := db.Create(&userAuth).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if userAuth.ID != 0 {
-		customer.UserAuthID = userAuth.ID
-		if err := db.Create(&customer).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
+	// Create customer information
+	customer.UserAuthID = userAuth.ID
+	if err := db.Create(&customer).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// Update customer authenticate
+	userAuth.CustomerID = customer.ID
+	if err := db.Model(&userAuth).Updates(&userAuth).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// Create customer credit
+	customerCredit := &model.CustomerCredit{CustomerID: customer.ID, Phone: customer.Phone}
+	if err := db.Create(&customerCredit).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"server_response": "A customer has been created!"})
 	return
@@ -156,13 +157,61 @@ func UpdateCustomerHandler(c *gin.Context) {
 		return
 	}
 	customer.ID = getIDFromParam(c)
-	customer2 := &model.Customer{}
-	customer2.ID = 2
-	if err = db.Model(&customer2).Omit("point").Updates(&customer).Error; err != nil {
+	if err = db.Model(&customer).Omit("point").Updates(&customer).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "A customer has been updated!"})
+	return
+}
+
+// UpdateCustomerCreditValidationHandler in database
+func UpdateCustomerCreditValidationHandler(c *gin.Context) {
+	customer, err := getCustomerOrNotFound(c)
+	if err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	customerCredit := &model.CustomerCredit{}
+	if err := db.Where("customer_id = ?", customer.ID).First(&customerCredit).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	customerCredit.ValidatePhone = true
+	if err = db.Model(&customerCredit).Updates(&customerCredit).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"server_response": "A customer credit validation has been updated!"})
+	return
+}
+
+func updateCustomerCreditBalance(accountBalance int64, customerID uint) error {
+	customerCredit := &model.CustomerCredit{}
+	if err := db.Where("customer_id = ?", customerID).First(&customerCredit).Error; err != nil {
+		return err
+	}
+	if err := db.Model(&customerCredit).Update("account_balance", accountBalance).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdateCustomerCreditBalanceHandler in database
+// The usecase of this function when customer report about update customer credit balance bug.
+// We should we an automatic mechanism update customer credit balance when customer transfered money from bank/ online bank
+func UpdateCustomerCreditBalanceHandler(c *gin.Context) {
+	customer, err := getCustomerOrNotFound(c)
+	if err != nil {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	accountBalanceInt64, _ := strconv.ParseInt(c.PostForm("account_balance"), 10, 64)
+	if err = updateCustomerCreditBalance(accountBalanceInt64, customer.ID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"server_response": "A customer credit balance has been updated!"})
 	return
 }
 
@@ -171,6 +220,10 @@ func DeleteCustomerHandler(c *gin.Context) {
 	customer, err := getCustomerOrNotFound(c)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	if err := db.Where("customer_id = ?", customer.ID).Delete(&model.CustomerCredit{}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	if err := db.Delete(&model.UserAuthenticate{}, customer.UserAuthID).Error; err != nil {
@@ -287,17 +340,22 @@ func CreateEmployeeHandler(c *gin.Context) {
 		return
 	}
 	employee, userAuth := employeeWithAuth.ConvertEWAToNormal()
-	userAuth.UserType = 1
+	// Create employee authenticate
 	if err := db.Create(&userAuth).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if userAuth.ID != 0 {
-		employee.UserAuthID = userAuth.ID
-		if err := db.Create(&employee).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
+	// Create employee information
+	employee.UserAuthID = userAuth.ID
+	if err := db.Create(&employee).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// Update customer authenticate
+	userAuth.EmployeeID = employee.ID
+	if err := db.Model(&userAuth).Updates(&userAuth).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"server_response": "An employee has been created!"})
@@ -413,7 +471,7 @@ func GetDeliveryLocationHandler(c *gin.Context) {
 func CreateDeliveryLocationHandler(c *gin.Context) {
 	deliveryLocation := &model.DeliveryLocation{}
 	if err := c.ShouldBindJSON(&deliveryLocation); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	if err := validator.Validate(&deliveryLocation); err != nil {
@@ -436,7 +494,7 @@ func UpdateDeliveryLocationHandler(c *gin.Context) {
 		return
 	}
 	if err := c.ShouldBindJSON(&deliveryLocation); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	if err := validator.Validate(&deliveryLocation); err != nil {
@@ -499,7 +557,7 @@ func GetEmployeeTypeHandler(c *gin.Context) {
 func CreateEmployeeTypeHandler(c *gin.Context) {
 	employeeType := &model.EmployeeType{}
 	if err := c.ShouldBindJSON(&employeeType); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	if err := db.Create(&employeeType).Error; err != nil {
@@ -518,7 +576,7 @@ func UpdateEmployeeTypeHandler(c *gin.Context) {
 		return
 	}
 	if err := c.ShouldBindJSON(&employeeType); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	employeeType.ID = getIDFromParam(c)

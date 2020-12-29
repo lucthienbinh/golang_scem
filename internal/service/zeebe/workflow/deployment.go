@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/lucthienbinh/golang_scem/internal/model"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
 )
 
@@ -42,28 +43,28 @@ func DeployNewWorkflow() {
 }
 
 // CreateNewInstance of workflow
-func CreateNewInstance(orderID, customerReceiveID, orderPayID, orderShipID uint, payMethod string, useLongShip, useShortShip bool) uint {
+func CreateNewInstance(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
 
 	// After the workflow is deployed.
 	variables := make(map[string]interface{})
-	variables["order_id"] = orderID
-	variables["customer_receive_id"] = customerReceiveID
-	variables["order_pay_id"] = orderPayID
-	variables["pay_method"] = payMethod
-	variables["order_ship_id"] = orderShipID
-	variables["use_long_ship"] = useLongShip
-	variables["use_short_ship"] = useShortShip
+	variables["order_id"] = orderWorkflowData.OrderID
+	variables["order_pay_id"] = orderWorkflowData.OrderPayID
+	variables["pay_method"] = orderWorkflowData.PayMethod
+	variables["shipper_receive_money"] = orderWorkflowData.ShipperReceiveMoney
+	variables["use_long_ship"] = orderWorkflowData.UseLongShip
+	variables["use_short_ship"] = orderWorkflowData.UseShortShip
+	variables["customer_receive_id"] = orderWorkflowData.CustomerReceiveID
 
 	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("WORKFLOW_ID_1")).LatestVersion().VariablesFromMap(variables)
 	if err != nil {
-		panic(err)
+		return uint(0), uint(0), err
 	}
 
 	ctx := context.Background()
 	msg, err := request.Send(ctx)
 	if err != nil {
-		panic(err)
+		return uint(0), uint(0), err
 	}
 	log.Println(msg.String())
-	return uint(msg.WorkflowInstanceKey)
+	return uint(msg.WorkflowKey), uint(msg.WorkflowInstanceKey), nil
 }

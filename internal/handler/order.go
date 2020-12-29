@@ -48,6 +48,16 @@ func getOrderInfoOrNotFound(c *gin.Context) (*model.OrderInfoFetchDB, error) {
 	return orderInfoFetchDB, nil
 }
 
+func getOrderInfoOrNotFoundForPayment(orderID uint) (*model.OrderInfoForPayment, error) {
+	orderInfoForPayment := &model.OrderInfoForPayment{}
+	selectPart := "ord.id, ord.customer_send_id, ord.customer_receive_id, ord.use_long_ship, ord.use_short_ship, ord.total_price "
+	err := db.Table("order_infos as ord").Select(selectPart).First(&orderInfoForPayment, orderID).Error
+	if err != nil {
+		return orderInfoForPayment, err
+	}
+	return orderInfoForPayment, nil
+}
+
 // GetOrderInfoHandler in database
 func GetOrderInfoHandler(c *gin.Context) {
 	orderInfoFetchDB, err := getOrderInfoOrNotFound(c)
@@ -126,7 +136,7 @@ func UpdateOrderInfoHandler(c *gin.Context) {
 		return
 	}
 	if err := c.ShouldBindJSON(&orderInfo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	if err = db.Model(&orderInfo).Updates(&orderInfo).Error; err != nil {
@@ -183,7 +193,7 @@ func GetTransportTypeHandler(c *gin.Context) {
 func CreateTransportTypeHandler(c *gin.Context) {
 	transportType := &model.TransportType{}
 	if err := c.ShouldBindJSON(&transportType); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	if err := db.Create(&transportType).Error; err != nil {
@@ -202,7 +212,7 @@ func UpdateTransportTypeHandler(c *gin.Context) {
 		return
 	}
 	if err := c.ShouldBindJSON(&transportType); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	transportType.ID = getIDFromParam(c)
@@ -225,59 +235,4 @@ func DeleteTransportTypeHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
 	return
-}
-
-// -------------------- ORDER PAYMENT HANDLER FUNTION --------------------
-
-// GetOrderPayListHandler in database
-func GetOrderPayListHandler(c *gin.Context) {
-	orderPays := []model.OrderPay{}
-	db.Order("id asc").Find(&orderPays)
-	c.JSON(http.StatusOK, gin.H{"order_pay_list": &orderPays})
-	return
-}
-
-func getOrderPayOrNotFound(c *gin.Context) (*model.OrderPay, error) {
-	orderPay := &model.OrderPay{}
-	if err := db.First(&orderPay, c.Param("id")).Error; err != nil {
-		return orderPay, err
-	}
-	return orderPay, nil
-}
-
-// GetOrderPayHandler in database
-func GetOrderPayHandler(c *gin.Context) {
-	orderPay, err := getOrderPayOrNotFound(c)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"order_pay_info": &orderPay})
-	return
-}
-
-// CreateOrderPayHandler in database
-func CreateOrderPayHandler(orderID uint, payMethod string, totalPrice int64) (uint, error) {
-	orderPay := &model.OrderPay{}
-	orderPay.OrderID = orderID
-	orderPay.PayMethod = payMethod
-	orderPay.TotalPrice = totalPrice
-	if err := db.Create(&orderPay).Error; err != nil {
-		return uint(0), err
-	}
-	return orderPay.ID, nil
-}
-
-// UpdateOrderPayHandler in database
-func UpdateOrderPayHandler(orderID, orderPayID, payEmployeeID uint, payStatus bool, payServiceProvider string) error {
-	orderPay := &model.OrderPay{}
-	orderPay.ID = orderID
-	orderPay.PayStatus = payStatus
-	// If one of these fields is not empty, gorm will update it (struct input regulation)!
-	orderPay.PayEmployeeID = payEmployeeID
-	orderPay.PayServiceProvider = payServiceProvider
-	if err := db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
-		return err
-	}
-	return nil
 }

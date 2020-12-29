@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -24,14 +25,6 @@ type SessionJSON struct {
 }
 
 var sesh *sessions.Service
-
-// GetUserAuthIDInSession to validate role
-func GetUserAuthIDInSession(c *gin.Context) uint {
-	r := c.Request
-	userSession, _ := sesh.GetUserSession(r)
-	rawUint64, _ := strconv.ParseUint(userSession.UserID, 10, 32)
-	return uint(rawUint64)
-}
 
 // CreateWebSession after login successful
 func CreateWebSession(c *gin.Context, userAuthID uint) {
@@ -217,4 +210,21 @@ func generateKey() (string, error) {
 		return "", err
 	}
 	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+// GetUserAuthIDInSession function
+func GetUserAuthIDInSession(c *gin.Context) (uint, error) {
+	r := c.Request
+	userSession, err := sesh.GetUserSession(r)
+	if err != nil {
+		log.Printf("Err fetching user session: %v\n", err)
+		return uint(0), err
+	}
+	// nil session pointers indicate a 401 unauthorized
+	if userSession == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return uint(0), errors.New("StatusUnauthorized")
+	}
+	rawUint64, _ := strconv.ParseUint(userSession.UserID, 10, 64)
+	return uint(rawUint64), nil
 }
