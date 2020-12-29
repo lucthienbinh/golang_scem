@@ -21,10 +21,7 @@ type createOrderPay struct {
 }
 
 type confirmOrderPay struct {
-	OrderID       uint   `json:"order_id" validate:"nonzero"`
 	ConfirmString string `json:"confirm_string" validate:"nonzero"`
-	PayEmployeeID uint   `json:"pay_employee_id"`
-	PayCustomerID bool   `json:"pay_customer_id"`
 }
 
 // -------------------- ORDER PAYMENT HANDLER FUNTION --------------------
@@ -39,7 +36,7 @@ func GetOrderPayListHandler(c *gin.Context) {
 
 func getOrderPayOrNotFound(orderPayID uint) (*model.OrderPay, error) {
 	orderPay := &model.OrderPay{}
-	if err := db.First(&orderPay, orderPayID).Error; err != nil {
+	if err := db.First(orderPay, orderPayID).Error; err != nil {
 		return orderPay, err
 	}
 	return orderPay, nil
@@ -47,7 +44,7 @@ func getOrderPayOrNotFound(orderPayID uint) (*model.OrderPay, error) {
 
 func getOrderPayOrNotFoundByOrderID(orderID uint) (*model.OrderPay, error) {
 	orderPay := &model.OrderPay{}
-	if err := db.Where("order_id = ?", orderID).First(&orderPay).Error; err != nil {
+	if err := db.Where("order_id = ?", orderID).First(orderPay).Error; err != nil {
 		return orderPay, err
 	}
 	return orderPay, nil
@@ -67,7 +64,7 @@ func GetOrderPayHandler(c *gin.Context) {
 // CompareCustomerBalanceVsTotalPrice to check if customer has enough money to pay for the order
 func CompareCustomerBalanceVsTotalPrice(customerID uint, totalPrice int64) (bool, error) {
 	customerCredit := &model.CustomerCredit{}
-	if err := db.Where("customer_id = ?", customerID).First(&customerCredit).Error; err != nil {
+	if err := db.Where("customer_id = ?", customerID).First(customerCredit).Error; err != nil {
 		return false, err
 	}
 	if customerCredit.AccountBalance > totalPrice {
@@ -105,7 +102,7 @@ func CreateOrderPayStepOneHandler(c *gin.Context) {
 		// if not we will create a new data
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			orderPay = &model.OrderPay{OrderID: stepOneRequest.OrderID, TotalPrice: orderInfoForPayment.TotalPrice, FinishedStepOne: true}
-			if err := db.Create(&orderPay).Error; err != nil {
+			if err := db.Create(orderPay).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
@@ -171,7 +168,7 @@ func CreateOrderPayStepTwoHandler(c *gin.Context) {
 	orderWorkflowData.WorkflowInstanceKey = WorkflowInstanceKey
 
 	// Create workflow data in database
-	if err := db.Create(&orderWorkflowData).Error; err != nil {
+	if err := db.Create(orderWorkflowData).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -193,25 +190,58 @@ func CreateOrderPayStepTwoHandler(c *gin.Context) {
 	return
 }
 
-// UpdateOrderPayCustomerConfirmHandler in database
-func UpdateOrderPayCustomerConfirmHandler(c *gin.Context, userAuthID uint) {
-
-}
-
 // UpdateOrderPayEmployeeConfirmHandler in database
 func UpdateOrderPayEmployeeConfirmHandler(c *gin.Context, userAuthID uint) {
-
+	confirmString := c.PostForm("confirm_string")
+	userAuthenticate := &model.UserAuthenticate{}
+	if err := db.First(userAuthenticate, userAuthID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+	orderPay, err := getOrderPayOrNotFound(getIDFromParam(c))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if confirmString != orderPay.ConfirmString {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Confirm string needs to be match with the given!"})
+		return
+	}
+	orderPay.PayEmployeeID = userAuthenticate.EmployeeID
+	if err := db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"server_response": "Order payment money has been received and confirmed by employee id: ",
+		"employee_id":     userAuthenticate.EmployeeID})
+	return
 }
 
-// UpdateOrderPayHandler in database
-func UpdateOrderPayHandler(orderID, orderPayID, payEmployeeID uint, payStatus bool, payServiceProvider string) error {
-	orderPay := &model.OrderPay{}
-	orderPay.ID = orderID
-	orderPay.PayStatus = payStatus
-	// If one of these fields is not empty, gorm will update it (struct input regulation)!
-	orderPay.PayEmployeeID = payEmployeeID
-	if err := db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
-		return err
+// UpdateOrderPayCustomerConfirmHandler in database
+func UpdateOrderPayCustomerConfirmHandler(c *gin.Context, userAuthID uint) {
+	confirmString := c.PostForm("confirm_string")
+	userAuthenticate := &model.UserAuthenticate{}
+	if err := db.First(userAuthenticate, userAuthID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
 	}
-	return nil
+	orderPay, err := getOrderPayOrNotFound(getIDFromParam(c))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if confirmString != orderPay.ConfirmString {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Confirm string needs to be match with the given!"})
+		return
+	}
+	orderPay.PayCustomerID = userAuthenticate.CustomerID
+	if err := db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"server_response": "Order payment money has been confirmed by customer id: ",
+		"employee_id":     userAuthenticate.CustomerID})
+	return
 }

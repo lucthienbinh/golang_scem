@@ -2,11 +2,32 @@ package model
 
 // -------------------- Table in database --------------------
 
+// OrderWorkflowData structure
+type OrderWorkflowData struct {
+	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
+	WorkflowKey         uint `json:"workflow_key"`
+	WorkflowInstanceKey uint `json:"workflow_instance_key"`
+	// Mapping ID for data
+	OrderID     uint `json:"order_id"`
+	OrderPayID  uint `json:"order_pay_id"`
+	ShortShipID uint `json:"short_ship_id"`
+	LongShipID  uint `json:"long_ship_id"`
+	// Variable use for Zeebe gateway
+	PayMethod           string `json:"pay_method"`
+	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
+	UseShortShip        bool   `json:"use_short_ship"`
+	UseLongShip         bool   `json:"use_long_ship"`
+	CustomerReceiveID   uint   `json:"customer_receive_id"`
+}
+
 // OrderLongShip structure
 type OrderLongShip struct {
-	ID              uint   `gorm:"primary_key;<-:false" json:"id"`
-	OrderID         uint   `json:"order_id"`
-	CurrentLocation string `json:"current_location"`
+	ID                       uint   `gorm:"primary_key;<-:false" json:"id"`
+	TransportTypeID          uint   `json:"transport_type_id" validate:"nonzero"`
+	LicensePlate             string `json:"license_plate" validate:"nonzero"`
+	EstimatedTimeOfDeparture int64  `json:"estimated_time_of_departure" validate:"nonzero"`
+	EstimatedTimeOfArrival   int64  `json:"estimated_time_of_arrival" validate:"nonzero"`
+	CurrentLocation          string `json:"current_location"`
 	// Message data in workflow - Start
 	// Package Loaded
 	PackageLoaded bool  `json:"package_loaded"`
@@ -33,8 +54,8 @@ type OrderLongShip struct {
 // OrderShortShip structure
 type OrderShortShip struct {
 	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
-	OrderID             uint `json:"order_id"`
-	ShipperID           uint `json:"shipper_id"`
+	OrderID             uint `json:"order_id" validate:"nonzero"`
+	ShipperID           uint `json:"shipper_id" validate:"nonzero"`
 	CustomerReceiveID   uint `json:"customer_receive_id"`
 	ShipperReceiveMoney bool `json:"shipper_receive_money"`
 	// Message data in workflow - Start

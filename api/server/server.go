@@ -81,7 +81,6 @@ func webRouter() http.Handler {
 	}
 	router.UserRoutes(api)
 	router.WebOrderRoutes(api)
-	router.ZeebeRoutes(api)
 
 	return e
 }

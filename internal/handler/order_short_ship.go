@@ -24,7 +24,7 @@ func GetOrderShortShipListHandler(c *gin.Context) {
 
 func getOrderShortShipOrNotFound(c *gin.Context) (*model.OrderShortShip, error) {
 	orderShortShip := &model.OrderShortShip{}
-	if err := db.First(&orderShortShip, c.Param("id")).Error; err != nil {
+	if err := db.First(orderShortShip, c.Param("id")).Error; err != nil {
 		return orderShortShip, err
 	}
 	return orderShortShip, nil
@@ -46,7 +46,7 @@ func CreateOrderShortShip(orderID, shipperID uint) (uint, error) {
 	orderShortShip := &model.OrderShortShip{}
 	orderShortShip.OrderID = orderID
 	orderShortShip.ShipperID = shipperID
-	if err := db.Create(&orderShortShip).Error; err != nil {
+	if err := db.Create(orderShortShip).Error; err != nil {
 		return uint(0), err
 	}
 	return orderShortShip.ID, nil

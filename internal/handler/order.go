@@ -42,7 +42,7 @@ func getOrderInfoOrNotFound(c *gin.Context) (*model.OrderInfoFetchDB, error) {
 	leftJoin5 := "left join employees as e2 on ord.empl_ship_id = e2.id"
 
 	if err := db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).Joins(leftJoin5).
-		Order("ord.id asc").First(&orderInfoFetchDB, c.Param("id")).Error; err != nil {
+		Order("ord.id asc").First(orderInfoFetchDB, c.Param("id")).Error; err != nil {
 		return orderInfoFetchDB, err
 	}
 	return orderInfoFetchDB, nil
@@ -51,7 +51,7 @@ func getOrderInfoOrNotFound(c *gin.Context) (*model.OrderInfoFetchDB, error) {
 func getOrderInfoOrNotFoundForPayment(orderID uint) (*model.OrderInfoForPayment, error) {
 	orderInfoForPayment := &model.OrderInfoForPayment{}
 	selectPart := "ord.id, ord.customer_send_id, ord.customer_receive_id, ord.use_long_ship, ord.use_short_ship, ord.total_price "
-	err := db.Table("order_infos as ord").Select(selectPart).First(&orderInfoForPayment, orderID).Error
+	err := db.Table("order_infos as ord").Select(selectPart).First(orderInfoForPayment, orderID).Error
 	if err != nil {
 		return orderInfoForPayment, err
 	}
@@ -81,7 +81,7 @@ func calculateShortShipDistance(orderInfo *model.OrderInfo) (int64, error) {
 
 func calculateTotalPrice(orderInfo *model.OrderInfo) (int64, error) {
 	transportType := &model.TransportType{}
-	if err := db.First(&transportType, orderInfo.TransportTypeID).Error; err != nil {
+	if err := db.First(transportType, orderInfo.TransportTypeID).Error; err != nil {
 		return 0, err
 	}
 	var totalPrice int64
@@ -117,7 +117,7 @@ func CreateOrderInfoHandler(c *gin.Context) {
 		return
 	}
 	orderInfo.TotalPrice = totalPrice
-	if err := db.Create(&orderInfo).Error; err != nil {
+	if err := db.Create(orderInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -154,83 +154,6 @@ func DeleteOrderInfoHandler(c *gin.Context) {
 		return
 	}
 	if err := db.Delete(&model.OrderInfo{}, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
-	return
-}
-
-// -------------------- TRANSPORT TYPE HANDLER FUNTION --------------------
-
-// GetTransportTypeListHandler in database
-func GetTransportTypeListHandler(c *gin.Context) {
-	transportTypes := []model.TransportType{}
-	db.Order("id asc").Find(&transportTypes)
-	c.JSON(http.StatusOK, gin.H{"transport_type_list": &transportTypes})
-	return
-}
-
-func getTransportTypeOrNotFound(c *gin.Context) (*model.TransportType, error) {
-	transportType := &model.TransportType{}
-	if err := db.First(&transportType, c.Param("id")).Error; err != nil {
-		return transportType, err
-	}
-	return transportType, nil
-}
-
-// GetTransportTypeHandler in database
-func GetTransportTypeHandler(c *gin.Context) {
-	transportType, err := getTransportTypeOrNotFound(c)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"transport_type_info": &transportType})
-	return
-}
-
-// CreateTransportTypeHandler in database
-func CreateTransportTypeHandler(c *gin.Context) {
-	transportType := &model.TransportType{}
-	if err := c.ShouldBindJSON(&transportType); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	if err := db.Create(&transportType).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusCreated, gin.H{"server_response": "An transport type has been created!"})
-	return
-}
-
-// UpdateTransportTypeHandler in database
-func UpdateTransportTypeHandler(c *gin.Context) {
-	transportType, err := getTransportTypeOrNotFound(c)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	if err := c.ShouldBindJSON(&transportType); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	transportType.ID = getIDFromParam(c)
-	if err = db.Model(&transportType).Updates(&transportType).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
-	return
-}
-
-// DeleteTransportTypeHandler in database
-func DeleteTransportTypeHandler(c *gin.Context) {
-	if _, err := getTransportTypeOrNotFound(c); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	if err := db.Delete(&model.TransportType{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})

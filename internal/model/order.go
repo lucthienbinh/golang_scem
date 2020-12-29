@@ -43,6 +43,18 @@ type OrderInfoForPayment struct {
 	TotalPrice        int64 `json:"total_price"`
 }
 
+// TransportType structure
+type TransportType struct {
+	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
+	Name                string `json:"name" validate:"nonzero"`
+	SameCity            bool   `json:"same_city"`
+	BusStationFrom      string `json:"bus_station_from"`
+	BusStationTo        string `json:"bus_station_to"`
+	LongShipDuration    int64  `json:"long_ship_duration"`
+	LongShipPrice       int64  `json:"long_ship_price"`
+	ShortShipPricePerKm int64  `json:"short_ship_price_per_km" validate:"nonzero"`
+}
+
 // OrderPay structure
 type OrderPay struct {
 	ID              uint   `gorm:"primary_key;<-:false" json:"id"`
@@ -59,35 +71,6 @@ type OrderPay struct {
 	PayCustomerID uint  `json:"pay_customer_id"`
 	CreatedAt     int64 `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     int64 `gorm:"autoUpdateTime" json:"updated_at"`
-}
-
-// TransportType structure
-type TransportType struct {
-	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
-	Name                string `json:"name"`
-	SameCity            bool   `json:"same_city"`
-	BusStationFrom      string `json:"bus_station_from"`
-	BusStationTo        string `json:"bus_station_to"`
-	LongShipPrice       int64  `json:"long_ship_price"`
-	ShortShipPricePerKm int64  `json:"short_ship_price_per_km"`
-}
-
-// OrderWorkflowData structure
-type OrderWorkflowData struct {
-	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
-	WorkflowKey         uint `json:"workflow_key"`
-	WorkflowInstanceKey uint `json:"workflow_instance_key"`
-	// Mapping ID for data
-	OrderID     uint `json:"order_id"`
-	OrderPayID  uint `json:"order_pay_id"`
-	ShortShipID uint `json:"short_ship_id"`
-	LongShipID  uint `json:"long_ship_id"`
-	// Variable use for Zeebe gateway
-	PayMethod           string `json:"pay_method"`
-	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
-	UseShortShip        bool   `json:"use_short_ship"`
-	UseLongShip         bool   `json:"use_long_ship"`
-	CustomerReceiveID   uint   `json:"customer_receive_id"`
 }
 
 // -------------------- Struct uses to fetch data for frontend --------------------

@@ -74,7 +74,7 @@ type Employee struct {
 // EmployeeType structure
 type EmployeeType struct {
 	ID   uint   `gorm:"primary_key;<-:false" json:"id"`
-	Name string `validate:"nonzero" json:"name"`
+	Name string `json:"name" validate:"nonzero"`
 }
 
 // DeliveryLocation structure

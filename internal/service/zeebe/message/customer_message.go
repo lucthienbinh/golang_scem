@@ -5,21 +5,24 @@ import (
 	"fmt"
 )
 
-// CustomerReceiveConfirmed send mesage to zeebe engine
-func CustomerReceiveConfirmed(orderID uint) error {
-	variables := make(map[string]interface{})
-	variables["cus_receive_confirmed"] = true
-
-	request, err := zbClient.NewPublishMessageCommand().MessageName("CustomerReceiveConfirmed").CorrelationKey(fmt.Sprintf("%x", orderID)).VariablesFromMap(variables)
+// CustomerPayConfirmed send mesage to zeebe engine
+func CustomerPayConfirmed(orderID uint) error {
+	ctx := context.Background()
+	_, err := zbClient.NewPublishMessageCommand().MessageName("CustomerPayConfirmed").CorrelationKey(fmt.Sprintf("%x", orderID)).Send(ctx)
 	if err != nil {
 		// failed to set the updated variables
 		return err
 	}
+	return nil
+}
 
+// CustomerReceiveConfirmed send mesage to zeebe engine
+func CustomerReceiveConfirmed(orderID uint) error {
 	ctx := context.Background()
-	_, err = request.Send(ctx)
+	_, err := zbClient.NewPublishMessageCommand().MessageName("CustomerReceiveConfirmed").CorrelationKey(fmt.Sprintf("%x", orderID)).Send(ctx)
 	if err != nil {
-		return nil
+		// failed to set the updated variables
+		return err
 	}
 	return nil
 }
