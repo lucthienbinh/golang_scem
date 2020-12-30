@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/lucthienbinh/golang_scem/internal/handler"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
@@ -32,33 +31,22 @@ func handleJobLongShip(client worker.JobClient, job entities.Job) {
 		failJob(client, job)
 		return
 	}
-	var uintOrderID uint
-	orderID, ok := variables["order_id"].(float64)
-	if ok == true {
-		uintOrderID = uint(orderID)
-	} else {
-		failJob(client, job)
-		return
-	}
-	var uintOrderShipID uint
-	orderShipID, ok := variables["order_ship_id"].(float64)
-	if ok == true {
-		uintOrderShipID = uint(orderShipID)
-	} else {
-		failJob(client, job)
-		return
-	}
-
-	orderLongShipID, err := handler.CreateOrderLongShip(uintOrderID)
-	if err != nil {
-		failJob(client, job)
-		return
-	}
-	err = handler.UpdateOrderShipHandler(uintOrderShipID, 0, orderLongShipID)
-	if err != nil {
-		failJob(client, job)
-		return
-	}
+	// var uintOrderID uint
+	// orderID, ok := variables["order_id"].(float64)
+	// if ok == true {
+	// 	uintOrderID = uint(orderID)
+	// } else {
+	// 	failJob(client, job)
+	// 	return
+	// }
+	// var uintOrderShipID uint
+	// orderShipID, ok := variables["order_ship_id"].(float64)
+	// if ok == true {
+	// 	uintOrderShipID = uint(orderShipID)
+	// } else {
+	// 	failJob(client, job)
+	// 	return
+	// }
 
 	variables["long_ship_saved"] = true
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)

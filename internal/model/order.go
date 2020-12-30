@@ -27,6 +27,7 @@ type OrderInfo struct {
 	ShortShipID       uint   `json:"short_ship_id"`
 	UseLongShip       bool   `json:"use_long_ship"`
 	LongShipID        uint   `json:"long_ship_id"`
+	ShortShipDistance int64  `json:"short_ship_distance"`
 	TotalPrice        int64  `json:"total_price"`
 	CreatedAt         int64  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt         int64  `gorm:"autoUpdateTime" json:"updated_at"`

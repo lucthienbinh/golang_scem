@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/model"
@@ -69,16 +68,6 @@ func GetOrderInfoHandler(c *gin.Context) {
 	return
 }
 
-func calculateShortShipDistance(orderInfo *model.OrderInfo) (int64, error) {
-
-	// From Location: orderInfo.Sender
-	// To Location: orderInfo.Receiver
-	// To emulates google api distance calculation responses after receive sender and receiver info
-	// By example, we will give the distance by default is 10 km
-	time.Sleep(5 * time.Second)
-	return 10, nil
-}
-
 func calculateTotalPrice(orderInfo *model.OrderInfo) (int64, error) {
 	transportType := &model.TransportType{}
 	if err := db.First(transportType, orderInfo.TransportTypeID).Error; err != nil {
@@ -89,11 +78,7 @@ func calculateTotalPrice(orderInfo *model.OrderInfo) (int64, error) {
 		totalPrice += transportType.LongShipPrice
 	}
 	if orderInfo.UseShortShip == true {
-		shortShipDistance, err := calculateShortShipDistance(orderInfo)
-		if err != nil {
-			return 0, err
-		}
-		totalPrice += (transportType.ShortShipPricePerKm * shortShipDistance)
+		totalPrice += (transportType.ShortShipPricePerKm * orderInfo.ShortShipDistance)
 	}
 	return totalPrice, nil
 }

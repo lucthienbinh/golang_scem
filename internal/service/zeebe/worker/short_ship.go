@@ -4,9 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
 
-	"github.com/lucthienbinh/golang_scem/internal/handler"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
@@ -33,38 +31,33 @@ func handleJobShortShip(client worker.JobClient, job entities.Job) {
 		failJob(client, job)
 		return
 	}
-	var uintOrderID uint
-	orderID, ok := variables["order_id"].(float64)
-	if ok == true {
-		uintOrderID = uint(orderID)
-	} else {
-		failJob(client, job)
-		return
-	}
-	var uintOrderShipID uint
-	orderShipID, ok := variables["order_ship_id"].(float64)
-	if ok == true {
-		uintOrderShipID = uint(orderShipID)
-	} else {
-		failJob(client, job)
-		return
-	}
+	// var uintOrderID uint
+	// orderID, ok := variables["order_id"].(float64)
+	// if ok == true {
+	// 	uintOrderID = uint(orderID)
+	// } else {
+	// 	failJob(client, job)
+	// 	return
+	// }
+	// var uintOrderShipID uint
+	// orderShipID, ok := variables["order_ship_id"].(float64)
+	// if ok == true {
+	// 	uintOrderShipID = uint(orderShipID)
+	// } else {
+	// 	failJob(client, job)
+	// 	return
+	// }
 
-	// To emulates server provide  responses after receive customer payment info
-	time.Sleep(5 * time.Second)
-	payStatus := true
-	payServiceProvider := "zalo_pay"
+	// // To emulates server provide  responses after receive customer payment info
+	// time.Sleep(5 * time.Second)
+	// payStatus := true
+	// payServiceProvider := "zalo_pay"
 
-	orderShortShipID, err := handler.CreateOrderShortShip(uintOrderID)
-	if err != nil {
-		failJob(client, job)
-		return
-	}
-	err = handler.UpdateOrderShipHandler(uintOrderShipID, orderShortShipID, 0)
-	if err != nil {
-		failJob(client, job)
-		return
-	}
+	// orderShortShipID, err := handler.CreateOrderShortShip(uintOrderID)
+	// if err != nil {
+	// 	failJob(client, job)
+	// 	return
+	// }
 
 	variables["short_ship_saved"] = true
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
