@@ -29,8 +29,8 @@ func SaveFCMTokenWithUserAuthID(c *gin.Context, userAuthID uint, appToken string
 		return
 	}
 	if userAuthenticate.EmployeeID != 0 {
-		employeeFCMToken := &model.EmployeeFCMToken{EmployeeID: userAuthenticate.EmployeeID, Token: appToken}
-		if db.Model(&employeeFCMToken).Where("employee_id = ?", userAuthenticate.EmployeeID).Updates(&employeeFCMToken).RowsAffected == 0 {
+		employeeFCMToken := &model.UserFCMToken{EmployeeID: userAuthenticate.EmployeeID, Token: appToken}
+		if db.Model(employeeFCMToken).Where("employee_id = ?", userAuthenticate.EmployeeID).Updates(employeeFCMToken).RowsAffected == 0 {
 			if err := db.Create(employeeFCMToken).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
@@ -42,7 +42,7 @@ func SaveFCMTokenWithUserAuthID(c *gin.Context, userAuthID uint, appToken string
 		return
 	}
 	if userAuthenticate.CustomerID != 0 {
-		customerFCMToken := &model.CustomerFCMToken{CustomerID: userAuthenticate.CustomerID, Token: appToken}
+		customerFCMToken := &model.UserFCMToken{CustomerID: userAuthenticate.CustomerID, Token: appToken}
 		if db.Model(&customerFCMToken).Where("customer_id = ?", userAuthenticate.CustomerID).Updates(&customerFCMToken).RowsAffected == 0 {
 			if err := db.Create(customerFCMToken).Error; err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

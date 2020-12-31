@@ -18,8 +18,8 @@ type OrderWorkflowData struct {
 	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
 	UseShortShip        bool   `json:"use_short_ship"`
 	UseLongShip         bool   `json:"use_long_ship"`
-	CustomerReceiveID   uint   `json:"customer_receive_id"`
 	CustomerSendID      uint   `json:"customer_send_id"`
+	CustomerReceiveID   uint   `json:"customer_receive_id"`
 }
 
 // LongShip structure
@@ -55,22 +55,22 @@ type LongShip struct {
 
 // OrderLongShip structure
 type OrderLongShip struct {
-	ID                   uint `gorm:"primary_key;<-:false" json:"id"`
-	OrderID              uint `json:"order_id"`
-	LongShipID           uint `json:"long_ship_id"`
-	CustomerSendFCMToken uint `json:"customer_send_fcm_token"`
-	CustomerRecvFCMToken uint `json:"customer_recv_fcm_token"`
+	ID                   uint   `gorm:"primary_key;<-:false" json:"id"`
+	OrderID              uint   `json:"order_id"`
+	LongShipID           uint   `json:"long_ship_id"`
+	CustomerSendFCMToken string `json:"customer_send_fcm_token"`
+	CustomerRecvFCMToken string `json:"customer_recv_fcm_token"`
 }
 
 // OrderShortShip structure
 type OrderShortShip struct {
-	ID                   uint `gorm:"primary_key;<-:false" json:"id"`
-	OrderID              uint `json:"order_id" validate:"nonzero"`
-	ShipperID            uint `json:"shipper_id" validate:"nonzero"`
-	CustomerReceiveID    uint `json:"customer_receive_id"`
-	CustomerSendFCMToken uint `json:"customer_send_fcm_token"`
-	CustomerRecvFCMToken uint `json:"customer_recv_fcm_token"`
-	ShipperReceiveMoney  bool `json:"shipper_receive_money"`
+	ID                   uint   `gorm:"primary_key;<-:false" json:"id"`
+	OrderID              uint   `json:"order_id" validate:"nonzero"`
+	ShipperID            uint   `json:"shipper_id" validate:"nonzero"`
+	CustomerReceiveID    uint   `json:"customer_receive_id"`
+	CustomerSendFCMToken string `json:"customer_send_fcm_token"`
+	CustomerRecvFCMToken string `json:"customer_recv_fcm_token"`
+	ShipperReceiveMoney  bool   `json:"shipper_receive_money"`
 	// Message data in workflow - Start
 	// Shipper Received
 	ShipperReceived bool  `json:"shipper_received"`

@@ -8,14 +8,14 @@ import (
 // UserRoutes to manage user model
 func UserRoutes(rg *gin.RouterGroup) {
 
-	rg.PUT("customer/update/credit/balance/admin-role/:id", handler.UpdateCustomerCreditBalanceHandler)
+	rg.PUT("customer/update-credit/balance/admin-role/:id", handler.UpdateCustomerCreditBalanceHandler)
 
 	customer := rg.Group("/customer")
 	customer.GET("/list", handler.GetCustomerListHandler)
 	customer.GET("/id/:id", handler.GetCustomerHandler)
 	customer.POST("/create", handler.CreateCustomerHandler)
 	customer.PUT("/update/:id", handler.UpdateCustomerHandler)
-	customer.PUT("/update/credit/validate", handler.UpdateCustomerCreditValidationHandler)
+	customer.PUT("/update-credit/validate", handler.UpdateCustomerCreditValidationHandler)
 	customer.DELETE("/delete/:id", handler.DeleteCustomerHandler)
 
 	employee := rg.Group("/employee")

@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"crypto/rand"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,17 +39,6 @@ func GetOrderShortShipHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"order_long_ship_info": &orderShortShip})
 	return
-}
-
-// CreateOrderShortShip in database
-func CreateOrderShortShip(orderID, shipperID uint) (uint, error) {
-	orderShortShip := &model.OrderShortShip{}
-	orderShortShip.OrderID = orderID
-	orderShortShip.ShipperID = shipperID
-	if err := db.Create(orderShortShip).Error; err != nil {
-		return uint(0), err
-	}
-	return orderShortShip.ID, nil
 }
 
 // UpdateOSSShipperReceivedHandler in database
@@ -214,4 +203,53 @@ func DeleteOrderShortShipHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
 	return
+}
+
+// -------------------- ORDER SHORT SHIP INTERNAL CALL FUNTION --------------------
+
+// CreateOrderShortShip in database
+func CreateOrderShortShip(orderID uint, shipperReceiveMoney bool) (uint, error) {
+
+	orderShortShip := &model.OrderShortShip{}
+	orderShortShip.OrderID = orderID
+	orderInfoForShipment, err := getOrderInfoOrNotFoundForShipment(orderID)
+	if err != nil {
+		return uint(0), err
+	}
+
+	transportType := &model.TransportType{}
+	if err := db.First(transportType, orderInfoForShipment.TransportTypeID).Error; err != nil {
+		return uint(0), err
+	}
+	deliveryLocation := &model.DeliveryLocation{}
+
+	if orderInfoForShipment.UseLongShip == true {
+		if err := db.Where("city = ?", transportType.LocationTwo).First(deliveryLocation).Error; err != nil {
+			return uint(0), err
+		}
+	} else {
+		if err := db.Where("city = ?", transportType.LocationOne).First(deliveryLocation).Error; err != nil {
+			return uint(0), err
+		}
+	}
+	employeeList := []model.EmployeeInfoForShortShip{}
+	selectPart := "e.id, e.employee_type_id, e.delivery_location_id "
+	err = db.Table("employees as e").Select(selectPart).
+		Where("e.employee_type_id = ? AND e.delivery_location_id", 2, deliveryLocation.ID).Find(employeeList).Error
+	if err != nil {
+		return uint(0), err
+	}
+	length := len(employeeList)
+	index := rand.Intn(length - 1)
+	orderShortShip.ShipperID = employeeList[index].ID
+
+	orderShortShip.CustomerReceiveID = orderInfoForShipment.CustomerReceiveID
+	orderShortShip.CustomerSendFCMToken = orderInfoForShipment.CustomerSendFCMToken
+	orderShortShip.CustomerRecvFCMToken = orderInfoForShipment.CustomerRecvFCMToken
+	orderShortShip.CustomerSendFCMToken = orderInfoForShipment.CustomerRecvFCMToken
+	orderShortShip.ShipperReceiveMoney = shipperReceiveMoney
+	if err := db.Create(orderShortShip).Error; err != nil {
+		return uint(0), err
+	}
+	return orderShortShip.ID, nil
 }

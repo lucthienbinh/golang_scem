@@ -57,6 +57,16 @@ func getOrderInfoOrNotFoundForPayment(orderID uint) (*model.OrderInfoForPayment,
 	return orderInfoForPayment, nil
 }
 
+func getOrderInfoOrNotFoundForShipment(orderID uint) (*model.OrderInfoForShipment, error) {
+	orderInfoForShipment := &model.OrderInfoForShipment{}
+	selectPart := "ord.id, ord.customer_send_fcm_token, ord.customer_recv_fcm_token, ord.long_ship_id, ord.customer_receive_id "
+	err := db.Table("order_infos as ord").Select(selectPart).First(orderInfoForShipment, orderID).Error
+	if err != nil {
+		return orderInfoForShipment, err
+	}
+	return orderInfoForShipment, nil
+}
+
 // GetOrderInfoHandler in database
 func GetOrderInfoHandler(c *gin.Context) {
 	orderInfoFetchDB, err := getOrderInfoOrNotFound(c)
@@ -94,14 +104,29 @@ func CreateOrderInfoHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	// Clear frontend data if user try to send TotalPrice illegibly
-	orderInfo.TotalPrice = 0
+	// Calculate total price
 	totalPrice, err := calculateTotalPrice(orderInfo)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	orderInfo.TotalPrice = totalPrice
+	// Insert customer FCM token to orderInfo to send message
+	cusSendFCMToken := &model.UserFCMToken{}
+	if err := db.Where("customer_id = ?", orderInfo.CustomerSendID).First(cusSendFCMToken).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	cusReceiveFCMToken := &model.UserFCMToken{}
+	if orderInfo.CustomerReceiveID != 0 {
+		if err := db.Where("customer_id = ?", orderInfo.CustomerReceiveID).First(cusReceiveFCMToken).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		orderInfo.CustomerRecvFCMToken = cusReceiveFCMToken.Token
+	}
+	orderInfo.CustomerSendFCMToken = cusSendFCMToken.Token
+	// Create order info
 	if err := db.Create(orderInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

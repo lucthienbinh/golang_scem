@@ -48,7 +48,7 @@ func CreateDeliveryLocationHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if err := db.Create(deliveryLocation).Error; err != nil {
+	if err := db.Create(&deliveryLocation).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

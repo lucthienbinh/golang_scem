@@ -7,8 +7,6 @@ import (
 // -------------------- Table in database --------------------
 
 // UserAuthenticate structure for authentication ONLY
-// UserType = 1 for employee
-// UserType = 2 for customer
 type UserAuthenticate struct {
 	gorm.Model `json:"-"`
 	Email      string `json:"email"`
@@ -18,16 +16,11 @@ type UserAuthenticate struct {
 	Active     bool   `gorm:"default:1" json:"active"`
 }
 
-// CustomerFCMToken structure for Firebase Cloud Messaging
-type CustomerFCMToken struct {
+// UserFCMToken structure for Firebase Cloud Messaging
+type UserFCMToken struct {
 	gorm.Model `json:"-"`
+	UserAuthID uint   `json:"user_auth_id"`
 	CustomerID uint   `json:"customer_id"`
-	Token      string `json:"token"`
-}
-
-// EmployeeFCMToken structure for Firebase Cloud Messaging
-type EmployeeFCMToken struct {
-	gorm.Model `json:"-"`
 	EmployeeID uint   `json:"employee_id"`
 	Token      string `json:"token"`
 }
@@ -84,7 +77,7 @@ type DeliveryLocation struct {
 	District string `json:"district" validate:"nonzero"`
 }
 
-// -------------------- Struct uses to fetch data for frontend --------------------
+// -------------------- Struct uses to fetch data from database --------------------
 
 // EmployeeBasicInfo structure
 type EmployeeBasicInfo struct {
@@ -142,6 +135,13 @@ type EmployeeInfoFetchDB struct {
 	Avatar                   string `json:"avatar"`
 	DeliveryLocationCity     string `json:"delivery_location_city"`
 	DeliveryLocationDistrict string `json:"delivery_location_district"`
+}
+
+// EmployeeInfoForShortShip structure
+type EmployeeInfoForShortShip struct {
+	ID                 uint `json:"id"`
+	EmployeeTypeID     uint `json:"employee_type_id" validate:"nonzero"`
+	DeliveryLocationID uint `json:"delivery_location_id"`
 }
 
 // SelectStuct for select options

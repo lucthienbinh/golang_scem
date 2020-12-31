@@ -40,8 +40,7 @@ func MigrationDatabase() (err error) {
 		&model.OrderInfo{},
 		&model.TransportType{},
 		&model.UserAuthenticate{},
-		&model.EmployeeFCMToken{},
-		&model.CustomerFCMToken{},
+		&model.UserFCMToken{},
 		&model.OrderPay{},
 		&model.LongShip{},
 		&model.OrderLongShip{},
@@ -97,8 +96,7 @@ func deleteDatabase() (err error) {
 		&model.OrderInfo{},
 		&model.TransportType{},
 		&model.UserAuthenticate{},
-		&model.EmployeeFCMToken{},
-		&model.CustomerFCMToken{},
+		&model.UserFCMToken{},
 		&model.OrderPay{},
 		&model.LongShip{},
 		&model.OrderLongShip{},
@@ -108,19 +106,19 @@ func deleteDatabase() (err error) {
 }
 
 func createEmployeeType() error {
-	employeeType := model.EmployeeType{Name: "Admin"}
+	employeeType := &model.EmployeeType{Name: "Admin"}
 	if err := db.Create(employeeType).Error; err != nil {
 		return err
 	}
-	employeeType = model.EmployeeType{Name: "Input staff"}
+	employeeType = &model.EmployeeType{Name: "Input staff"}
 	if err := db.Create(employeeType).Error; err != nil {
 		return err
 	}
-	employeeType = model.EmployeeType{Name: "Delivery staff"}
+	employeeType = &model.EmployeeType{Name: "Delivery staff"}
 	if err := db.Create(employeeType).Error; err != nil {
 		return err
 	}
-	employeeType = model.EmployeeType{Name: "Load package staff"}
+	employeeType = &model.EmployeeType{Name: "Load package staff"}
 	if err := db.Create(employeeType).Error; err != nil {
 		return err
 	}
@@ -128,11 +126,11 @@ func createEmployeeType() error {
 }
 
 func createDefaultEmployee() error {
-	userAuth := model.UserAuthenticate{Email: "admin@gmail.com", Password: "12345678"}
+	userAuth := &model.UserAuthenticate{Email: "admin@gmail.com", Password: "12345678"}
 	if err := db.Create(userAuth).Error; err != nil {
 		return err
 	}
-	employee := model.Employee{UserAuthID: userAuth.ID, Name: "Binh", Age: 40, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao", IdentityCard: "17687t562765786", EmployeeTypeID: 1, Avatar: "image1.jpg"}
+	employee := &model.Employee{UserAuthID: userAuth.ID, Name: "Binh", Age: 40, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao", IdentityCard: "17687t562765786", EmployeeTypeID: 1, Avatar: "image1.jpg"}
 	if err := db.Create(employee).Error; err != nil {
 		return err
 	}
@@ -141,11 +139,11 @@ func createDefaultEmployee() error {
 		return err
 	}
 
-	userAuth = model.UserAuthenticate{Email: "inputstaff@gmail.com", Password: "12345678"}
+	userAuth = &model.UserAuthenticate{Email: "inputstaff@gmail.com", Password: "12345678"}
 	if err := db.Create(userAuth).Error; err != nil {
 		return err
 	}
-	employee = model.Employee{UserAuthID: userAuth.ID, Name: "Huan", Age: 35, Phone: 448883333, Gender: "male", Address: "21 Huynh Thuc Khang", IdentityCard: "17687t562765786", EmployeeTypeID: 2, Avatar: "image2.jpg"}
+	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Huan", Age: 35, Phone: 448883333, Gender: "male", Address: "21 Huynh Thuc Khang", IdentityCard: "17687t562765786", EmployeeTypeID: 2, Avatar: "image2.jpg"}
 	if err := db.Create(employee).Error; err != nil {
 		return err
 	}
@@ -154,11 +152,11 @@ func createDefaultEmployee() error {
 		return err
 	}
 
-	userAuth = model.UserAuthenticate{Email: "deliverystaff@gmail.com", Password: "12345678"}
+	userAuth = &model.UserAuthenticate{Email: "deliverystaff@gmail.com", Password: "12345678"}
 	if err := db.Create(userAuth).Error; err != nil {
 		return err
 	}
-	employee = model.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 37, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 4}
+	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 37, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 4}
 	if err := db.Create(employee).Error; err != nil {
 		return err
 	}
@@ -167,11 +165,11 @@ func createDefaultEmployee() error {
 		return err
 	}
 
-	userAuth = model.UserAuthenticate{Email: "loadpackagestaff@gmail.com", Password: "12345678"}
+	userAuth = &model.UserAuthenticate{Email: "loadpackagestaff@gmail.com", Password: "12345678"}
 	if err := db.Create(userAuth).Error; err != nil {
 		return err
 	}
-	employee = model.Employee{UserAuthID: userAuth.ID, Name: "Hung", Age: 47, Phone: 776334958, Gender: "male", Address: "84 Nguyen Trau", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg"}
+	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Hung", Age: 47, Phone: 776334958, Gender: "male", Address: "84 Nguyen Trau", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg"}
 	if err := db.Create(employee).Error; err != nil {
 		return err
 	}
@@ -183,11 +181,11 @@ func createDefaultEmployee() error {
 }
 
 func createDefaultCustomer() error {
-	userAuth := model.UserAuthenticate{Email: "customer@gmail.com", Password: "12345678"}
+	userAuth := &model.UserAuthenticate{Email: "customer@gmail.com", Password: "12345678"}
 	if err := db.Create(userAuth).Error; err != nil {
 		return err
 	}
-	customer := model.Customer{UserAuthID: userAuth.ID, Name: "Customer One", Age: 18, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao, Phuong 1, Quan 5"}
+	customer := &model.Customer{UserAuthID: userAuth.ID, Name: "Customer One", Age: 18, Phone: 223334444, Gender: "male", Address: "12 Tran Hung Dao, Phuong 1, Quan 5"}
 	if err := db.Create(customer).Error; err != nil {
 		return err
 	}
@@ -196,11 +194,11 @@ func createDefaultCustomer() error {
 		return err
 	}
 
-	userAuth = model.UserAuthenticate{Email: "customer3@gmail.com", Password: "12345678"}
+	userAuth = &model.UserAuthenticate{Email: "customer3@gmail.com", Password: "12345678"}
 	if err := db.Create(userAuth).Error; err != nil {
 		return err
 	}
-	customer = model.Customer{UserAuthID: userAuth.ID, Name: "Customer Three", Age: 18, Phone: 223334444, Gender: "female", Address: "13 Tran Hung Dao"}
+	customer = &model.Customer{UserAuthID: userAuth.ID, Name: "Customer Three", Age: 18, Phone: 223334444, Gender: "female", Address: "13 Tran Hung Dao"}
 	if err := db.Create(customer).Error; err != nil {
 		return err
 	}
@@ -209,11 +207,11 @@ func createDefaultCustomer() error {
 		return err
 	}
 
-	userAuth = model.UserAuthenticate{Email: "customer2@gmail.com", Password: "12345678"}
+	userAuth = &model.UserAuthenticate{Email: "customer2@gmail.com", Password: "12345678"}
 	if err := db.Create(userAuth).Error; err != nil {
 		return err
 	}
-	customer = model.Customer{UserAuthID: userAuth.ID, Name: "Customer Two", Age: 18, Phone: 223334444, Gender: "male", Address: "14 Tran Hung Dao"}
+	customer = &model.Customer{UserAuthID: userAuth.ID, Name: "Customer Two", Age: 18, Phone: 223334444, Gender: "male", Address: "14 Tran Hung Dao"}
 	if err := db.Create(customer).Error; err != nil {
 		return err
 	}
@@ -226,19 +224,19 @@ func createDefaultCustomer() error {
 }
 
 func createTransportType() error {
-	transportType := model.TransportType{Name: "HCM", SameCity: true, ShortShipPricePerKm: 30000}
+	transportType := &model.TransportType{SameCity: true, LocationOne: "HCM", ShortShipPricePerKm: 30000}
 	if err := db.Create(transportType).Error; err != nil {
 		return err
 	}
-	transportType = model.TransportType{Name: "DL", SameCity: true, ShortShipPricePerKm: 26000}
+	transportType = &model.TransportType{SameCity: true, LocationOne: "HCM", ShortShipPricePerKm: 26000}
 	if err := db.Create(transportType).Error; err != nil {
 		return err
 	}
-	transportType = model.TransportType{Name: "HCM-DL", LongShipDuration: 86400, LongShipPrice: 100000, BusStationFrom: "231-233 Le Hong Phong", BusStationTo: "695-697 Quoc lo 20, Thi tran Lien Nghia, Huyen Duc Trong, Lam Dong", ShortShipPricePerKm: 30000}
+	transportType = &model.TransportType{LocationOne: "HCM", LocationTwo: "DL", LongShipDuration: 86400, LongShipPrice: 100000, BusStationFrom: "231-233 Le Hong Phong", BusStationTo: "695-697 Quoc lo 20, Thi tran Lien Nghia, Huyen Duc Trong, Lam Dong", ShortShipPricePerKm: 30000}
 	if err := db.Create(transportType).Error; err != nil {
 		return err
 	}
-	transportType = model.TransportType{Name: "HCM-VT", LongShipDuration: 172800, LongShipPrice: 120000, BusStationFrom: "231-233 Le Hong Phong", BusStationTo: "192 Nam Ky Khoi Nghia, Phuong Thang Tam", ShortShipPricePerKm: 26000}
+	transportType = &model.TransportType{LocationOne: "HCM", LocationTwo: "VT", LongShipDuration: 172800, LongShipPrice: 120000, BusStationFrom: "231-233 Le Hong Phong", BusStationTo: "192 Nam Ky Khoi Nghia, Phuong Thang Tam", ShortShipPricePerKm: 26000}
 	if err := db.Create(transportType).Error; err != nil {
 		return err
 	}
@@ -246,43 +244,43 @@ func createTransportType() error {
 }
 
 func createDeliveryLocation() error {
-	location := model.DeliveryLocation{City: "HCM", District: "1"}
+	location := &model.DeliveryLocation{City: "HCM", District: "1"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
-	location = model.DeliveryLocation{City: "HCM", District: "2"}
+	location = &model.DeliveryLocation{City: "HCM", District: "2"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
-	location = model.DeliveryLocation{City: "HCM", District: "3"}
+	location = &model.DeliveryLocation{City: "HCM", District: "3"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
-	location = model.DeliveryLocation{City: "HCM", District: "Tan Binh"}
+	location = &model.DeliveryLocation{City: "HCM", District: "Tan Binh"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
-	location = model.DeliveryLocation{City: "HCM", District: "Phu Nhuan"}
+	location = &model.DeliveryLocation{City: "HCM", District: "Phu Nhuan"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
-	location = model.DeliveryLocation{City: "DL", District: "1"}
+	location = &model.DeliveryLocation{City: "DL", District: "1"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
-	location = model.DeliveryLocation{City: "DL", District: "2"}
+	location = &model.DeliveryLocation{City: "DL", District: "2"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
-	location = model.DeliveryLocation{City: "DL", District: "3"}
+	location = &model.DeliveryLocation{City: "DL", District: "3"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
-	location = model.DeliveryLocation{City: "DL", District: "4"}
+	location = &model.DeliveryLocation{City: "DL", District: "4"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
-	location = model.DeliveryLocation{City: "DL", District: "5"}
+	location = &model.DeliveryLocation{City: "DL", District: "5"}
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
@@ -290,9 +288,9 @@ func createDeliveryLocation() error {
 }
 
 func createExampleOrder() error {
-	orderInfo := model.OrderInfo{
+	orderInfo := &model.OrderInfo{
 		Weight: 2, Volume: 10, Type: "Normal", Image: "order1.png",
-		CustomerSendID: 1, EmplShipID: 3, EmplCreateID: 2,
+		CustomerSendID: 1, EmplCreateID: 2,
 		Sender:       "269 Ngo Quyen, Quan 5, HCM",
 		Receiver:     "38 Tran Hung Dao, Quan 1,HCM",
 		Detail:       "May vi tinh ca nhan va ban phim may tinh",
@@ -306,7 +304,7 @@ func createExampleOrder() error {
 }
 
 func createExampleOrderPay() error {
-	orderPay := model.OrderPay{
+	orderPay := &model.OrderPay{
 		OrderID: 1, PayStatus: true, PayEmployeeID: 2, TotalPrice: 200000, PayMethod: "cash",
 	}
 	if err := db.Create(orderPay).Error; err != nil {
@@ -316,7 +314,7 @@ func createExampleOrderPay() error {
 }
 
 func createExampleOrderShortShip() error {
-	orderShortShip := model.OrderShortShip{
+	orderShortShip := &model.OrderShortShip{
 		OrderID: 1, ShipperID: 3, ShipperReceived: true,
 		ShipperCalled: true, ShipperShipped: true,
 		TimeConfirmed: 1608743635, CusReceiveConfirmed: true,
@@ -329,9 +327,9 @@ func createExampleOrderShortShip() error {
 }
 
 func createExampleOrder2() error {
-	orderInfo := model.OrderInfo{
+	orderInfo := &model.OrderInfo{
 		Weight: 3, Volume: 50, Type: "Special", Image: "order1.png",
-		CustomerSendID: 1, EmplShipID: 3, EmplCreateID: 2,
+		CustomerSendID: 1, EmplCreateID: 2,
 		Sender:   "12 Hai Ba Trung, Quan 2, HCM",
 		Receiver: "74 Phan Chau Trinh, Quan 3, DL",
 		Detail:   "May xay thit", UseLongShip: true,

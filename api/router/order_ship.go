@@ -12,7 +12,8 @@ import (
 func OrderShipRoutes(rg *gin.RouterGroup) {
 
 	zeebe := rg.Group("/zeebe")
-	zeebe.GET("/deploy-workflow", handler.DeployWorkflowHandler)
+	zeebe.GET("/deploy-full-ship-workflow", handler.DeployWorkflowFullShipHandler)
+	zeebe.GET("/deploy-long-ship-workflow", handler.DeployWorkflowLongShipHandler)
 
 	longShip := zeebe.Group("/long-ship")
 	longShip.GET("/list", handler.GetLongShipListHandler)

@@ -239,24 +239,24 @@ func DeleteLongShipHandler(c *gin.Context) {
 	return
 }
 
-// -------------------- ORDER LONG SHIP HANDLER FUNTION --------------------
-
-func getCustomerFCMTokenByCustomerID(customerID uint) string {
-	
-}
+// -------------------- ORDER LONG SHIP INTERNAL CALL FUNTION --------------------
 
 // CreateOrderLongShip in database
 func CreateOrderLongShip(orderID uint) (uint, error) {
-	orderWorkflowData := &model.OrderWorkflowData{}
-	if err := db.Where("order_id = ?", orderID).First(orderWorkflowData).Error; err != nil {
+
+	orderInfoForShipment, err := getOrderInfoOrNotFoundForShipment(orderID)
+	if err != nil {
 		return uint(0), err
 	}
-	if orderWorkflowData
+
 	orderLongShip := &model.OrderLongShip{}
 	orderLongShip.OrderID = orderID
-	orderLongShip.ShipperID = shipperID
-	if err := db.Create(orderShortShip).Error; err != nil {
+	orderLongShip.LongShipID = orderInfoForShipment.LongShipID
+	orderLongShip.CustomerSendFCMToken = orderInfoForShipment.CustomerSendFCMToken
+	orderLongShip.CustomerRecvFCMToken = orderInfoForShipment.CustomerRecvFCMToken
+
+	if err := db.Create(orderLongShip).Error; err != nil {
 		return uint(0), err
 	}
-	return orderShortShip.ID, nil
+	return orderLongShip.ID, nil
 }
