@@ -43,6 +43,7 @@ func MigrationDatabase() (err error) {
 		&model.EmployeeFCMToken{},
 		&model.CustomerFCMToken{},
 		&model.OrderPay{},
+		&model.LongShip{},
 		&model.OrderLongShip{},
 		&model.OrderShortShip{},
 		&model.OrderWorkflowData{},
@@ -99,6 +100,7 @@ func deleteDatabase() (err error) {
 		&model.EmployeeFCMToken{},
 		&model.CustomerFCMToken{},
 		&model.OrderPay{},
+		&model.LongShip{},
 		&model.OrderLongShip{},
 		&model.OrderShortShip{},
 		&model.OrderWorkflowData{},
@@ -294,7 +296,7 @@ func createExampleOrder() error {
 		Sender:       "269 Ngo Quyen, Quan 5, HCM",
 		Receiver:     "38 Tran Hung Dao, Quan 1,HCM",
 		Detail:       "May vi tinh ca nhan va ban phim may tinh",
-		UseShortShip: true, ShortShipID: 1, TransportTypeID: 1,
+		UseShortShip: true, OrderShortShipID: 1, TransportTypeID: 1,
 		TotalPrice: 200000, Note: "Giao hang vao buoi sang",
 	}
 	if err := db.Create(orderInfo).Error; err != nil {
@@ -333,7 +335,7 @@ func createExampleOrder2() error {
 		Sender:   "12 Hai Ba Trung, Quan 2, HCM",
 		Receiver: "74 Phan Chau Trinh, Quan 3, DL",
 		Detail:   "May xay thit", UseLongShip: true,
-		UseShortShip: true, ShortShipID: 1, TransportTypeID: 3,
+		UseShortShip: true, OrderShortShipID: 1, TransportTypeID: 3,
 		TotalPrice: 200000, Note: "Giao hang vao buoi trua",
 	}
 	if err := db.Create(orderInfo).Error; err != nil {

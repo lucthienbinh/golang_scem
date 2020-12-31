@@ -62,7 +62,6 @@ func main() {
 	// ZBMessage.MoneyReceived(1, 1)
 
 	ZBWorker.RunBankPayment()
-	ZBWorker.RunSavePayment()
 
 	// Our servers will live in the routes package
 	server.RunServer()

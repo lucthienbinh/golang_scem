@@ -6,15 +6,28 @@ import (
 	ZBWorkflow "github.com/lucthienbinh/golang_scem/internal/service/zeebe/workflow"
 )
 
-func createWorkflowInstanceHandler(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
-	WorkflowKey, WorkflowInstanceKey, err := ZBWorkflow.CreateNewInstance(orderWorkflowData)
+// DeployWorkflowFullShipHandler function
+func DeployWorkflowFullShipHandler(c *gin.Context) {
+	ZBWorkflow.DeployLongShipWorkflow()
+}
+
+// DeployWorkflowLongShipHandler function
+func DeployWorkflowLongShipHandler(c *gin.Context) {
+	ZBWorkflow.DeployLongShipWorkflow()
+}
+
+func createWorkflowFullShipInstanceHandler(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+	WorkflowKey, WorkflowInstanceKey, err := ZBWorkflow.CreateFullShipInstance(orderWorkflowData)
 	if err != nil {
 		return uint(0), uint(0), err
 	}
 	return WorkflowKey, WorkflowInstanceKey, nil
 }
 
-// DeployWorkflowHandler function
-func DeployWorkflowHandler(c *gin.Context) {
-	ZBWorkflow.DeployNewWorkflow()
+func createWorkflowLongShipInstanceHandler(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+	WorkflowKey, WorkflowInstanceKey, err := ZBWorkflow.CreateLongShipInstance(orderWorkflowData)
+	if err != nil {
+		return uint(0), uint(0), err
+	}
+	return WorkflowKey, WorkflowInstanceKey, nil
 }

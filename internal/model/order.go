@@ -23,10 +23,11 @@ type OrderInfo struct {
 	TransportTypeID   uint   `json:"transport_type_id" validate:"nonzero"`
 	Detail            string `json:"detail" validate:"nonzero"`
 	Note              string `json:"note"`
-	UseShortShip      bool   `json:"use_short_ship"`
-	ShortShipID       uint   `json:"short_ship_id"`
 	UseLongShip       bool   `json:"use_long_ship"`
+	UseShortShip      bool   `json:"use_short_ship"`
 	LongShipID        uint   `json:"long_ship_id"`
+	OrderLongShipID   uint   `json:"order_long_ship_id"`
+	OrderShortShipID  uint   `json:"order_short_ship_id"`
 	ShortShipDistance int64  `json:"short_ship_distance"`
 	TotalPrice        int64  `json:"total_price"`
 	CreatedAt         int64  `gorm:"autoCreateTime" json:"created_at"`

@@ -8,20 +8,22 @@ type OrderWorkflowData struct {
 	WorkflowKey         uint `json:"workflow_key"`
 	WorkflowInstanceKey uint `json:"workflow_instance_key"`
 	// Mapping ID for data
-	OrderID     uint `json:"order_id"`
-	OrderPayID  uint `json:"order_pay_id"`
-	ShortShipID uint `json:"short_ship_id"`
-	LongShipID  uint `json:"long_ship_id"`
+	OrderID          uint `json:"order_id"`
+	OrderPayID       uint `json:"order_pay_id"`
+	LongShipID       uint `json:"long_ship_id"`
+	OrderLongShipID  uint `json:"order_long_ship_id"`
+	OrderShortShipID uint `json:"order_short_ship_id"`
 	// Variable use for Zeebe gateway
 	PayMethod           string `json:"pay_method"`
 	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
 	UseShortShip        bool   `json:"use_short_ship"`
 	UseLongShip         bool   `json:"use_long_ship"`
 	CustomerReceiveID   uint   `json:"customer_receive_id"`
+	CustomerSendID      uint   `json:"customer_send_id"`
 }
 
-// OrderLongShip structure
-type OrderLongShip struct {
+// LongShip structure
+type LongShip struct {
 	ID                       uint   `gorm:"primary_key;<-:false" json:"id"`
 	TransportTypeID          uint   `json:"transport_type_id" validate:"nonzero"`
 	LicensePlate             string `json:"license_plate" validate:"nonzero"`
@@ -51,13 +53,24 @@ type OrderLongShip struct {
 	UpdatedAt int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
+// OrderLongShip structure
+type OrderLongShip struct {
+	ID                   uint `gorm:"primary_key;<-:false" json:"id"`
+	OrderID              uint `json:"order_id"`
+	LongShipID           uint `json:"long_ship_id"`
+	CustomerSendFCMToken uint `json:"customer_send_fcm_token"`
+	CustomerRecvFCMToken uint `json:"customer_recv_fcm_token"`
+}
+
 // OrderShortShip structure
 type OrderShortShip struct {
-	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
-	OrderID             uint `json:"order_id" validate:"nonzero"`
-	ShipperID           uint `json:"shipper_id" validate:"nonzero"`
-	CustomerReceiveID   uint `json:"customer_receive_id"`
-	ShipperReceiveMoney bool `json:"shipper_receive_money"`
+	ID                   uint `gorm:"primary_key;<-:false" json:"id"`
+	OrderID              uint `json:"order_id" validate:"nonzero"`
+	ShipperID            uint `json:"shipper_id" validate:"nonzero"`
+	CustomerReceiveID    uint `json:"customer_receive_id"`
+	CustomerSendFCMToken uint `json:"customer_send_fcm_token"`
+	CustomerRecvFCMToken uint `json:"customer_recv_fcm_token"`
+	ShipperReceiveMoney  bool `json:"shipper_receive_money"`
 	// Message data in workflow - Start
 	// Shipper Received
 	ShipperReceived bool  `json:"shipper_received"`

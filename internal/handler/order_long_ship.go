@@ -9,32 +9,32 @@ import (
 	"gopkg.in/validator.v2"
 )
 
-// -------------------- ORDER LONG SHIP HANDLER FUNTION --------------------
+// -------------------- LONG SHIP HANDLER FUNTION --------------------
 
-// GetOrderLongShipListHandler in database
-func GetOrderLongShipListHandler(c *gin.Context) {
-	orderLongShips := []model.OrderLongShip{}
-	db.Order("id asc").Find(&orderLongShips)
-	c.JSON(http.StatusOK, gin.H{"order_long_ship_list": &orderLongShips})
+// GetLongShipListHandler in database
+func GetLongShipListHandler(c *gin.Context) {
+	longShips := []model.LongShip{}
+	db.Order("id asc").Find(&longShips)
+	c.JSON(http.StatusOK, gin.H{"long_ship_list": &longShips})
 	return
 }
 
-func getOrderLongShipOrNotFound(c *gin.Context) (*model.OrderLongShip, error) {
-	orderLongShip := &model.OrderLongShip{}
-	if err := db.First(orderLongShip, c.Param("id")).Error; err != nil {
-		return orderLongShip, err
+func getLongShipOrNotFound(c *gin.Context) (*model.LongShip, error) {
+	longShip := &model.LongShip{}
+	if err := db.First(longShip, c.Param("id")).Error; err != nil {
+		return longShip, err
 	}
-	return orderLongShip, nil
+	return longShip, nil
 }
 
-// GetOrderLongShipHandler in database
-func GetOrderLongShipHandler(c *gin.Context) {
-	orderLongShip, err := getOrderLongShipOrNotFound(c)
+// GetLongShipHandler in database
+func GetLongShipHandler(c *gin.Context) {
+	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"order_long_ship_info": &orderLongShip})
+	c.JSON(http.StatusOK, gin.H{"long_ship_info": &longShip})
 	return
 }
 
@@ -46,28 +46,28 @@ func CreateLongShipFormData(c *gin.Context) {
 	return
 }
 
-// CreateOrderLongShipHandler in database
-func CreateOrderLongShipHandler(c *gin.Context) {
-	orderLongShip := &model.OrderLongShip{}
-	if err := c.ShouldBindJSON(&orderLongShip); err != nil {
+// CreateLongShipHandler in database
+func CreateLongShipHandler(c *gin.Context) {
+	longShip := &model.LongShip{}
+	if err := c.ShouldBindJSON(&longShip); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if err := validator.Validate(&orderLongShip); err != nil {
+	if err := validator.Validate(&longShip); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if err := db.Create(orderLongShip).Error; err != nil {
+	if err := db.Create(longShip).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"server_response": "An order long ship has been created!"})
+	c.JSON(http.StatusCreated, gin.H{"server_response": "A long ship has been created!"})
 	return
 }
 
 // UpdateLongShipFormData in frontend
 func UpdateLongShipFormData(c *gin.Context) {
-	orderLongShip, err := getOrderLongShipOrNotFound(c)
+	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -75,30 +75,30 @@ func UpdateLongShipFormData(c *gin.Context) {
 	transportTypes := []model.TransportType{}
 	db.Where("same_city == ?", false).Order("id asc").Find(&transportTypes)
 	c.JSON(http.StatusOK, gin.H{
-		"order_long_ship_info": &orderLongShip,
-		"transport_type_list":  &transportTypes,
+		"long_ship_info":      &longShip,
+		"transport_type_list": &transportTypes,
 	})
 	return
 }
 
-// UpdateOrderLongShipHandler in database
-func UpdateOrderLongShipHandler(c *gin.Context) {
-	orderLongShip, err := getOrderLongShipOrNotFound(c)
+// UpdateLongShipHandler in database
+func UpdateLongShipHandler(c *gin.Context) {
+	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if err := c.ShouldBindJSON(&orderLongShip); err != nil {
+	if err := c.ShouldBindJSON(&longShip); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	if err := validator.Validate(&orderLongShip); err != nil {
+	if err := validator.Validate(&longShip); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	orderLongShip.ID = getIDFromParam(c)
+	longShip.ID = getIDFromParam(c)
 	selectField := []string{"transport_type_id", "license_plate", "estimated_time_of_departure", "estimated_time_of_arrival"}
-	if err = db.Model(&orderLongShip).Select(selectField).Updates(orderLongShip).Error; err != nil {
+	if err = db.Model(&longShip).Select(selectField).Updates(longShip).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -106,26 +106,26 @@ func UpdateOrderLongShipHandler(c *gin.Context) {
 	return
 }
 
-// UpdateOLSLoadPackageHandler in database
-func UpdateOLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
+// UpdateLSLoadPackageHandler in database
+func UpdateLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 	employeeID, err := getEmployeeIDByUserAuthID(userAuthID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderLongShip, err := getOrderLongShipOrNotFound(c)
+	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	orderLongShipUpdateInfo := model.OrderLongShip{
+	longShipUpdateInfo := model.LongShip{
 		CurrentLocation: "Location1",
 		PackageLoaded:   true,
 		EmplLoadID:      employeeID,
 		LoadedTime:      time.Now().Unix(),
 	}
-	orderLongShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderLongShip).Updates(orderLongShipUpdateInfo).Error; err != nil {
+	longShip.ID = getIDFromParam(c)
+	if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -133,30 +133,30 @@ func UpdateOLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 	return
 }
 
-// UpdateOLSStartVehicleHandler in database
-func UpdateOLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
+// UpdateLSStartVehicleHandler in database
+func UpdateLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
 	employeeID, err := getEmployeeIDByUserAuthID(userAuthID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderLongShip, err := getOrderLongShipOrNotFound(c)
+	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if orderLongShip.PackageLoaded == false {
+	if longShip.PackageLoaded == false {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	orderLongShipUpdateInfo := model.OrderLongShip{
+	longShipUpdateInfo := model.LongShip{
 		CurrentLocation: "Location2",
 		VehicleStarted:  true,
 		EmplDriver1ID:   employeeID,
 		StartedTime:     time.Now().Unix(),
 	}
-	orderLongShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderLongShip).Updates(orderLongShipUpdateInfo).Error; err != nil {
+	longShip.ID = getIDFromParam(c)
+	if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -164,30 +164,30 @@ func UpdateOLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
 	return
 }
 
-// UpdateOLSVehicleArrivedHandler in database
-func UpdateOLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
+// UpdateLSVehicleArrivedHandler in database
+func UpdateLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
 	employeeID, err := getEmployeeIDByUserAuthID(userAuthID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderLongShip, err := getOrderLongShipOrNotFound(c)
+	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if orderLongShip.VehicleStarted == false {
+	if longShip.VehicleStarted == false {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	orderLongShipUpdateInfo := model.OrderLongShip{
+	longShipUpdateInfo := model.LongShip{
 		CurrentLocation: "Location3",
 		VehicleArrived:  true,
 		EmplDriver2ID:   employeeID,
 		ArrivedTime:     time.Now().Unix(),
 	}
-	orderLongShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderLongShip).Updates(orderLongShipUpdateInfo).Error; err != nil {
+	longShip.ID = getIDFromParam(c)
+	if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -195,30 +195,30 @@ func UpdateOLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
 	return
 }
 
-// UpdateOLSUnloadPackageHandler in database
-func UpdateOLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
+// UpdateLSUnloadPackageHandler in database
+func UpdateLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 	employeeID, err := getEmployeeIDByUserAuthID(userAuthID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderLongShip, err := getOrderLongShipOrNotFound(c)
+	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if orderLongShip.VehicleArrived == false {
+	if longShip.VehicleArrived == false {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	orderLongShipUpdateInfo := model.OrderLongShip{
+	longShipUpdateInfo := model.LongShip{
 		CurrentLocation: "Location3",
 		PackageUnloaded: true,
 		EmplUnloadID:    employeeID,
 		UnloadedTime:    time.Now().Unix(),
 	}
-	orderLongShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderLongShip).Updates(orderLongShipUpdateInfo).Error; err != nil {
+	longShip.ID = getIDFromParam(c)
+	if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -226,15 +226,37 @@ func UpdateOLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 	return
 }
 
-// DeleteOrderLongShipHandler in database
-func DeleteOrderLongShipHandler(c *gin.Context) {
-	if _, err := getOrderLongShipOrNotFound(c); err != nil {
+// DeleteLongShipHandler in database
+func DeleteLongShipHandler(c *gin.Context) {
+	if _, err := getLongShipOrNotFound(c); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if err := db.Delete(&model.OrderLongShip{}, c.Param("id")).Error; err != nil {
+	if err := db.Delete(&model.LongShip{}, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
 	return
+}
+
+// -------------------- ORDER LONG SHIP HANDLER FUNTION --------------------
+
+func getCustomerFCMTokenByCustomerID(customerID uint) string {
+	
+}
+
+// CreateOrderLongShip in database
+func CreateOrderLongShip(orderID uint) (uint, error) {
+	orderWorkflowData := &model.OrderWorkflowData{}
+	if err := db.Where("order_id = ?", orderID).First(orderWorkflowData).Error; err != nil {
+		return uint(0), err
+	}
+	if orderWorkflowData
+	orderLongShip := &model.OrderLongShip{}
+	orderLongShip.OrderID = orderID
+	orderLongShip.ShipperID = shipperID
+	if err := db.Create(orderShortShip).Error; err != nil {
+		return uint(0), err
+	}
+	return orderShortShip.ID, nil
 }

@@ -14,18 +14,18 @@ func OrderShipRoutes(rg *gin.RouterGroup) {
 	zeebe := rg.Group("/zeebe")
 	zeebe.GET("/deploy-workflow", handler.DeployWorkflowHandler)
 
-	orderLongShip := zeebe.Group("/order-long-ship")
-	orderLongShip.GET("/list", handler.GetOrderLongShipListHandler)
-	orderLongShip.GET("/id/:id", handler.GetOrderLongShipHandler)
-	orderLongShip.GET("/create-form-data", handler.CreateLongShipFormData)
-	orderLongShip.POST("/create", handler.CreateOrderLongShipHandler)
-	orderLongShip.GET("/update-form-data/:id", handler.UpdateLongShipFormData)
-	orderLongShip.PUT("/update/:id", handler.UpdateOrderLongShipHandler)
-	orderLongShip.PUT("/update/load-package", updateOLSLoadPackageHandler)
-	orderLongShip.PUT("/update/start-vehicle", updateOLSStartVehicleHandler)
-	orderLongShip.PUT("/update/vehicle-arrived", updateOLSVehicleArrivedHandler)
-	orderLongShip.PUT("/update/unload-package", updateOLSUnloadPackageHandler)
-	orderLongShip.DELETE("/delete/:id", handler.DeleteOrderLongShipHandler)
+	longShip := zeebe.Group("/long-ship")
+	longShip.GET("/list", handler.GetLongShipListHandler)
+	longShip.GET("/id/:id", handler.GetLongShipHandler)
+	longShip.GET("/create-form-data", handler.CreateLongShipFormData)
+	longShip.POST("/create", handler.CreateLongShipHandler)
+	longShip.GET("/update-form-data/:id", handler.UpdateLongShipFormData)
+	longShip.PUT("/update/:id", handler.UpdateLongShipHandler)
+	longShip.PUT("/update/load-package", updateLSLoadPackageHandler)
+	longShip.PUT("/update/start-vehicle", updateLSStartVehicleHandler)
+	longShip.PUT("/update/vehicle-arrived", updateLSVehicleArrivedHandler)
+	longShip.PUT("/update/unload-package", updateLSUnloadPackageHandler)
+	longShip.DELETE("/delete/:id", handler.DeleteLongShipHandler)
 
 	orderShortShip := zeebe.Group("/order-short-ship")
 	orderShortShip.GET("/list", handler.GetOrderShortShipListHandler)
@@ -38,38 +38,38 @@ func OrderShipRoutes(rg *gin.RouterGroup) {
 	orderShortShip.PUT("/update/cancel-order", handler.CancelOrderShortShipHandler)
 }
 
-func updateOLSLoadPackageHandler(c *gin.Context) {
+func updateLSLoadPackageHandler(c *gin.Context) {
 	userAuthID, err := middleware.GetUserAuthIDInSession(c)
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	handler.UpdateOLSLoadPackageHandler(c, userAuthID)
+	handler.UpdateLSLoadPackageHandler(c, userAuthID)
 }
 
-func updateOLSStartVehicleHandler(c *gin.Context) {
+func updateLSStartVehicleHandler(c *gin.Context) {
 	userAuthID, err := middleware.GetUserAuthIDInSession(c)
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	handler.UpdateOLSStartVehicleHandler(c, userAuthID)
+	handler.UpdateLSStartVehicleHandler(c, userAuthID)
 }
 
-func updateOLSVehicleArrivedHandler(c *gin.Context) {
+func updateLSVehicleArrivedHandler(c *gin.Context) {
 	userAuthID, err := middleware.GetUserAuthIDInSession(c)
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	handler.UpdateOLSVehicleArrivedHandler(c, userAuthID)
+	handler.UpdateLSVehicleArrivedHandler(c, userAuthID)
 }
 
-func updateOLSUnloadPackageHandler(c *gin.Context) {
+func updateLSUnloadPackageHandler(c *gin.Context) {
 	userAuthID, err := middleware.GetUserAuthIDInSession(c)
 	if err != nil {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	handler.UpdateOLSUnloadPackageHandler(c, userAuthID)
+	handler.UpdateLSUnloadPackageHandler(c, userAuthID)
 }

@@ -30,11 +30,11 @@ func ConnectZeebeEngine() {
 	zbClient = newZbClient
 }
 
-// DeployNewWorkflow function
-func DeployNewWorkflow() {
+// DeployFullShipWorkflow function
+func DeployFullShipWorkflow() {
 
 	ctx := context.Background()
-	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("WORKFLOW_FILE_NAME_1")).Send(ctx)
+	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("WORKFLOW_FULL_SHIP_NAME_1")).Send(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -42,8 +42,20 @@ func DeployNewWorkflow() {
 	fmt.Println(response.String())
 }
 
-// CreateNewInstance of workflow
-func CreateNewInstance(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+// DeployLongShipWorkflow function
+func DeployLongShipWorkflow() {
+
+	ctx := context.Background()
+	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("WORKFLOW_LONG_SHIP_NAME_1")).Send(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(response.String())
+}
+
+// CreateFullShipInstance of workflow
+func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
 
 	// After the workflow is deployed.
 	variables := make(map[string]interface{})
@@ -55,7 +67,28 @@ func CreateNewInstance(orderWorkflowData *model.OrderWorkflowData) (uint, uint, 
 	variables["use_short_ship"] = orderWorkflowData.UseShortShip
 	variables["customer_receive_id"] = orderWorkflowData.CustomerReceiveID
 
-	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("WORKFLOW_ID_1")).LatestVersion().VariablesFromMap(variables)
+	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("WORKFLOW_FULL_SHIP_ID_1")).LatestVersion().VariablesFromMap(variables)
+	if err != nil {
+		return uint(0), uint(0), err
+	}
+
+	ctx := context.Background()
+	msg, err := request.Send(ctx)
+	if err != nil {
+		return uint(0), uint(0), err
+	}
+	log.Println(msg.String())
+	return uint(msg.WorkflowKey), uint(msg.WorkflowInstanceKey), nil
+}
+
+// CreateLongShipInstance of workflow
+func CreateLongShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+
+	// After the workflow is deployed.
+	variables := make(map[string]interface{})
+	variables["order_id"] = orderWorkflowData.OrderID
+
+	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("WORKFLOW_LONG_SHIP_ID_1")).LatestVersion().VariablesFromMap(variables)
 	if err != nil {
 		return uint(0), uint(0), err
 	}
