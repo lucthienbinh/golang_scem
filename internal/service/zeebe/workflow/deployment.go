@@ -86,7 +86,7 @@ func CreateLongShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, u
 
 	// After the workflow is deployed.
 	variables := make(map[string]interface{})
-	variables["order_id"] = orderWorkflowData.OrderID
+	variables["long_ship_id"] = orderWorkflowData.OrderID
 
 	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("WORKFLOW_LONG_SHIP_ID_1")).LatestVersion().VariablesFromMap(variables)
 	if err != nil {

@@ -61,8 +61,7 @@ func GetOrderPayHandler(c *gin.Context) {
 	return
 }
 
-// CompareCustomerBalanceVsTotalPrice to check if customer has enough money to pay for the order
-func CompareCustomerBalanceVsTotalPrice(customerID uint, totalPrice int64) (bool, error) {
+func compareCustomerBalanceVsTotalPrice(customerID uint, totalPrice int64) (bool, error) {
 	customerCredit := &model.CustomerCredit{}
 	if err := db.Where("customer_id = ?", customerID).First(customerCredit).Error; err != nil {
 		return false, err
@@ -91,7 +90,7 @@ func CreateOrderPayStepOneHandler(c *gin.Context) {
 		return
 	}
 	// Compare customer balance and TotalPrice to decide if customer can use credit or not
-	useCredit, err := CompareCustomerBalanceVsTotalPrice(orderInfoForPayment.CustomerSendID, orderInfoForPayment.TotalPrice)
+	useCredit, err := compareCustomerBalanceVsTotalPrice(orderInfoForPayment.CustomerSendID, orderInfoForPayment.TotalPrice)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -111,7 +110,6 @@ func CreateOrderPayStepOneHandler(c *gin.Context) {
 			return
 		}
 	}
-
 	// Return hideCreditButton = true if customer balance is lower than TotalPrice
 	if useCredit == true {
 		c.JSON(http.StatusCreated, gin.H{"hideCreditButton": false})

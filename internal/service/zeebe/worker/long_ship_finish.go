@@ -5,13 +5,14 @@ import (
 	"log"
 	"os"
 
+	ZBMessage "github.com/lucthienbinh/golang_scem/internal/service/zeebe/message"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
 )
 
-// RunLongShip to start this worker
-func RunLongShip() {
+// RunLongShipFinish to start this worker
+func RunLongShipFinish() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         os.Getenv("BROKER_ADDRESS"),
 		UsePlaintextConnection: true,
@@ -19,10 +20,10 @@ func RunLongShip() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("long_ship").Handler(handleJobLongShip).Open()
+	go client.NewJobWorker().JobType("long_ship").Handler(handleJobLongShipFinish).Open()
 }
 
-func handleJobLongShip(client worker.JobClient, job entities.Job) {
+func handleJobLongShipFinish(client worker.JobClient, job entities.Job) {
 	jobKey := job.GetKey()
 
 	variables, err := job.GetVariablesAsMap()
@@ -31,24 +32,19 @@ func handleJobLongShip(client worker.JobClient, job entities.Job) {
 		failJob(client, job)
 		return
 	}
-	// var uintOrderID uint
-	// orderID, ok := variables["order_id"].(float64)
-	// if ok == true {
-	// 	uintOrderID = uint(orderID)
-	// } else {
-	// 	failJob(client, job)
-	// 	return
-	// }
-	// var uintOrderShipID uint
-	// orderShipID, ok := variables["order_ship_id"].(float64)
-	// if ok == true {
-	// 	uintOrderShipID = uint(orderShipID)
-	// } else {
-	// 	failJob(client, job)
-	// 	return
-	// }
+	var uintLongShipID uint
+	longShipID, ok := variables["long_ship_id"].(float64)
+	if ok == true {
+		uintLongShipID = uint(longShipID)
+	} else {
+		failJob(client, job)
+		return
+	}
+	if err = ZBMessage.LongShipFinished(uintLongShipID); err != nil {
+		failJob(client, job)
+		return
+	}
 
-	variables["long_ship_saved"] = true
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {
 		// failed to set the updated variables
@@ -57,7 +53,7 @@ func handleJobLongShip(client worker.JobClient, job entities.Job) {
 	}
 
 	log.Println("Complete job", jobKey, "of type", job.Type)
-	log.Println("Processing order:", variables["order_id"])
+	log.Println("Sending finish long ship id:", uintLongShipID)
 
 	ctx := context.Background()
 	_, err = request.Send(ctx)

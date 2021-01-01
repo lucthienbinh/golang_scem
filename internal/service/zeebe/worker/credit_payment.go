@@ -4,15 +4,15 @@ import (
 	"context"
 	"log"
 	"os"
-	"time"
 
+	"github.com/lucthienbinh/golang_scem/internal/handler"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
 )
 
-// RunBankPayment to start this worker
-func RunBankPayment() {
+// RunCreditPayment to start this worker
+func RunCreditPayment() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         os.Getenv("BROKER_ADDRESS"),
 		UsePlaintextConnection: true,
@@ -20,7 +20,7 @@ func RunBankPayment() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("bank_payment").Handler(handleJobBankPayment).Open()
+	go client.NewJobWorker().JobType("credit_payment").Handler(handleJobCreditPayment).Open()
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -29,15 +29,8 @@ func RunBankPayment() {
 	}()
 }
 
-func handleJobBankPayment(client worker.JobClient, job entities.Job) {
+func handleJobCreditPayment(client worker.JobClient, job entities.Job) {
 	jobKey := job.GetKey()
-
-	// headers, err := job.GetCustomHeadersAsMap()
-	// if err != nil {
-	// 	// failed to handle job as we require the custom job headers
-	// 	failJob(client, job)
-	// 	return
-	// }
 
 	variables, err := job.GetVariablesAsMap()
 	if err != nil {
@@ -46,13 +39,21 @@ func handleJobBankPayment(client worker.JobClient, job entities.Job) {
 		return
 	}
 
-	// To emulates pay service provider responses after receive customer payment info
-	time.Sleep(5 * time.Second)
-	payStatus := true
-	payServiceProvider := "zalo_pay"
+	var uintOrderID uint
+	orderID, ok := variables["order_id"].(float64)
+	if ok == true {
+		uintOrderID = uint(orderID)
+	} else {
+		failJob(client, job)
+		return
+	}
 
-	variables["pay_status"] = payStatus
-	variables["pay_service_provider"] = payServiceProvider
+	validPayment, err := handler.CreditPaymentService(uintOrderID)
+	if err != nil {
+		failJob(client, job)
+		return
+	}
+	variables["valid_payment"] = validPayment
 
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {
