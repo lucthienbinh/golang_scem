@@ -20,7 +20,7 @@ import (
 var client *redis.Client
 
 // RunAppAuth to connect redis server
-func RunAppAuth() {
+func RunAppAuth() error {
 	//Initializing redis
 	dsn := os.Getenv("REDIS_DSN")
 	if len(dsn) == 0 {
@@ -31,8 +31,9 @@ func RunAppAuth() {
 	})
 	_, err := client.Ping().Result()
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
 // -------------------- Public function --------------------

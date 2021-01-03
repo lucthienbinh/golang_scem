@@ -182,15 +182,15 @@ func ClearWebSession(c *gin.Context) {
 }
 
 // RunWebAuth to connect redis server
-func RunWebAuth() {
+func RunWebAuth(sessionKey []byte) error {
 	seshStore := store.New(store.Options{})
 
 	// e.g. `$ openssl rand -base64 64`
 	seshAuth, err := auth.New(auth.Options{
-		Key: []byte("qV3Dyaji0KpAgO5yTk3tskcwvLFJZk7LTzcptpbc2ecFHI9kM763UTXyexZp/DcXLBr15hz16PjrY6qjn8Xmvw=="),
+		Key: sessionKey,
 	})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	seshTransport := transport.New(transport.Options{
@@ -199,7 +199,7 @@ func RunWebAuth() {
 	})
 
 	sesh = sessions.New(seshStore, seshAuth, seshTransport, sessions.Options{})
-
+	return nil
 }
 
 // thanks

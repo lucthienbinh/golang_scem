@@ -11,7 +11,7 @@ var (
 )
 
 // ConnectZeebeEngine function
-func ConnectZeebeEngine() {
+func ConnectZeebeEngine() error {
 	gatewayAddress := os.Getenv("BROKER_ADDRESS")
 	newZbClient, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         gatewayAddress,
@@ -19,8 +19,9 @@ func ConnectZeebeEngine() {
 	})
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	zbClient = newZbClient
+	return nil
 }

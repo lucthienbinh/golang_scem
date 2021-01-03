@@ -21,50 +21,87 @@ func main() {
 
 	// Initial web auth middleware
 	if os.Getenv("RUN_WEB_AUTH") == "yes" {
-		middleware.RunWebAuth()
+		runWebAuth()
 	}
 
 	// Initial app auth middleware
 	if os.Getenv("RUN_APP_AUTH") == "yes" {
-		middleware.RunAppAuth()
+		runAppAuth()
 	}
 
 	// Select Postgres database
 	if os.Getenv("SELECT_DATABASE") == "1" {
-		if err := handler.ConnectPostgres(); err != nil {
-			log.Print(err)
-			os.Exit(1)
-		}
-		log.Print("Connected with posgres database!")
+		connectPostgress()
 	}
 
 	// Select MySQL database
 	if os.Getenv("SELECT_DATABASE") == "2" {
-		if err := handler.ConnectMySQL(); err != nil {
-			log.Print(err)
-			os.Exit(1)
-		}
-		log.Print("Connected with posgres database!")
+		connectMySQL()
 	}
 
 	if err := handler.RefreshDatabase(); err != nil {
 		// if err := handlers.MigrationDatabase(); err != nil {
-		log.Print(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 	log.Print("Refreshed database!")
 
-	if os.Getenv("USEZEEBE") == "1" {
-		ZBWorkflow.ConnectZeebeEngine()
-
-		ZBMessage.ConnectZeebeEngine()
-
-		ZBWorker.RunCreditPayment()
-		ZBWorker.RunLongShip()
-		ZBWorker.RunShortShip()
-		ZBWorker.RunLongShipFinish()
+	if os.Getenv("USE_ZEEBE") == "1" {
+		connectZeebeClient()
 	}
 
 	// Our servers will live in the routes package
 	server.RunServer()
+}
+
+// Source code: https://www.devdungeon.com/content/working-files-go#read_all
+func runWebAuth() {
+	sessionKey := []byte(os.Getenv("SESSION_KEY"))
+	if err := middleware.RunWebAuth(sessionKey); err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	log.Println("Web authenticate activated!")
+}
+
+func runAppAuth() {
+	if err := middleware.RunAppAuth(); err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	log.Println("App authenticate activated!")
+}
+
+func connectPostgress() {
+	if err := handler.ConnectPostgres(); err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+	log.Println("Connected with posgres database!")
+}
+
+func connectMySQL() {
+	if err := handler.ConnectMySQL(); err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+	log.Println("Connected with posgres database!")
+}
+
+func connectZeebeClient() {
+	if err := ZBWorkflow.ConnectZeebeEngine(); err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+	log.Println("Zeebe workflow package connected with zeebe!")
+	if err := ZBMessage.ConnectZeebeEngine(); err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+	log.Println("Zeebe message package connected with zeebe!")
+	// Run Zebee service
+	ZBWorker.RunCreditPayment()
+	ZBWorker.RunLongShip()
+	ZBWorker.RunShortShip()
+	ZBWorker.RunLongShipFinish()
 }
