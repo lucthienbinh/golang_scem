@@ -23,9 +23,6 @@ var client *redis.Client
 func RunAppAuth() error {
 	//Initializing redis
 	dsn := os.Getenv("REDIS_DSN")
-	if len(dsn) == 0 {
-		dsn = "127.0.0.1:6379"
-	}
 	client = redis.NewClient(&redis.Options{
 		Addr: dsn, //redis port
 	})

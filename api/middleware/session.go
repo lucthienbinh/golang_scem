@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/adam-hanna/sessions/store"
 	"github.com/adam-hanna/sessions/transport"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v7"
 )
 
 // SessionJSON is used for marshalling and unmarshalling custom session json information.
@@ -183,7 +185,20 @@ func ClearWebSession(c *gin.Context) {
 
 // RunWebAuth to connect redis server
 func RunWebAuth(sessionKey []byte) error {
-	seshStore := store.New(store.Options{})
+	dsn := os.Getenv("REDIS_DSN")
+	// Check connection
+	client = redis.NewClient(&redis.Options{
+		Addr: dsn, //redis port
+	})
+	_, err := client.Ping().Result()
+	if err != nil {
+		return err
+	}
+	client.Close()
+
+	seshStore := store.New(store.Options{
+		ConnectionAddress: dsn,
+	})
 
 	// e.g. `$ openssl rand -base64 64`
 	seshAuth, err := auth.New(auth.Options{

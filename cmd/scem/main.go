@@ -14,9 +14,11 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if os.Getenv("RUNENV") != "docker" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
 	}
 
 	// Initial web auth middleware
@@ -40,7 +42,7 @@ func main() {
 	}
 
 	if err := handler.RefreshDatabase(); err != nil {
-		// if err := handlers.MigrationDatabase(); err != nil {
+		// if err := handler.MigrationDatabase(); err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
