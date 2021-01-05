@@ -31,14 +31,14 @@ func main() {
 		runAppAuth()
 	}
 
-	// Select Postgres database
+	// Select database
 	if os.Getenv("SELECT_DATABASE") == "1" {
 		connectPostgress()
-	}
-
-	// Select MySQL database
-	if os.Getenv("SELECT_DATABASE") == "2" {
+	} else if os.Getenv("SELECT_DATABASE") == "2" {
 		connectMySQL()
+	} else {
+		log.Println("No database selected!")
+		os.Exit(1)
 	}
 
 	if err := handler.RefreshDatabase(); err != nil {
@@ -46,7 +46,7 @@ func main() {
 		log.Println(err)
 		os.Exit(1)
 	}
-	log.Print("Refreshed database!")
+	log.Print("Database refreshed!")
 
 	if os.Getenv("USE_ZEEBE") == "1" {
 		connectZeebeClient()
