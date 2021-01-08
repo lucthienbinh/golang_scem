@@ -6,6 +6,7 @@ import (
 	"github.com/lucthienbinh/golang_scem/internal/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -27,6 +28,14 @@ func ConnectMySQL() (err error) {
 	// refer https://github.com/go-sql-driver/mysql#dsn-data-source-name for details
 	dsn := os.Getenv("MYSQL_DSN")
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	return err
+}
+
+// ConnectSQLite to open connect with database
+func ConnectSQLite() (err error) {
+	// github.com/mattn/go-sqlite3
+	dsn := os.Getenv("SQLITE_DSN")
+	db, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	return err
 }
 

@@ -36,6 +36,8 @@ func main() {
 		connectPostgress()
 	} else if os.Getenv("SELECT_DATABASE") == "2" {
 		connectMySQL()
+	} else if os.Getenv("SELECT_DATABASE") == "3" {
+		connectSQLite()
 	} else {
 		log.Println("No database selected!")
 		os.Exit(1)
@@ -88,6 +90,14 @@ func connectMySQL() {
 		os.Exit(1)
 	}
 	log.Println("Connected with posgres database!")
+}
+
+func connectSQLite() {
+	if err := handler.ConnectSQLite(); err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+	log.Println("Connected with sqlite database!")
 }
 
 func connectZeebeClient() {
