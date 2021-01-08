@@ -122,6 +122,10 @@ func createEmployeeType() error {
 	if err := db.Create(employeeType).Error; err != nil {
 		return err
 	}
+	employeeType = &model.EmployeeType{Name: "Load package staff1"}
+	if err := db.Create(employeeType).Error; err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -330,9 +334,10 @@ func createExampleOrder2() error {
 	orderInfo := &model.OrderInfo{
 		Weight: 3, Volume: 50, Type: "Special", Image: "order1.png",
 		CustomerSendID: 1, EmplCreateID: 2,
-		Sender:   "12 Hai Ba Trung, Quan 2, HCM",
-		Receiver: "74 Phan Chau Trinh, Quan 3, DL",
-		Detail:   "May xay thit", UseLongShip: true,
+		OriginalSender: "231-233 Le Hong Phong",
+		Sender:         "695-697 Quoc lo 20, Thi tran Lien Nghia, Huyen Duc Trong, Lam Dong",
+		Receiver:       "74 Phan Chau Trinh, Quan 3, DL",
+		Detail:         "May xay thit", UseLongShip: true,
 		UseShortShip: true, OrderShortShipID: 1, TransportTypeID: 3,
 		TotalPrice: 200000, Note: "Giao hang vao buoi trua",
 	}

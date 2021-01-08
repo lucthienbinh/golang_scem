@@ -12,19 +12,19 @@ import (
 
 // GetOrderInfoListHandler in database
 func GetOrderInfoListHandler(c *gin.Context) {
-	orderInfoList := []model.OrderInfoFetchDB{}
-	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, " +
-		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as transport_type, " +
-		"e1.name as empl_create_name, e2.name as empl_ship_name, ord.receiver, ord.detail, ord.total_price, ord.note, ord.created_at"
-	leftJoin1 := "left join customers as c1 on ord.customer_send_id = c1.id"
-	leftJoin2 := "left join customers as c2 on ord.customer_receive_id = c2.id"
-	leftJoin3 := "left join transport_types as t on ord.transport_type_id = t.id"
-	leftJoin4 := "left join employees as e1 on ord.empl_create_id = e1.id"
-	leftJoin5 := "left join employees as e2 on ord.empl_ship_id = e2.id"
+	orderInfoList := []model.OrderInfo{}
+	// selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, " +
+	// 	"c1.name as customer_send_name, c2.name as customer_receive_name, e1.name as empl_create_name, " +
+	// 	"ord.original_sender, ord.sender, ord.receiver, ord.detail, ord.total_price, ord.note, ord.created_at"
+	// leftJoin1 := "left join customers as c1 on ord.customer_send_id = c1.id"
+	// leftJoin2 := "left join customers as c2 on ord.customer_receive_id = c2.id"
+	// leftJoin3 := "left join transport_types as t on ord.transport_type_id = t.id"
+	// leftJoin4 := "left join employees as e1 on ord.empl_create_id = e1.id"
+	// leftJoin5 := "left join employees as e2 on ord.empl_ship_id = e2.id"
 
-	db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).Joins(leftJoin5).
-		Order("ord.id asc").Find(&orderInfoList)
-
+	// db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).Joins(leftJoin5).
+	// 	Order("ord.id asc").Find(&orderInfoList)
+	db.Order("id asc").Find(&orderInfoList)
 	c.JSON(http.StatusOK, gin.H{"order_info_list": orderInfoList})
 	return
 }
@@ -32,15 +32,13 @@ func GetOrderInfoListHandler(c *gin.Context) {
 func getOrderInfoOrNotFound(c *gin.Context) (*model.OrderInfoFetchDB, error) {
 	orderInfoFetchDB := &model.OrderInfoFetchDB{}
 	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, " +
-		"c1.name as customer_send_name, c2.name as customer_receive_name, t.name as transport_type, " +
-		"e1.name as empl_create_name, e2.name as empl_ship_name, ord.receiver, ord.detail, ord.total_price, ord.note"
+		"c1.name as customer_send_name, c2.name as customer_receive_name, " +
+		"e1.name as empl_create_name, ord.receiver, ord.detail, ord.total_price, ord.note"
 	leftJoin1 := "left join customers as c1 on ord.customer_send_id = c1.id"
 	leftJoin2 := "left join customers as c2 on ord.customer_receive_id = c2.id"
-	leftJoin3 := "left join transport_types as t on ord.transport_type_id = t.id"
 	leftJoin4 := "left join employees as e1 on ord.empl_create_id = e1.id"
-	leftJoin5 := "left join employees as e2 on ord.empl_ship_id = e2.id"
 
-	if err := db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).Joins(leftJoin5).
+	if err := db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin4).
 		Order("ord.id asc").First(orderInfoFetchDB, c.Param("id")).Error; err != nil {
 		return orderInfoFetchDB, err
 	}

@@ -238,25 +238,3 @@ func DeleteLongShipHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been deleted!"})
 	return
 }
-
-// -------------------- ORDER LONG SHIP INTERNAL CALL FUNTION --------------------
-
-// CreateOrderLongShip in database
-func CreateOrderLongShip(orderID uint) (uint, error) {
-
-	orderInfoForShipment, err := getOrderInfoOrNotFoundForShipment(orderID)
-	if err != nil {
-		return uint(0), err
-	}
-
-	orderLongShip := &model.OrderLongShip{}
-	orderLongShip.OrderID = orderID
-	orderLongShip.LongShipID = orderInfoForShipment.LongShipID
-	orderLongShip.CustomerSendFCMToken = orderInfoForShipment.CustomerSendFCMToken
-	orderLongShip.CustomerRecvFCMToken = orderInfoForShipment.CustomerRecvFCMToken
-
-	if err := db.Create(orderLongShip).Error; err != nil {
-		return uint(0), err
-	}
-	return orderLongShip.ID, nil
-}

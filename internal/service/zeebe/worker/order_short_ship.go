@@ -45,7 +45,7 @@ func handleJobShortShip(client worker.JobClient, job entities.Job) {
 		failJob(client, job)
 		return
 	}
-	orderLongShipID, err := handler.CreateOrderShortShip(uintOrderID, shipperReceiveMoney)
+	orderShortShipID, err := handler.CreateOrderShortShip(uintOrderID, shipperReceiveMoney)
 	if err != nil {
 		failJob(client, job)
 		return
@@ -59,7 +59,7 @@ func handleJobShortShip(client worker.JobClient, job entities.Job) {
 	}
 
 	log.Println("Complete job", jobKey, "of type", job.Type)
-	log.Println("Created short ship id:", orderLongShipID)
+	log.Println("Created short ship id:", orderShortShipID)
 
 	ctx := context.Background()
 	_, err = request.Send(ctx)
