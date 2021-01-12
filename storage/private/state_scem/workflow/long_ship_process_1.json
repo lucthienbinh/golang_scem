@@ -1,0 +1,58 @@
+{
+    "workflow_model_list": [
+        {
+            "workflow_process_id": "long_ship_process_1",
+            "step": 1,
+            "type": 1,
+            "name": "Start",
+            "next_step_1": 2
+        },
+        {
+            "workflow_process_id": "long_ship_process_1",
+            "step": 2,
+            "type": 4,
+            "name": "Package Loaded",
+            "next_step_1": 3,
+            "mapping_name": "PackageLoaded"
+        },
+        {
+            "workflow_process_id": "long_ship_process_1",
+            "step": 3,
+            "type": 4,
+            "name": "Vehicle Started",
+            "next_step_1": 4,
+            "mapping_name": "VehicleStarted"
+        },
+        {
+            "workflow_process_id": "long_ship_process_1",
+            "step": 4,
+            "type": 4,
+            "name": "Vehicle Arrived",
+            "next_step_1": 5,
+            "mapping_name": "VehicleArrived"
+        },
+        {
+            "workflow_process_id": "long_ship_process_1",
+            "step": 5,
+            "type": 4,
+            "name": "Package Unloaded",
+            "next_step_1": 6,
+            "mapping_name": "PackageUnloaded"
+        },
+        {
+            "workflow_process_id": "long_ship_process_1",
+            "step": 6,
+            "type": 3,
+            "name": "Long Ship Finish Service",
+            "next_step_1": 6,
+            "mapping_name": "long_ship_finish"
+        },
+        {
+            "workflow_process_id": "long_ship_process_1",
+            "step": 6,
+            "type": 5,
+            "name": "End",
+            "next_step_1": 2
+        }
+    ]
+}

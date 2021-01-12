@@ -1,0 +1,182 @@
+{
+    "workflow_model_list": [
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 1,
+            "type": 1,
+            "name": "Start",
+            "next_step_1": 2
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 2,
+            "type": 2,
+            "name": "Cash ?",
+            "next_step_1": 3,
+            "next_step_2": 15
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 3,
+            "type": 2,
+            "name": "Shipper Receive Money ?",
+            "next_step_1": 4,
+            "next_step_2": 6
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 4,
+            "type": 4,
+            "name": "Employee Pay Confirmed",
+            "next_step_1": 5,
+            "mapping_name": "EmployeePayConfirmed",
+            "message_correlation_name": "order_id"
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 5,
+            "type": 2,
+            "name": "Long Ship ?",
+            "next_step_1": 17,
+            "next_step_2": 6
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 6,
+            "type": 3,
+            "name": "Order Short Ship Service",
+            "next_step_1": 7,
+            "mapping_name": "order_short_ship",
+            "service_retry": 3
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 7,
+            "type": 4,
+            "name": "Shipper Received",
+            "next_step_1": 8,
+            "mapping_name": "ShipperReceived",
+            "message_correlation_name": "order_id"
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 8,
+            "type": 4,
+            "name": "Shipper Called",
+            "next_step_1": 9,
+            "mapping_name": "ShipperCalled",
+            "message_correlation_name": "order_id"
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 9,
+            "type": 2,
+            "name": "CustomerReceive Time Confirmed ?",
+            "next_step_1": 10,
+            "next_step_2": 14
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 10,
+            "type": 2,
+            "name": "Shipper Receive Money ?",
+            "next_step_1": 20,
+            "next_step_2": 11
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 11,
+            "type": 4,
+            "name": "Shipper Shipped",
+            "next_step_1": 12,
+            "mapping_name": "ShipperShipped",
+            "message_correlation_name": "order_id"
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 12,
+            "type": 2,
+            "name": "CustomerReceive Info ?",
+            "next_step_1": 13,
+            "next_step_2": 21
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 13,
+            "type": 4,
+            "name": "CustomerReceive Confirmed",
+            "next_step_1": 14,
+            "mapping_name": "CustomerReceiveConfirmed",
+            "message_correlation_name": "order_id"
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 14,
+            "type": 5,
+            "name": "End",
+            "next_step_1": 0
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 15,
+            "type": 3,
+            "name": "Credit Payment Service",
+            "next_step_1": 16,
+            "mapping_name": "credit_payment",
+            "service_retry": 3
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 16,
+            "type": 4,
+            "name": "Customer Pay Confirmed",
+            "next_step_1": 5,
+            "mapping_name": "CustomerPayConfirmed",
+            "message_correlation_name": "order_id"
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 17,
+            "type": 3,
+            "name": "Order Long Ship Service",
+            "next_step_1": 18,
+            "mapping_name": "order_long_ship",
+            "service_retry": 3
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 18,
+            "type": 4,
+            "name": "Long Ship Finished",
+            "next_step_1": 19,
+            "mapping_name": "LongShipFinished",
+            "message_correlation_name": "order_id"
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 19,
+            "type": 2,
+            "name": "Short Ship ?",
+            "next_step_1": 6,
+            "next_step_2": 14
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 20,
+            "type": 4,
+            "name": "Shipper Received Money",
+            "next_step_1": 11,
+            "mapping_name": "ShipperReceivedMoney",
+            "message_correlation_name": "order_id"
+        },
+        {
+            "workflow_process_id": "full_ship_process_1",
+            "step": 21,
+            "type": 4,
+            "name": "Shipper Confirmed",
+            "next_step_1": 14,
+            "mapping_name": "ShipperConfirmed",
+            "message_correlation_name": "order_id"
+        }
+    ]
+}

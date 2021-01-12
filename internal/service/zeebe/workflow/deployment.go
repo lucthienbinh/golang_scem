@@ -35,7 +35,7 @@ func ConnectZeebeEngine() error {
 func DeployFullShipWorkflow() {
 
 	ctx := context.Background()
-	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("WORKFLOW_FULL_SHIP_NAME_1")).Send(ctx)
+	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("FULL_SHIP_ZB_FILE_1")).Send(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +47,7 @@ func DeployFullShipWorkflow() {
 func DeployLongShipWorkflow() {
 
 	ctx := context.Background()
-	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("WORKFLOW_LONG_SHIP_NAME_1")).Send(ctx)
+	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("LONG_SHIP_ZB_FILE_1")).Send(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +68,7 @@ func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, u
 	variables["use_short_ship"] = orderWorkflowData.UseShortShip
 	variables["customer_receive_id"] = orderWorkflowData.CustomerReceiveID
 
-	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("WORKFLOW_FULL_SHIP_ID_1")).LatestVersion().VariablesFromMap(variables)
+	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("FULL_SHIP_ZB_ID_1")).LatestVersion().VariablesFromMap(variables)
 	if err != nil {
 		return uint(0), uint(0), err
 	}
@@ -89,7 +89,7 @@ func CreateLongShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, u
 	variables := make(map[string]interface{})
 	variables["long_ship_id"] = orderWorkflowData.OrderID
 
-	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("WORKFLOW_LONG_SHIP_ID_1")).LatestVersion().VariablesFromMap(variables)
+	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("LONG_SHIP_ZB_ID_1")).LatestVersion().VariablesFromMap(variables)
 	if err != nil {
 		return uint(0), uint(0), err
 	}

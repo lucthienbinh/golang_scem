@@ -3,12 +3,21 @@ package handler
 import (
 	"math/rand"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/model"
 	SSWorkflow "github.com/lucthienbinh/golang_scem/internal/service/state_scem/workflow"
 	ZBWorkflow "github.com/lucthienbinh/golang_scem/internal/service/zeebe/workflow"
 )
+
+// CreateWorkflowFullShipInstanceHandler will select private function
+func CreateWorkflowFullShipInstanceHandler(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+	if os.Getenv("STATE_SERVICE") == "1" {
+		return createWorkflowFullShipInstanceHandlerZB(orderWorkflowData)
+	}
+	return createWorkflowFullShipInstanceHandlerSS(orderWorkflowData)
+}
 
 // ------------------------------ CALL TO ZEEBE CLIENT ------------------------------
 
@@ -52,7 +61,20 @@ func DeployWorkflowFullShipHandlerSS(c *gin.Context) {
 
 // DeployWorkflowLongShipHandlerSS function
 func DeployWorkflowLongShipHandlerSS(c *gin.Context) {
-	SSWorkflow.DeployLongShipWorkflow()
+	if err := SSWorkflow.DeployLongShipWorkflow(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"server_response": "A workflow model has been created!"})
+	return
+}
+
+func createWorkflowFullShipInstanceHandlerSS(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+	WorkflowKey, WorkflowInstanceKey, err := SSWorkflow.CreateFullShipInstance(orderWorkflowData)
+	if err != nil {
+		return uint(0), uint(0), err
+	}
+	return WorkflowKey, WorkflowInstanceKey, nil
 }
 
 // ------------------------------ CALL FROM CLIENT ------------------------------

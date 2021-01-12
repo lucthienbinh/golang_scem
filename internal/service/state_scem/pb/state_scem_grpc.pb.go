@@ -18,6 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StateScemServiceClient interface {
 	DeployWorkflow(ctx context.Context, in *DeployWorkflowRequest, opts ...grpc.CallOption) (*DeployWorkflowlResponse, error)
+	CreateWorkflowInstance(ctx context.Context, in *CreateWorkflowInstanceRequest, opts ...grpc.CallOption) (*CreateWorkflowInstanceResponse, error)
 }
 
 type stateScemServiceClient struct {
@@ -37,11 +38,21 @@ func (c *stateScemServiceClient) DeployWorkflow(ctx context.Context, in *DeployW
 	return out, nil
 }
 
+func (c *stateScemServiceClient) CreateWorkflowInstance(ctx context.Context, in *CreateWorkflowInstanceRequest, opts ...grpc.CallOption) (*CreateWorkflowInstanceResponse, error) {
+	out := new(CreateWorkflowInstanceResponse)
+	err := c.cc.Invoke(ctx, "/pb.StateScemService/CreateWorkflowInstance", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StateScemServiceServer is the server API for StateScemService service.
 // All implementations must embed UnimplementedStateScemServiceServer
 // for forward compatibility
 type StateScemServiceServer interface {
 	DeployWorkflow(context.Context, *DeployWorkflowRequest) (*DeployWorkflowlResponse, error)
+	CreateWorkflowInstance(context.Context, *CreateWorkflowInstanceRequest) (*CreateWorkflowInstanceResponse, error)
 	mustEmbedUnimplementedStateScemServiceServer()
 }
 
@@ -51,6 +62,9 @@ type UnimplementedStateScemServiceServer struct {
 
 func (UnimplementedStateScemServiceServer) DeployWorkflow(context.Context, *DeployWorkflowRequest) (*DeployWorkflowlResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeployWorkflow not implemented")
+}
+func (UnimplementedStateScemServiceServer) CreateWorkflowInstance(context.Context, *CreateWorkflowInstanceRequest) (*CreateWorkflowInstanceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateWorkflowInstance not implemented")
 }
 func (UnimplementedStateScemServiceServer) mustEmbedUnimplementedStateScemServiceServer() {}
 
@@ -83,6 +97,24 @@ func _StateScemService_DeployWorkflow_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StateScemService_CreateWorkflowInstance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateWorkflowInstanceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StateScemServiceServer).CreateWorkflowInstance(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.StateScemService/CreateWorkflowInstance",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StateScemServiceServer).CreateWorkflowInstance(ctx, req.(*CreateWorkflowInstanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _StateScemService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.StateScemService",
 	HandlerType: (*StateScemServiceServer)(nil),
@@ -90,6 +122,10 @@ var _StateScemService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeployWorkflow",
 			Handler:    _StateScemService_DeployWorkflow_Handler,
+		},
+		{
+			MethodName: "CreateWorkflowInstance",
+			Handler:    _StateScemService_CreateWorkflowInstance_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

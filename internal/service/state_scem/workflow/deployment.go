@@ -2,41 +2,15 @@ package workflow
 
 import (
 	"context"
+	"io/ioutil"
 	"log"
-	"time"
+	"os"
 
+	"github.com/lucthienbinh/golang_scem/internal/model"
 	"github.com/lucthienbinh/golang_scem/internal/service/state_scem/pb"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
+	"google.golang.org/protobuf/encoding/protojson"
 )
-
-var kacp = keepalive.ClientParameters{
-	Time:                10 * time.Second, // send pings every 10 seconds if there is no activity
-	Timeout:             time.Second,      // wait 1 second for ping ack before considering the connection dead
-	PermitWithoutStream: true,             // send pings even without active streams
-}
-
-var (
-	stateScemClient pb.StateScemServiceClient
-)
-
-// ConnectGolangStateScem function
-func ConnectGolangStateScem() error {
-	var conn *grpc.ClientConn
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure(), grpc.WithKeepaliveParams(kacp))
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	log.Println("OK")
-	stateScemClient = pb.NewStateScemServiceClient(conn)
-
-	// keep alive in 3 mins
-	// ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
-	// defer cancel()
-	return nil
-}
 
 const (
 	address = "localhost:9001"
@@ -46,22 +20,29 @@ const (
 func DeployFullShipWorkflow() error {
 
 	// Set up a connection to the server.
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.FailOnNonTempDialError(true), grpc.WithBlock())
+	conn, err := grpc.Dial(os.Getenv("STATE_SCEM_ADDRESS"), grpc.WithInsecure(), grpc.FailOnNonTempDialError(true), grpc.WithBlock())
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 	c := pb.NewStateScemServiceClient(conn)
 
-	workflowModelPB := []*pb.WorkflowModel{{
-		WorkflowProcessID: "full_ship_process_1",
-		Step:              1,
-		Type:              1,
-		Name:              "Start",
-		NextStep1:         2,
-	}, {}}
-	message := pb.DeployWorkflowRequest{WorkflowModel: workflowModelPB}
-	r, err := c.DeployWorkflow(context.Background(), &message)
+	// Open our jsonFile
+	jsonFile, err := os.Open(os.Getenv("FULL_SHIP_SS_FILE_1"))
+	if err != nil {
+		return err
+	}
+	defer jsonFile.Close()
+
+	// Source: https://tutorialedge.net/golang/parsing-json-with-golang/
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	message := &pb.DeployWorkflowRequest{}
+	err = protojson.Unmarshal(byteValue, message)
+	if err != nil {
+		return err
+	}
+
+	r, err := c.DeployWorkflow(context.Background(), message)
 	if err != nil {
 		return err
 	}
@@ -71,12 +52,63 @@ func DeployFullShipWorkflow() error {
 }
 
 // DeployLongShipWorkflow function
-func DeployLongShipWorkflow() {
-	message := pb.DeployWorkflowRequest{}
-	response, err := stateScemClient.DeployWorkflow(context.Background(), &message)
+func DeployLongShipWorkflow() error {
+
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(os.Getenv("STATE_SCEM_ADDRESS"), grpc.WithInsecure(), grpc.FailOnNonTempDialError(true), grpc.WithBlock())
 	if err != nil {
-		log.Fatalf("Error when calling SayHello: %s", err)
+		return err
+	}
+	defer conn.Close()
+	c := pb.NewStateScemServiceClient(conn)
+
+	// Open our jsonFile
+	jsonFile, err := os.Open(os.Getenv("LONG_SHIP_SS_FILE_1"))
+	if err != nil {
+		return err
+	}
+	defer jsonFile.Close()
+
+	// Source: https://tutorialedge.net/golang/parsing-json-with-golang/
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	message := &pb.DeployWorkflowRequest{}
+	protojson.Unmarshal(byteValue, message)
+
+	r, err := c.DeployWorkflow(context.Background(), message)
+	if err != nil {
+		return err
+	}
+	log.Printf("Response from Server: %s", r)
+	return nil
+}
+
+// CreateFullShipInstance of workflow
+func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(os.Getenv("STATE_SCEM_ADDRESS"), grpc.WithInsecure(), grpc.FailOnNonTempDialError(true), grpc.WithBlock())
+	if err != nil {
+		return uint(0), uint(0), err
+	}
+	defer conn.Close()
+	c := pb.NewStateScemServiceClient(conn)
+
+	// After the workflow is deployed.
+	variables := make(map[string]interface{})
+	variables["order_id"] = orderWorkflowData.OrderID
+	variables["order_pay_id"] = orderWorkflowData.OrderPayID
+	variables["pay_method"] = orderWorkflowData.PayMethod
+	variables["shipper_receive_money"] = orderWorkflowData.ShipperReceiveMoney
+	variables["use_long_ship"] = orderWorkflowData.UseLongShip
+	variables["use_short_ship"] = orderWorkflowData.UseShortShip
+	variables["customer_receive_id"] = orderWorkflowData.CustomerReceiveID
+
+	workflowVariableList := []*pb.WorkflowVariable{
+		{VariableName: "order_id",VariableValue: orderWorkflowData.OrderID}
 	}
 
-	log.Printf("Response from Server: %s", response)
+	message := &pb.CreateWorkflowInstanceRequest{}
+
+	// return uint(msg.WorkflowKey), uint(msg.WorkflowInstanceKey), nil
+	return uint(0), uint(0), nil
 }

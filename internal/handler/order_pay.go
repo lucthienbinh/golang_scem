@@ -158,7 +158,7 @@ func CreateOrderPayStepTwoHandler(c *gin.Context) {
 		CustomerReceiveID:   orderInfoForPayment.CustomerReceiveID,
 	}
 	// Create workflow instance in zeebe
-	WorkflowKey, WorkflowInstanceKey, err := createWorkflowFullShipInstanceHandlerZB(orderWorkflowData)
+	WorkflowKey, WorkflowInstanceKey, err := CreateWorkflowFullShipInstanceHandler(orderWorkflowData)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

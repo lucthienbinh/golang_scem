@@ -13,7 +13,7 @@ import (
 func OrderShipRoutes(rg *gin.RouterGroup) {
 
 	stateService := rg.Group("/state-service")
-	if os.Getenv("USE_ZEEBE") == "1" {
+	if os.Getenv("STATE_SERVICE") == "1" {
 		zeebe := stateService.Group("/zeebe")
 		zeebe.GET("/deploy-full-ship-workflow", handler.DeployWorkflowFullShipHandlerZB)
 		zeebe.GET("/deploy-long-ship-workflow", handler.DeployWorkflowLongShipHandlerZB)
