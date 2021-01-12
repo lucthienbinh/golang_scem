@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/lucthienbinh/golang_scem/internal/model"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
@@ -56,12 +57,11 @@ func DeployLongShipWorkflow() {
 }
 
 // CreateFullShipInstance of workflow
-func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (string, uint, error) {
 
 	// After the workflow is deployed.
 	variables := make(map[string]interface{})
 	variables["order_id"] = orderWorkflowData.OrderID
-	variables["order_pay_id"] = orderWorkflowData.OrderPayID
 	variables["pay_method"] = orderWorkflowData.PayMethod
 	variables["shipper_receive_money"] = orderWorkflowData.ShipperReceiveMoney
 	variables["use_long_ship"] = orderWorkflowData.UseLongShip
@@ -70,20 +70,20 @@ func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, u
 
 	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("FULL_SHIP_ZB_ID_1")).LatestVersion().VariablesFromMap(variables)
 	if err != nil {
-		return uint(0), uint(0), err
+		return "", uint(0), err
 	}
 
 	ctx := context.Background()
 	msg, err := request.Send(ctx)
 	if err != nil {
-		return uint(0), uint(0), err
+		return "", uint(0), err
 	}
 	log.Println(msg.String())
-	return uint(msg.WorkflowKey), uint(msg.WorkflowInstanceKey), nil
+	return strconv.Itoa(int(msg.WorkflowKey)), uint(msg.WorkflowInstanceKey), nil
 }
 
 // CreateLongShipInstance of workflow
-func CreateLongShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+func CreateLongShipInstance(orderWorkflowData *model.OrderWorkflowData) (string, uint, error) {
 
 	// After the workflow is deployed.
 	variables := make(map[string]interface{})
@@ -91,14 +91,14 @@ func CreateLongShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, u
 
 	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("LONG_SHIP_ZB_ID_1")).LatestVersion().VariablesFromMap(variables)
 	if err != nil {
-		return uint(0), uint(0), err
+		return "", uint(0), err
 	}
 
 	ctx := context.Background()
 	msg, err := request.Send(ctx)
 	if err != nil {
-		return uint(0), uint(0), err
+		return "", uint(0), err
 	}
 	log.Println(msg.String())
-	return uint(msg.WorkflowKey), uint(msg.WorkflowInstanceKey), nil
+	return strconv.Itoa(int(msg.WorkflowKey)), uint(msg.WorkflowInstanceKey), nil
 }

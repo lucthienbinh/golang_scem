@@ -53,7 +53,10 @@ func handleJobCreditPayment(client worker.JobClient, job entities.Job) {
 		failJob(client, job)
 		return
 	}
-	variables["valid_payment"] = validPayment
+	if validPayment == false {
+		failJob(client, job)
+		return
+	}
 
 	request, err := client.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(variables)
 	if err != nil {

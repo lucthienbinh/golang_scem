@@ -4,9 +4,9 @@ package model
 
 // OrderWorkflowData structure
 type OrderWorkflowData struct {
-	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
-	WorkflowKey         uint `json:"workflow_key"`
-	WorkflowInstanceKey uint `json:"workflow_instance_key"`
+	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
+	WorkflowKey         string `json:"workflow_key"`
+	WorkflowInstanceKey uint   `json:"workflow_instance_key"`
 	// Mapping ID for data
 	OrderID          uint `json:"order_id"`
 	OrderPayID       uint `json:"order_pay_id"`

@@ -2,6 +2,7 @@
 // github.com/golang/protobuf has been superseded by the google.golang.org/protobuf module
 // Source : https://stackoverflow.com/a/62872353
 // GitHub issues: https://github.com/golang/protobuf/issues/1070#issuecomment-607465055
+// Struct in go: https://stackoverflow.com/questions/52966444/is-google-protobuf-struct-proto-the-best-way-to-send-dynamic-json-over-grpc/65026774#65026774
 1. Get protobuf compiler 
 go get -u google.golang.org/protobuf/cmd/protoc-gen-go
 go install google.golang.org/protobuf/cmd/protoc-gen-go
@@ -15,8 +16,9 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 5. Import GRPC to go mod 
 go get -u google.golang.org/grpc
 6. Genrate command 
-protoc --go_out=. --go-grpc_out=. scem_state.proto
+6.1 protoc --go_out=. --go-grpc_out=. scem_state.proto
 // generate the messages
 --go_out=.
 # generate the services
 --go-grpc_out=. 
+6.2 protoc --proto_path=/home/zeebe/go/src/google.golang.org/protobuf --proto_path=state_scem/pb --go_out=state_scem/pb --go-grpc_out=state_scem/pb state_scem/pb/state_scem.proto

@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"context"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
@@ -83,12 +84,12 @@ func DeployLongShipWorkflow() error {
 }
 
 // CreateFullShipInstance of workflow
-func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (string, uint, error) {
 
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(os.Getenv("STATE_SCEM_ADDRESS"), grpc.WithInsecure(), grpc.FailOnNonTempDialError(true), grpc.WithBlock())
 	if err != nil {
-		return uint(0), uint(0), err
+		return "", uint(0), err
 	}
 	defer conn.Close()
 	c := pb.NewStateScemServiceClient(conn)
@@ -96,19 +97,24 @@ func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (uint, u
 	// After the workflow is deployed.
 	variables := make(map[string]interface{})
 	variables["order_id"] = orderWorkflowData.OrderID
-	variables["order_pay_id"] = orderWorkflowData.OrderPayID
 	variables["pay_method"] = orderWorkflowData.PayMethod
 	variables["shipper_receive_money"] = orderWorkflowData.ShipperReceiveMoney
 	variables["use_long_ship"] = orderWorkflowData.UseLongShip
 	variables["use_short_ship"] = orderWorkflowData.UseShortShip
 	variables["customer_receive_id"] = orderWorkflowData.CustomerReceiveID
 
-	workflowVariableList := []*pb.WorkflowVariable{
-		{VariableName: "order_id",VariableValue: orderWorkflowData.OrderID}
-	}
+	workflowVariables := make(map[string]interface{})
+	workflowVariables["workflow_variable_list"] = variables
+	workflowVariables["workflow_process_id"] = os.Getenv("FULL_SHIP_SS_ID_1")
+	workflowVariablesJSON, _ := json.Marshal(workflowVariables)
 
 	message := &pb.CreateWorkflowInstanceRequest{}
+	protojson.Unmarshal(workflowVariablesJSON, message)
 
-	// return uint(msg.WorkflowKey), uint(msg.WorkflowInstanceKey), nil
-	return uint(0), uint(0), nil
+	r, err := c.CreateWorkflowInstance(context.Background(), message)
+	if err != nil {
+		return "", uint(0), err
+	}
+	log.Printf("Response from Server: %s", r)
+	return r.WorkflowKey, uint(r.WorkflowInstanceID), nil
 }

@@ -12,11 +12,30 @@ import (
 )
 
 // CreateWorkflowFullShipInstanceHandler will select private function
-func CreateWorkflowFullShipInstanceHandler(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+func CreateWorkflowFullShipInstanceHandler(orderWorkflowData *model.OrderWorkflowData) (string, uint, error) {
 	if os.Getenv("STATE_SERVICE") == "1" {
 		return createWorkflowFullShipInstanceHandlerZB(orderWorkflowData)
 	}
 	return createWorkflowFullShipInstanceHandlerSS(orderWorkflowData)
+}
+
+// CreateWorkflowInstanceSS function
+func CreateWorkflowInstanceSS(c *gin.Context) {
+	orderWorkflowData := model.OrderWorkflowData{}
+	orderWorkflowData.OrderID = uint(12)
+	orderWorkflowData.PayMethod = "Cash"
+	orderWorkflowData.ShipperReceiveMoney = true
+	orderWorkflowData.UseLongShip = true
+	orderWorkflowData.UseShortShip = true
+	orderWorkflowData.CustomerReceiveID = uint(11)
+
+	WorkflowKey, WorkflowInstanceKey, err := createWorkflowFullShipInstanceHandlerSS(&orderWorkflowData)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"server_response1": WorkflowKey, "server_response2": WorkflowInstanceKey})
+	return
 }
 
 // ------------------------------ CALL TO ZEEBE CLIENT ------------------------------
@@ -31,18 +50,18 @@ func DeployWorkflowLongShipHandlerZB(c *gin.Context) {
 	ZBWorkflow.DeployLongShipWorkflow()
 }
 
-func createWorkflowFullShipInstanceHandlerZB(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+func createWorkflowFullShipInstanceHandlerZB(orderWorkflowData *model.OrderWorkflowData) (string, uint, error) {
 	WorkflowKey, WorkflowInstanceKey, err := ZBWorkflow.CreateFullShipInstance(orderWorkflowData)
 	if err != nil {
-		return uint(0), uint(0), err
+		return "", uint(0), err
 	}
 	return WorkflowKey, WorkflowInstanceKey, nil
 }
 
-func createWorkflowLongShipInstanceHandlerZB(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+func createWorkflowLongShipInstanceHandlerZB(orderWorkflowData *model.OrderWorkflowData) (string, uint, error) {
 	WorkflowKey, WorkflowInstanceKey, err := ZBWorkflow.CreateLongShipInstance(orderWorkflowData)
 	if err != nil {
-		return uint(0), uint(0), err
+		return "", uint(0), err
 	}
 	return WorkflowKey, WorkflowInstanceKey, nil
 }
@@ -69,10 +88,10 @@ func DeployWorkflowLongShipHandlerSS(c *gin.Context) {
 	return
 }
 
-func createWorkflowFullShipInstanceHandlerSS(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+func createWorkflowFullShipInstanceHandlerSS(orderWorkflowData *model.OrderWorkflowData) (string, uint, error) {
 	WorkflowKey, WorkflowInstanceKey, err := SSWorkflow.CreateFullShipInstance(orderWorkflowData)
 	if err != nil {
-		return uint(0), uint(0), err
+		return "", uint(0), err
 	}
 	return WorkflowKey, WorkflowInstanceKey, nil
 }

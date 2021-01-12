@@ -149,7 +149,6 @@ func CreateOrderPayStepTwoHandler(c *gin.Context) {
 	}
 	orderWorkflowData := &model.OrderWorkflowData{
 		OrderID:             orderPay.OrderID,
-		OrderPayID:          orderPay.ID,
 		PayMethod:           stepTwoRequest.PayMethod,
 		ShipperReceiveMoney: stepTwoRequest.ShipperReceiveMoney,
 		UseShortShip:        orderInfoForPayment.UseShortShip,

@@ -21,6 +21,7 @@ func OrderShipRoutes(rg *gin.RouterGroup) {
 		stateScem := stateService.Group("/state-scem")
 		stateScem.GET("/deploy-full-ship-workflow", handler.DeployWorkflowFullShipHandlerSS)
 		stateScem.GET("/deploy-long-ship-workflow", handler.DeployWorkflowLongShipHandlerSS)
+		stateScem.GET("/test-create-instance", handler.CreateWorkflowInstanceSS)
 	}
 
 	longShip := stateService.Group("/long-ship")
