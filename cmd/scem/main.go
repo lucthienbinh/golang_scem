@@ -8,6 +8,7 @@ import (
 	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/api/server"
 	"github.com/lucthienbinh/golang_scem/internal/handler"
+	SSWorkflow "github.com/lucthienbinh/golang_scem/internal/service/state_scem/workflow"
 	ZBMessage "github.com/lucthienbinh/golang_scem/internal/service/zeebe/message"
 	ZBWorker "github.com/lucthienbinh/golang_scem/internal/service/zeebe/worker"
 	ZBWorkflow "github.com/lucthienbinh/golang_scem/internal/service/zeebe/workflow"
@@ -52,10 +53,14 @@ func main() {
 
 	if os.Getenv("USE_ZEEBE") == "1" {
 		connectZeebeClient()
+	} else {
+		connectGolangStateScem()
 	}
 
 	// Our servers will live in the routes package
-	server.RunServer()
+	if os.Getenv("RUN_WEB_SERVER") == "yes" {
+		server.RunServer()
+	}
 }
 
 // Source code: https://www.devdungeon.com/content/working-files-go#read_all
@@ -116,4 +121,11 @@ func connectZeebeClient() {
 	ZBWorker.RunLongShip()
 	ZBWorker.RunShortShip()
 	ZBWorker.RunLongShipFinish()
+}
+
+func connectGolangStateScem() {
+	if err := SSWorkflow.ConnectGolangStateScem(); err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v7"
-	"github.com/twinj/uuid"
+	"github.com/google/uuid"
 )
 
 // Source: https://learn.vonage.com/blog/2020/03/13/using-jwt-for-authentication-in-a-golang-application-dr
@@ -210,7 +210,7 @@ type tokenDetails struct {
 func createToken(userid uint) (*tokenDetails, error) {
 	td := &tokenDetails{}
 	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
-	td.AccessUUID = uuid.NewV4().String()
+	td.AccessUUID = uuid.New().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
 	td.RefreshUUID = td.AccessUUID + "++" + strconv.Itoa(int(userid))

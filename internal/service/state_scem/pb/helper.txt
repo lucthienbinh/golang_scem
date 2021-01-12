@@ -1,0 +1,22 @@
+// Setup GRPC generate code in go linux environment
+// github.com/golang/protobuf has been superseded by the google.golang.org/protobuf module
+// Source : https://stackoverflow.com/a/62872353
+// GitHub issues: https://github.com/golang/protobuf/issues/1070#issuecomment-607465055
+1. Get protobuf compiler 
+go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+go install google.golang.org/protobuf/cmd/protoc-gen-go
+2. Get protobuf grpc plugin
+go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
+3. add GOPATH/bin to .profile 
+"export PATH=$PATH:/home/zeebe/go/bin"
+4. reset terminal to apply change
+
+5. Import GRPC to go mod 
+go get -u google.golang.org/grpc
+6. Genrate command 
+protoc --go_out=. --go-grpc_out=. scem_state.proto
+// generate the messages
+--go_out=.
+# generate the services
+--go-grpc_out=. 

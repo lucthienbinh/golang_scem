@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/api/middleware"
@@ -11,24 +12,31 @@ import (
 // OrderShipRoutes to manage user model
 func OrderShipRoutes(rg *gin.RouterGroup) {
 
-	zeebe := rg.Group("/zeebe")
-	zeebe.GET("/deploy-full-ship-workflow", handler.DeployWorkflowFullShipHandler)
-	zeebe.GET("/deploy-long-ship-workflow", handler.DeployWorkflowLongShipHandler)
+	stateService := rg.Group("/state-service")
+	if os.Getenv("USE_ZEEBE") == "1" {
+		zeebe := stateService.Group("/zeebe")
+		zeebe.GET("/deploy-full-ship-workflow", handler.DeployWorkflowFullShipHandlerZB)
+		zeebe.GET("/deploy-long-ship-workflow", handler.DeployWorkflowLongShipHandlerZB)
+	} else {
+		stateScem := stateService.Group("/state-scem")
+		stateScem.GET("/deploy-full-ship-workflow", handler.DeployWorkflowFullShipHandlerSS)
+		stateScem.GET("/deploy-long-ship-workflow", handler.DeployWorkflowLongShipHandlerSS)
+	}
 
-	longShip := zeebe.Group("/long-ship")
+	longShip := stateService.Group("/long-ship")
 	longShip.GET("/list", handler.GetLongShipListHandler)
 	longShip.GET("/id/:id", handler.GetLongShipHandler)
 	longShip.GET("/create-form-data", handler.CreateLongShipFormData)
 	longShip.POST("/create", handler.CreateLongShipHandler)
 	longShip.GET("/update-form-data/:id", handler.UpdateLongShipFormData)
-	longShip.PUT("/update/:id", handler.UpdateLongShipHandler)
+	longShip.PUT("/update-long-ship/:id", handler.UpdateLongShipHandler)
 	longShip.PUT("/update/load-package", updateLSLoadPackageHandler)
 	longShip.PUT("/update/start-vehicle", updateLSStartVehicleHandler)
 	longShip.PUT("/update/vehicle-arrived", updateLSVehicleArrivedHandler)
 	longShip.PUT("/update/unload-package", updateLSUnloadPackageHandler)
 	longShip.DELETE("/delete/:id", handler.DeleteLongShipHandler)
 
-	orderShortShip := zeebe.Group("/order-short-ship")
+	orderShortShip := stateService.Group("/order-short-ship")
 	orderShortShip.GET("/list", handler.GetOrderShortShipListHandler)
 	orderShortShip.GET("/id/:id", handler.GetOrderShortShipHandler)
 	orderShortShip.PUT("/update/shipper-received", handler.UpdateOSSShipperReceivedHandler)

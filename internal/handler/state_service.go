@@ -2,25 +2,27 @@ package handler
 
 import (
 	"math/rand"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/model"
+	SSWorkflow "github.com/lucthienbinh/golang_scem/internal/service/state_scem/workflow"
 	ZBWorkflow "github.com/lucthienbinh/golang_scem/internal/service/zeebe/workflow"
 )
 
 // ------------------------------ CALL TO ZEEBE CLIENT ------------------------------
 
-// DeployWorkflowFullShipHandler function
-func DeployWorkflowFullShipHandler(c *gin.Context) {
+// DeployWorkflowFullShipHandlerZB function
+func DeployWorkflowFullShipHandlerZB(c *gin.Context) {
+	ZBWorkflow.DeployFullShipWorkflow()
+}
+
+// DeployWorkflowLongShipHandlerZB function
+func DeployWorkflowLongShipHandlerZB(c *gin.Context) {
 	ZBWorkflow.DeployLongShipWorkflow()
 }
 
-// DeployWorkflowLongShipHandler function
-func DeployWorkflowLongShipHandler(c *gin.Context) {
-	ZBWorkflow.DeployLongShipWorkflow()
-}
-
-func createWorkflowFullShipInstanceHandler(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+func createWorkflowFullShipInstanceHandlerZB(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
 	WorkflowKey, WorkflowInstanceKey, err := ZBWorkflow.CreateFullShipInstance(orderWorkflowData)
 	if err != nil {
 		return uint(0), uint(0), err
@@ -28,7 +30,7 @@ func createWorkflowFullShipInstanceHandler(orderWorkflowData *model.OrderWorkflo
 	return WorkflowKey, WorkflowInstanceKey, nil
 }
 
-func createWorkflowLongShipInstanceHandler(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
+func createWorkflowLongShipInstanceHandlerZB(orderWorkflowData *model.OrderWorkflowData) (uint, uint, error) {
 	WorkflowKey, WorkflowInstanceKey, err := ZBWorkflow.CreateLongShipInstance(orderWorkflowData)
 	if err != nil {
 		return uint(0), uint(0), err
@@ -36,7 +38,24 @@ func createWorkflowLongShipInstanceHandler(orderWorkflowData *model.OrderWorkflo
 	return WorkflowKey, WorkflowInstanceKey, nil
 }
 
-// ------------------------------ CALL FROM ZEEBE CLIENT ------------------------------
+// ------------------------------ CALL TO GOLANG STATE SCEM CLIENT ------------------------------
+
+// DeployWorkflowFullShipHandlerSS function
+func DeployWorkflowFullShipHandlerSS(c *gin.Context) {
+	if err := SSWorkflow.DeployFullShipWorkflow(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"server_response": "A workflow model has been created!"})
+	return
+}
+
+// DeployWorkflowLongShipHandlerSS function
+func DeployWorkflowLongShipHandlerSS(c *gin.Context) {
+	SSWorkflow.DeployLongShipWorkflow()
+}
+
+// ------------------------------ CALL FROM CLIENT ------------------------------
 
 // ++++++++++++++++++++ Credit Payment Worker ++++++++++++++++++++
 

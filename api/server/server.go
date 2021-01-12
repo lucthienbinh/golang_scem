@@ -29,12 +29,12 @@ func RunServer() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	appServer := &http.Server{
-		Addr:         os.Getenv("APP_PORT"),
-		Handler:      appRouter(),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-	}
+	// appServer := &http.Server{
+	// 	Addr:         os.Getenv("APP_PORT"),
+	// 	Handler:      appRouter(),
+	// 	ReadTimeout:  5 * time.Second,
+	// 	WriteTimeout: 10 * time.Second,
+	// }
 
 	g.Go(func() error {
 		err := webServer.ListenAndServe()
@@ -44,13 +44,13 @@ func RunServer() {
 		return err
 	})
 
-	g.Go(func() error {
-		err := appServer.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
-		}
-		return err
-	})
+	// g.Go(func() error {
+	// 	err := appServer.ListenAndServe()
+	// 	if err != nil && err != http.ErrServerClosed {
+	// 		log.Fatal(err)
+	// 	}
+	// 	return err
+	// })
 
 	if err := g.Wait(); err != nil {
 		log.Fatal(err)
@@ -81,7 +81,7 @@ func webRouter() http.Handler {
 	}
 	router.UserRoutes(api)
 	router.WebOrderRoutes(api)
-
+	router.OrderShipRoutes(api)
 	return e
 }
 
