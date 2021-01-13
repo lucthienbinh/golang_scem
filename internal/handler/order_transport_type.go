@@ -71,8 +71,19 @@ func UpdateTransportTypeHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+
 	transportType.ID = getIDFromParam(c)
-	if err = db.Model(&transportType).Updates(&transportType).Error; err != nil {
+	updateValue := map[string]interface{}{
+		"same_city":               transportType.SameCity,
+		"location_one":            transportType.LocationOne,
+		"location_two":            transportType.LocationTwo,
+		"bus_station_from":        transportType.BusStationFrom,
+		"bus_station_to":          transportType.BusStationTo,
+		"long_ship_duration":      transportType.LongShipDuration,
+		"long_ship_price":         transportType.LongShipPrice,
+		"short_ship_price_per_km": transportType.ShortShipPricePerKm,
+	}
+	if err = db.Model(&transportType).Updates(updateValue).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
