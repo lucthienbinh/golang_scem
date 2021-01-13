@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/api/router"
@@ -59,22 +58,13 @@ func RunServer() {
 
 func webRouter() http.Handler {
 	e := gin.Default()
-	if os.Getenv("RUN_WEB_AUTH") == "yes" {
-		config := cors.DefaultConfig()
-		config.AllowOrigins = []string{"http://127.0.0.1:3000"}
-		config.AllowCredentials = true
-		config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "X-CSRF-Token", "Accept"}
-		e.Use(cors.New(config))
-	}
 
 	e.Static("/api/images", os.Getenv("IMAGE_FILE_PATH"))
 	// Set a lower memory limit for multipart forms (default is 32 MiB)
 	e.MaxMultipartMemory = 8 << 20 // 8 MiB
 
-	webAuth := e.Group("/web-auth")
-	router.WebAuthRoutes(webAuth)
-
 	api := e.Group("/api")
+	router.WebAuthRoutes(api)
 	// Active web auth
 	if os.Getenv("RUN_WEB_AUTH") == "yes" {
 		api.Use(middleware.ValidateWebSession())

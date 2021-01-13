@@ -129,5 +129,5 @@ var _StateScemService_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "state_scem.proto",
+	Metadata: "proto_source/state_scem.proto",
 }

@@ -69,6 +69,7 @@ func CreateWebSession(c *gin.Context, userAuthID uint) {
 	http.SetCookie(w, &csrfCookie)
 
 	c.JSON(http.StatusOK, gin.H{"status": "Successfully logged in"})
+	return
 }
 
 // ValidateWebSession when user access route with middleware
@@ -181,6 +182,7 @@ func ClearWebSession(c *gin.Context) {
 
 	// w.WriteHeader(http.StatusOK)
 	c.JSON(http.StatusOK, gin.H{"status": "Successfully logged out"})
+	return
 }
 
 // RunWebAuth to connect redis server

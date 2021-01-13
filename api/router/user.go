@@ -35,7 +35,6 @@ func UserRoutes(rg *gin.RouterGroup) {
 	employeeType.PUT("/update/:id", handler.UpdateEmployeeTypeHandler)
 	employeeType.DELETE("/delete/:id", handler.DeleteEmployeeTypeHandler)
 
-	// middlewares.ValidateAppToken()
 	deliveryLocation := rg.Group("/delivery-location")
 	deliveryLocation.GET("/list", handler.GetDeliveryLocationListHandler)
 	deliveryLocation.GET("/id/:id", handler.GetDeliveryLocationHandler)

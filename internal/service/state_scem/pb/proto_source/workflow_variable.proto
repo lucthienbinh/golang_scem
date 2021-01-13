@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = ".;pb"; 
+
+message WorkflowVariable {
+  int32 WorkflowInstanceID = 1 [json_name="workflow_instance_id"];
+  int32 OrderID = 2 [json_name="order_id"];
+  string PayMethod = 3[json_name="pay_method"];
+  bool ShipperReceiveMoney = 4 [json_name="shipper_receive_money"];
+  bool UseShortShip = 5 [json_name="use_short_ship"];
+  bool UseLongShip = 6 [json_name="use_long_ship"];
+  int32 CustomerReceiveID = 7 [json_name="customer_receive_id"];
+}
