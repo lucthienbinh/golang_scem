@@ -14,11 +14,10 @@ type OrderWorkflowData struct {
 	OrderLongShipID  uint `json:"order_long_ship_id"`
 	OrderShortShipID uint `json:"order_short_ship_id"`
 	// Variable use for Zeebe gateway
-	PayMethod           string `json:"pay_method"`
-	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
-	UseLongShip         bool   `json:"use_long_ship"`
-	CustomerSendID      uint   `json:"customer_send_id"`
-	CustomerReceiveID   uint   `json:"customer_receive_id"`
+	ShipperReceiveMoney bool `json:"shipper_receive_money"`
+	UseLongShip         bool `json:"use_long_ship"`
+	CustomerSendID      uint `json:"customer_send_id"`
+	CustomerReceiveID   uint `json:"customer_receive_id"`
 }
 
 // LongShip structure

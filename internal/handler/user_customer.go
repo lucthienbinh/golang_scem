@@ -68,7 +68,8 @@ func CreateCustomerHandler(c *gin.Context) {
 		return
 	}
 	// Create customer credit
-	customerCredit := &model.CustomerCredit{CustomerID: customer.ID, Phone: customer.Phone}
+	// Todo: ValidatePhone must not be harded code
+	customerCredit := &model.CustomerCredit{CustomerID: customer.ID, Phone: customer.Phone, ValidatePhone: true}
 	if err := db.Create(customerCredit).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

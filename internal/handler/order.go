@@ -39,8 +39,7 @@ func getOrderInfoOrNotFound(c *gin.Context) (*model.OrderInfo, error) {
 
 func getOrderInfoOrNotFoundForPayment(orderID uint) (*model.OrderInfoForPayment, error) {
 	orderInfoForPayment := &model.OrderInfoForPayment{}
-	selectPart := "ord.id, ord.customer_send_id, ord.customer_receive_id, ord.use_long_ship, ord.use_short_ship, ord.total_price "
-	err := db.Table("order_infos as ord").Select(selectPart).First(orderInfoForPayment, orderID).Error
+	err := db.Model(&model.OrderInfo{}).First(orderInfoForPayment, orderID).Error
 	if err != nil {
 		return orderInfoForPayment, err
 	}
@@ -108,13 +107,11 @@ func calculateTotalPrice(orderInfo *model.OrderInfo) (int64, error) {
 func CreateOrderInfoHandler(c *gin.Context) {
 	orderInfo := &model.OrderInfo{}
 	if err := c.ShouldBindJSON(&orderInfo); err != nil {
-		// c.AbortWithStatus(http.StatusBadRequest)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	if err := validator.Validate(&orderInfo); err != nil {
-		// c.AbortWithStatus(http.StatusBadRequest)
-		c.JSON(http.StatusInternalServerError, gin.H{"error2": err.Error()})
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	// Calculate total price
@@ -147,6 +144,7 @@ func CreateOrderInfoHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"server_response": "An order info has been created!",
 		"order_id":        orderInfo.ID,
+		"total_price":     totalPrice,
 	})
 	return
 }

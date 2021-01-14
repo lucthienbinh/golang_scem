@@ -113,7 +113,6 @@ func connectZeebeClient() {
 	}
 	log.Println("Zeebe message package connected with zeebe!")
 	// Run Zebee service
-	ZBWorker.RunCreditPayment()
 	ZBWorker.RunLongShip()
 	ZBWorker.RunShortShip()
 	ZBWorker.RunLongShipFinish()

@@ -54,20 +54,16 @@ type TransportType struct {
 
 // OrderPay structure
 type OrderPay struct {
-	ID              uint   `gorm:"primary_key;<-:false" json:"id"`
-	OrderID         uint   `json:"order_id"`
-	PayMethod       string `json:"pay_method"`
-	PayStatus       bool   `json:"pay_status"`
-	TotalPrice      int64  `json:"total_price"`
-	FinishedStepOne bool   `json:"finished_step_one"`
-	FinishedStepTwo bool   `json:"finished_step_two"`
-	ConfirmString   string `json:"confirm_string"`
-	// If customer pay method is cash, we will need an employee to confirm
-	PayEmployeeID uint `json:"pay_employee_id"`
-	// If customer pay method is credit, we will need customer confirmation
-	PayCustomerID uint  `json:"pay_customer_id"`
-	CreatedAt     int64 `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt     int64 `gorm:"autoUpdateTime" json:"updated_at"`
+	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
+	OrderID             uint   `json:"order_id"`
+	PayMethod           string `json:"pay_method"`
+	PayStatus           bool   `json:"pay_status"`
+	TotalPrice          int64  `json:"total_price"`
+	FinishedStepOne     bool   `json:"finished_step_one"`
+	FinishedStepTwo     bool   `json:"finished_step_two"`
+	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
+	CreatedAt           int64  `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt           int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
 // -------------------- Struct uses to fetch data from database --------------------
@@ -79,6 +75,7 @@ type OrderInfoForPayment struct {
 	CustomerReceiveID uint
 	UseLongShip       bool
 	TotalPrice        int64
+	LongShipID        uint
 }
 
 // OrderInfoForShipment structure

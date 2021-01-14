@@ -1,10 +1,7 @@
 package router
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/internal/handler"
 )
 
@@ -28,27 +25,17 @@ func WebOrderRoutes(rg *gin.RouterGroup) {
 
 	orderPay := rg.Group("/order-pay")
 	orderPay.GET("/list", handler.GetOrderPayListHandler)
-	orderPay.GET("/id/:id", handler.GetOrderPayHandler)
 	orderPay.POST("/create-step-one", handler.CreateOrderPayStepOneHandler)
 	orderPay.POST("/create-step-two", handler.CreateOrderPayStepTwoHandler)
-	orderPay.PUT("/update/customer-confirm/:id", updateOrderPayCustomerConfirmHandler)
-	orderPay.PUT("/update/employee-confirm/:id", updateOrderPayEmployeeConfirmHandler)
+	orderPay.PUT("/update-payment-confirm/orderid/:id", handler.UpdateOrderPayConfirmHandler)
 }
 
-func updateOrderPayCustomerConfirmHandler(c *gin.Context) {
-	userAuthID, err := middleware.GetUserAuthIDInToken(c)
-	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	handler.UpdateOrderPayCustomerConfirmHandler(c, userAuthID)
-}
-
-func updateOrderPayEmployeeConfirmHandler(c *gin.Context) {
-	userAuthID, err := middleware.GetUserAuthIDInSession(c)
-	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	handler.UpdateOrderPayEmployeeConfirmHandler(c, userAuthID)
-}
+// Todo: get user token first then go to handler
+// func updateOrderPayConfirmHandler(c *gin.Context) {
+// 	userAuthID, err := middleware.GetUserAuthIDInToken(c)
+// 	if err != nil {
+// 		c.AbortWithStatus(http.StatusUnauthorized)
+// 		return
+// 	}
+// 	handler.UpdateOrderPayCustomerConfirmHandler(c, userAuthID)
+// }

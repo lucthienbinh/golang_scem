@@ -16,14 +16,16 @@ func CreateWorkflowFullShipInstanceHandler(orderWorkflowData *model.OrderWorkflo
 	if os.Getenv("STATE_SERVICE") == "1" {
 		return createWorkflowFullShipInstanceHandlerZB(orderWorkflowData)
 	}
-	return createWorkflowFullShipInstanceHandlerSS(orderWorkflowData)
+	if os.Getenv("STATE_SERVICE") == "2" {
+		return createWorkflowFullShipInstanceHandlerSS(orderWorkflowData)
+	}
+	return "231-321314-41515135131", uint(1), nil
 }
 
 // CreateWorkflowInstanceSS function
 func CreateWorkflowInstanceSS(c *gin.Context) {
 	orderWorkflowData := model.OrderWorkflowData{}
 	orderWorkflowData.OrderID = uint(12)
-	orderWorkflowData.PayMethod = "Cash"
 	orderWorkflowData.ShipperReceiveMoney = true
 	orderWorkflowData.UseLongShip = true
 	orderWorkflowData.CustomerReceiveID = uint(11)

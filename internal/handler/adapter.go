@@ -44,6 +44,7 @@ func MigrationDatabase() (err error) {
 	return db.AutoMigrate(
 		&model.Employee{},
 		&model.Customer{},
+		&model.CustomerCredit{},
 		&model.EmployeeType{},
 		&model.DeliveryLocation{},
 		&model.OrderInfo{},
@@ -78,6 +79,9 @@ func RefreshDatabase() (err error) {
 	if err := createDefaultCustomer(); err != nil {
 		return err
 	}
+	if err := createCustomerCredit(); err != nil {
+		return err
+	}
 	if err := createTransportType(); err != nil {
 		return err
 	}
@@ -106,6 +110,7 @@ func deleteDatabase() (err error) {
 	return db.Migrator().DropTable(
 		&model.Employee{},
 		&model.Customer{},
+		&model.CustomerCredit{},
 		&model.EmployeeType{},
 		&model.DeliveryLocation{},
 		&model.OrderInfo{},
@@ -242,6 +247,22 @@ func createDefaultCustomer() error {
 	return nil
 }
 
+func createCustomerCredit() error {
+	customerCredit := &model.CustomerCredit{CustomerID: 1, Phone: 223334444, ValidatePhone: true, AccountBalance: 30000000}
+	if err := db.Create(customerCredit).Error; err != nil {
+		return err
+	}
+	customerCredit = &model.CustomerCredit{CustomerID: 2, Phone: 223334444, ValidatePhone: true, AccountBalance: 30000000}
+	if err := db.Create(customerCredit).Error; err != nil {
+		return err
+	}
+	customerCredit = &model.CustomerCredit{CustomerID: 3, Phone: 223334444, ValidatePhone: true, AccountBalance: 30000000}
+	if err := db.Create(customerCredit).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func createTransportType() error {
 	transportType := &model.TransportType{SameCity: true, LocationOne: "HCM", ShortShipPricePerKm: 30000}
 	if err := db.Create(transportType).Error; err != nil {
@@ -336,7 +357,7 @@ func createExampleOrder() error {
 
 func createExampleOrderPay() error {
 	orderPay := &model.OrderPay{
-		OrderID: 1, PayStatus: true, PayEmployeeID: 2, TotalPrice: 200000, PayMethod: "cash",
+		OrderID: 1, PayStatus: true, TotalPrice: 200000, PayMethod: "cash",
 	}
 	if err := db.Create(orderPay).Error; err != nil {
 		return err
