@@ -193,7 +193,7 @@ func createDefaultEmployee() error {
 	if err := db.Create(userAuth).Error; err != nil {
 		return err
 	}
-	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Hung", Age: 47, Phone: 776334958, Gender: "male", Address: "84 Nguyen Trau", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg"}
+	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Hung", Age: 47, Phone: 776334958, Gender: "male", Address: "84 Nguyen Trau", IdentityCard: "17687t562765786", EmployeeTypeID: 4, Avatar: "image3.jpg"}
 	if err := db.Create(employee).Error; err != nil {
 		return err
 	}
@@ -284,11 +284,11 @@ func createTransportType() error {
 }
 
 func createLongShip() error {
-	longShip := &model.LongShip{TransportTypeID: 3, LicensePlate: "51A 435.22", EstimatedTimeOfDeparture: 1610599301, EstimatedTimeOfArrival: 1610999301, Finished: false}
+	longShip := &model.LongShip{LSQrCode: "1610662785_860de.jpg", TransportTypeID: 3, LicensePlate: "51A 435.22", EstimatedTimeOfDeparture: 1610599301, EstimatedTimeOfArrival: 1610999301, Finished: false}
 	if err := db.Create(longShip).Error; err != nil {
 		return err
 	}
-	longShip = &model.LongShip{TransportTypeID: 4, LicensePlate: "51B 425.82", EstimatedTimeOfDeparture: 1610099301, EstimatedTimeOfArrival: 1610399301, Finished: true}
+	longShip = &model.LongShip{TransportTypeID: 4, LicensePlate: "51B 425.82", EstimatedTimeOfDeparture: 1610099301, EstimatedTimeOfArrival: 1610399301, Finished: false}
 	if err := db.Create(longShip).Error; err != nil {
 		return err
 	}
@@ -367,10 +367,7 @@ func createExampleOrderPay() error {
 
 func createExampleOrderShortShip() error {
 	orderShortShip := &model.OrderShortShip{
-		OrderID: 1, ShipperID: 3, ShipperReceived: true,
-		ShipperCalled: true, ShipperShipped: true,
-		TimeConfirmed: 1608743635, CusReceiveConfirmed: true,
-		Finished: true,
+		OrderID: 1, ShipperID: 3, CustomerSendID: 1, OSSQrCode: "1610662785_860de.jpg",
 	}
 	if err := db.Create(orderShortShip).Error; err != nil {
 		return err

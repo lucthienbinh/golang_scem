@@ -152,6 +152,10 @@ func UpdateLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+	if longShip.PackageLoaded == true {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 	longShipUpdateInfo := model.LongShip{
 		CurrentLocation: "Location1",
 		PackageLoaded:   true,
@@ -179,7 +183,7 @@ func UpdateLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if longShip.PackageLoaded == false {
+	if longShip.PackageLoaded == false || longShip.VehicleStarted == true {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -210,7 +214,7 @@ func UpdateLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if longShip.VehicleStarted == false {
+	if longShip.VehicleStarted == false || longShip.VehicleArrived == true {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -241,15 +245,16 @@ func UpdateLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if longShip.VehicleArrived == false {
+	if longShip.VehicleArrived == false || longShip.PackageUnloaded == true {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	longShipUpdateInfo := model.LongShip{
-		CurrentLocation: "Location3",
+		CurrentLocation: "Location4",
 		PackageUnloaded: true,
 		EmplUnloadID:    employeeID,
 		UnloadedTime:    time.Now().Unix(),
+		Finished:        true,
 	}
 	longShip.ID = getIDFromParam(c)
 	if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {

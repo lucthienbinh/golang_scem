@@ -56,8 +56,8 @@ type OrderLongShip struct {
 	ID                   uint   `gorm:"primary_key;<-:false" json:"id"`
 	OrderID              uint   `json:"order_id"`
 	LongShipID           uint   `json:"long_ship_id"`
-	CustomerSendFCMToken string `json:"customer_send_fcm_token"`
-	CustomerRecvFCMToken string `json:"customer_recv_fcm_token"`
+	CustomerSendFCMToken string `json:"-"`
+	CustomerRecvFCMToken string `json:"-"`
 }
 
 // OrderShortShip structure
@@ -65,27 +65,20 @@ type OrderShortShip struct {
 	ID                   uint   `gorm:"primary_key;<-:false" json:"id"`
 	OrderID              uint   `json:"order_id" validate:"nonzero"`
 	ShipperID            uint   `json:"shipper_id" validate:"nonzero"`
+	CustomerSendID       uint   `json:"customer_send_id"`
 	CustomerReceiveID    uint   `json:"customer_receive_id"`
-	CustomerSendFCMToken string `json:"customer_send_fcm_token"`
-	CustomerRecvFCMToken string `json:"customer_recv_fcm_token"`
+	CustomerSendFCMToken string `json:"-"`
+	CustomerRecvFCMToken string `json:"-"`
 	ShipperReceiveMoney  bool   `json:"shipper_receive_money"`
 	// Message data in workflow - Start
-	// Shipper Received
-	ShipperReceived bool  `json:"shipper_received"`
-	ReceivedTime    int64 `json:"received_time"`
 	// Shipper Called
-	ShipperCalled bool  `json:"shipper_called"`
-	TimeConfirmed int64 `json:"time_confirmed"`
-	CalledTime    int64 `json:"called_time"`
+	ShipperCalled bool `json:"shipper_called"`
 	// Shipper Received Money
 	ShipperReceivedMoney bool  `json:"shipper_received_money"`
 	ReceivedMoneyTime    int64 `json:"received_money_time"`
 	// Shipper Shipped
 	ShipperShipped bool  `json:"shipper_shipped"`
 	ShippedTime    int64 `json:"shipped_time"`
-	// Customer Receive Confirmed
-	CusReceiveConfirmed     bool  `json:"cus_receive_confirmed"`
-	CusReceiveConfirmedTime int64 `json:"cus_receive_confirmed_time"`
 	// Shipper Confirmed
 	ShipperConfirmed     string `json:"shipper_confirmed"`
 	ShipperConfirmedTime int64  `json:"shipper_confirmed_time"`

@@ -1,11 +1,9 @@
 package router
 
 import (
-	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/internal/handler"
 )
 
@@ -40,46 +38,50 @@ func OrderShipRoutes(rg *gin.RouterGroup) {
 	orderShortShip := rg.Group("/order-short-ship")
 	orderShortShip.GET("/list", handler.GetOrderShortShipListHandler)
 	orderShortShip.GET("/id/:id", handler.GetOrderShortShipHandler)
-	orderShortShip.PUT("/update/shipper-received", handler.UpdateOSSShipperReceivedHandler)
-	orderShortShip.PUT("/update/shipper-called", handler.UpdateOSSShipperCalledHandler)
-	orderShortShip.PUT("/update/shipper-shipped", handler.UpdateOSSShipperShippedHandler)
-	orderShortShip.PUT("/update/cus-receive-confirmed", handler.UpdateOSSCusReceiveConfirmedHandler)
-	orderShortShip.PUT("/update/shipper-confirmed", handler.UpdateOSSShipperConfirmedHandler)
-	orderShortShip.PUT("/update/cancel-order", handler.CancelOrderShortShipHandler)
+	orderShortShip.PUT("/update/shipper-called/:id", handler.UpdateOSSShipperCalledHandler)
+	orderShortShip.PUT("/update/shipper-received-money/:id", handler.UpdateOSSShipperReceivedMoneyHandler)
+	orderShortShip.PUT("/update/shipper-shipped/:id", handler.UpdateOSSShipperShippedHandler)
+	orderShortShip.PUT("/update/shipper-confirmed/:id", handler.UpdateOSSShipperConfirmedHandler)
+	orderShortShip.PUT("/update/cancel-order/:id", handler.CancelOrderShortShipHandler)
 }
 
+// Todo: read user auth id in session instead of hard code
 func updateLSLoadPackageHandler(c *gin.Context) {
-	userAuthID, err := middleware.GetUserAuthIDInSession(c)
-	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	handler.UpdateLSLoadPackageHandler(c, userAuthID)
+	// userAuthID, err := middleware.GetUserAuthIDInSession(c)
+	// if err != nil {
+	// 	c.AbortWithStatus(http.StatusUnauthorized)
+	// 	return
+	// }
+	// handler.UpdateLSLoadPackageHandler(c, userAuthID)
+	handler.UpdateLSLoadPackageHandler(c, uint(4))
 }
 
 func updateLSStartVehicleHandler(c *gin.Context) {
-	userAuthID, err := middleware.GetUserAuthIDInSession(c)
-	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	handler.UpdateLSStartVehicleHandler(c, userAuthID)
+	// userAuthID, err := middleware.GetUserAuthIDInSession(c)
+	// if err != nil {
+	// 	c.AbortWithStatus(http.StatusUnauthorized)
+	// 	return
+	// }
+	// handler.UpdateLSStartVehicleHandler(c, userAuthID)
+	handler.UpdateLSStartVehicleHandler(c, uint(3))
 }
 
 func updateLSVehicleArrivedHandler(c *gin.Context) {
-	userAuthID, err := middleware.GetUserAuthIDInSession(c)
-	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	handler.UpdateLSVehicleArrivedHandler(c, userAuthID)
+	// userAuthID, err := middleware.GetUserAuthIDInSession(c)
+	// if err != nil {
+	// 	c.AbortWithStatus(http.StatusUnauthorized)
+	// 	return
+	// }
+	// handler.UpdateLSVehicleArrivedHandler(c, userAuthID)
+	handler.UpdateLSVehicleArrivedHandler(c, uint(3))
 }
 
 func updateLSUnloadPackageHandler(c *gin.Context) {
-	userAuthID, err := middleware.GetUserAuthIDInSession(c)
-	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	handler.UpdateLSUnloadPackageHandler(c, userAuthID)
+	// userAuthID, err := middleware.GetUserAuthIDInSession(c)
+	// if err != nil {
+	// 	c.AbortWithStatus(http.StatusUnauthorized)
+	// 	return
+	// }
+	// handler.UpdateLSUnloadPackageHandler(c, userAuthID)
+	handler.UpdateLSUnloadPackageHandler(c, uint(4))
 }

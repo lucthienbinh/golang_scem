@@ -75,5 +75,5 @@ func getEmployeeIDByUserAuthID(userAuthID uint) (uint, error) {
 	if err := db.First(userAuthenticate, userAuthID).Error; err != nil {
 		return uint(0), err
 	}
-	return userAuthenticate.CustomerID, nil
+	return userAuthenticate.EmployeeID, nil
 }

@@ -68,7 +68,7 @@ type OrderPay struct {
 
 // -------------------- Struct uses to fetch data from database --------------------
 
-// OrderInfoForPayment structure
+// OrderInfoForPayment structure (create workflow)
 type OrderInfoForPayment struct {
 	ID                uint
 	CustomerSendID    uint
@@ -78,7 +78,7 @@ type OrderInfoForPayment struct {
 	LongShipID        uint
 }
 
-// OrderInfoForShipment structure
+// OrderInfoForShipment structure (create short ship)
 type OrderInfoForShipment struct {
 	ID                   uint
 	TransportTypeID      uint
@@ -86,6 +86,7 @@ type OrderInfoForShipment struct {
 	CustomerRecvFCMToken string
 	UseLongShip          bool
 	LongShipID           uint
+	CustomerSendID       uint
 	CustomerReceiveID    uint
 }
 

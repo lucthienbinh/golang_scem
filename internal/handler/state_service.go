@@ -192,7 +192,7 @@ func CreateOrderShortShip(orderID uint, shipperReceiveMoney bool) (uint, error) 
 	length := len(employeeList)
 	index := rand.Intn(length - 1)
 	orderShortShip.ShipperID = employeeList[index].ID
-
+	orderShortShip.CustomerSendID = orderInfoForShipment.CustomerSendID
 	orderShortShip.CustomerReceiveID = orderInfoForShipment.CustomerReceiveID
 	orderShortShip.CustomerSendFCMToken = orderInfoForShipment.CustomerSendFCMToken
 	orderShortShip.CustomerRecvFCMToken = orderInfoForShipment.CustomerRecvFCMToken

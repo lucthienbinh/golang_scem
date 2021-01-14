@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"strconv"
+	"os"
 	"strings"
 	"time"
 
@@ -18,7 +18,7 @@ import (
 func GetOrderShortShipListHandler(c *gin.Context) {
 	orderShortShips := []model.OrderShortShip{}
 	db.Order("id asc").Find(&orderShortShips)
-	c.JSON(http.StatusOK, gin.H{"order_long_ship_list": &orderShortShips})
+	c.JSON(http.StatusOK, gin.H{"order_short_ship_list": &orderShortShips})
 	return
 }
 
@@ -41,23 +41,6 @@ func GetOrderShortShipHandler(c *gin.Context) {
 	return
 }
 
-// UpdateOSSShipperReceivedHandler in database
-func UpdateOSSShipperReceivedHandler(c *gin.Context) {
-	orderShortShip, err := getOrderShortShipOrNotFound(c)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-
-	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperReceived: true}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
-	return
-}
-
 // UpdateOSSShipperCalledHandler in database
 func UpdateOSSShipperCalledHandler(c *gin.Context) {
 	orderShortShip, err := getOrderShortShipOrNotFound(c)
@@ -66,16 +49,38 @@ func UpdateOSSShipperCalledHandler(c *gin.Context) {
 		return
 	}
 
-	if orderShortShip.ShipperReceived == false {
+	if orderShortShip.ShipperCalled == true {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	timeConfirmed := c.PostForm("time_confirmed")
-	timeConfirmedParsed, _ := strconv.ParseInt(timeConfirmed, 10, 64)
+	orderShortShip.ID = getIDFromParam(c)
+	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperCalled: true}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
+	return
+}
+
+// UpdateOSSShipperReceivedMoneyHandler in database
+func UpdateOSSShipperReceivedMoneyHandler(c *gin.Context) {
+	orderShortShip, err := getOrderShortShipOrNotFound(c)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	if orderShortShip.ShipperReceivedMoney == true || orderShortShip.ShipperCalled == false || orderShortShip.Canceled == true {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 
 	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperCalled: true, TimeConfirmed: timeConfirmedParsed}).Error; err != nil {
+	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
+		ShipperReceivedMoney: true,
+		ReceivedMoneyTime:    time.Now().Unix(),
+	}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -91,35 +96,13 @@ func UpdateOSSShipperShippedHandler(c *gin.Context) {
 		return
 	}
 
-	if orderShortShip.ShipperCalled == false {
+	if orderShortShip.ShipperCalled == false || orderShortShip.ShipperShipped == true || orderShortShip.Canceled == true {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
 	orderShortShip.ID = getIDFromParam(c)
 	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperShipped: true}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
-	return
-}
-
-// UpdateOSSCusReceiveConfirmedHandler in database
-func UpdateOSSCusReceiveConfirmedHandler(c *gin.Context) {
-	orderShortShip, err := getOrderShortShipOrNotFound(c)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-
-	if orderShortShip.ShipperShipped == false {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-
-	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{CusReceiveConfirmed: true, Finished: true}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -135,7 +118,7 @@ func UpdateOSSShipperConfirmedHandler(c *gin.Context) {
 		return
 	}
 
-	if orderShortShip.ShipperShipped == false {
+	if orderShortShip.ShipperShipped == false || orderShortShip.ShipperConfirmed != "" || orderShortShip.Canceled == true {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -156,7 +139,7 @@ func UpdateOSSShipperConfirmedHandler(c *gin.Context) {
 	newName := fmt.Sprintf("%x", b)
 	createTime := fmt.Sprintf("%d", time.Now().Unix())
 	newName = createTime + "_" + newName + "." + extension[1]
-	filepath := "public/upload/images/" + newName
+	filepath := os.Getenv("IMAGE_FILE_PATH") + newName
 
 	// Upload the file to specific dst.
 	if err := c.SaveUploadedFile(file, filepath); err != nil {
@@ -165,7 +148,11 @@ func UpdateOSSShipperConfirmedHandler(c *gin.Context) {
 	}
 
 	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperConfirmed: newName, Finished: true}).Error; err != nil {
+	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
+		ShipperConfirmed:     newName,
+		ShipperConfirmedTime: time.Now().Unix(),
+		Finished:             true,
+	}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -178,6 +165,11 @@ func CancelOrderShortShipHandler(c *gin.Context) {
 	orderShortShip, err := getOrderShortShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	if orderShortShip.Finished == true || orderShortShip.Canceled == true {
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
