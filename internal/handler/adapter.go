@@ -81,6 +81,9 @@ func RefreshDatabase() (err error) {
 	if err := createTransportType(); err != nil {
 		return err
 	}
+	if err := createLongShip(); err != nil {
+		return err
+	}
 	if err := createExampleOrder(); err != nil {
 		return err
 	}
@@ -251,6 +254,18 @@ func createTransportType() error {
 	}
 	transportType = &model.TransportType{LocationOne: "HCM", LocationTwo: "VT", LongShipDuration: 172800, LongShipPrice: 120000, BusStationFrom: "231-233 Le Hong Phong", BusStationTo: "192 Nam Ky Khoi Nghia, Phuong Thang Tam", ShortShipPricePerKm: 26000}
 	if err := db.Create(transportType).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func createLongShip() error {
+	longShip := &model.LongShip{TransportTypeID: 3, LicensePlate: "51A 435.22", EstimatedTimeOfDeparture: 1610599301, EstimatedTimeOfArrival: 1610999301, Finished: false}
+	if err := db.Create(longShip).Error; err != nil {
+		return err
+	}
+	longShip = &model.LongShip{TransportTypeID: 4, LicensePlate: "51B 425.82", EstimatedTimeOfDeparture: 1610099301, EstimatedTimeOfArrival: 1610399301, Finished: true}
+	if err := db.Create(longShip).Error; err != nil {
 		return err
 	}
 	return nil

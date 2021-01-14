@@ -49,7 +49,7 @@ type LongShip struct {
 	UnloadedTime    int64 `json:"unloaded_time"`
 	// Message data in workflow - End
 	Finished  bool   `json:"finished"`
-	OLSQrCode string `json:"qls_qr_code"`
+	LSQrCode  string `json:"ls_qr_code"`
 	UpdatedAt int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
@@ -95,6 +95,6 @@ type OrderShortShip struct {
 	Canceled       bool   `json:"canceled"`
 	CanceledReason string `json:"canceled_reason"`
 	Finished       bool   `json:"finished"`
-	OSSQrCode      string `json:"qss_qr_code"`
+	OSSQrCode      string `json:"oss_qr_code"`
 	UpdatedAt      int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }

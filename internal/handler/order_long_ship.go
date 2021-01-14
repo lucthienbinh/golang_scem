@@ -13,9 +13,24 @@ import (
 
 // GetLongShipListHandler in database
 func GetLongShipListHandler(c *gin.Context) {
-	longShips := []model.LongShip{}
-	db.Order("id asc").Find(&longShips)
-	c.JSON(http.StatusOK, gin.H{"long_ship_list": &longShips})
+	type APILongShipList struct {
+		ID                       uint   `json:"id"`
+		TransportTypeID          uint   `json:"transport_type_id"`
+		LicensePlate             string `json:"license_plate"`
+		EstimatedTimeOfDeparture int64  `json:"estimated_time_of_departure"`
+		EstimatedTimeOfArrival   int64  `json:"estimated_time_of_arrival"`
+		Finished                 bool   `json:"finished"`
+	}
+	longShips := []APILongShipList{}
+	db.Model(&model.LongShip{}).Order("id asc").Find(&longShips)
+
+	transportTypes := []model.TransportType{}
+	db.Where("same_city is ?", false).Order("id asc").Find(&transportTypes)
+
+	c.JSON(http.StatusOK, gin.H{
+		"long_ship_list":      &longShips,
+		"transport_type_list": &transportTypes,
+	})
 	return
 }
 
