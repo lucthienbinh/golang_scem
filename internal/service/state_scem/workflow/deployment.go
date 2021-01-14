@@ -100,7 +100,6 @@ func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (string,
 	variables["pay_method"] = orderWorkflowData.PayMethod
 	variables["shipper_receive_money"] = orderWorkflowData.ShipperReceiveMoney
 	variables["use_long_ship"] = orderWorkflowData.UseLongShip
-	variables["use_short_ship"] = orderWorkflowData.UseShortShip
 	variables["customer_receive_id"] = orderWorkflowData.CustomerReceiveID
 
 	workflowVariables := make(map[string]interface{})

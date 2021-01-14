@@ -1,11 +1,15 @@
 package handler
 
 import (
+	"crypto/rand"
+	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/model"
+	qrcode "github.com/skip2/go-qrcode"
 	"gopkg.in/validator.v2"
 )
 
@@ -56,7 +60,7 @@ func GetLongShipHandler(c *gin.Context) {
 // CreateLongShipFormData in frontend
 func CreateLongShipFormData(c *gin.Context) {
 	transportTypes := []model.TransportType{}
-	db.Where("same_city == ?", false).Order("id asc").Find(&transportTypes)
+	db.Where("same_city is ?", false).Order("id asc").Find(&transportTypes)
 	c.JSON(http.StatusOK, gin.H{"transport_type_list": &transportTypes})
 	return
 }
@@ -72,6 +76,21 @@ func CreateLongShipHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	// Create QR code
+	b := make([]byte, 8)
+	if _, err := rand.Read(b); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	newName := fmt.Sprintf("%x", b)
+	createTime := fmt.Sprintf("%d", time.Now().Unix())
+	newName = createTime + "_" + newName + ".jpg"
+	filepath := os.Getenv("QR_CODE_FILE_PATH") + newName
+	if err := qrcode.WriteFile(newName, qrcode.Medium, 256, filepath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	longShip.LSQrCode = newName
 	if err := db.Create(longShip).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

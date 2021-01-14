@@ -151,7 +151,6 @@ func CreateOrderPayStepTwoHandler(c *gin.Context) {
 		OrderID:             orderPay.OrderID,
 		PayMethod:           stepTwoRequest.PayMethod,
 		ShipperReceiveMoney: stepTwoRequest.ShipperReceiveMoney,
-		UseShortShip:        orderInfoForPayment.UseShortShip,
 		UseLongShip:         orderInfoForPayment.UseLongShip,
 		CustomerSendID:      orderInfoForPayment.CustomerSendID,
 		CustomerReceiveID:   orderInfoForPayment.CustomerReceiveID,

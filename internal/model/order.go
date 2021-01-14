@@ -10,8 +10,8 @@ import (
 type OrderInfo struct {
 	ID uint `gorm:"primary_key;<-:false" json:"id"`
 	// Package information
-	Weight int16  `json:"weight"`
-	Volume int16  `json:"volume"`
+	Weight int64  `json:"weight"`
+	Volume int64  `json:"volume"`
 	Type   string `json:"type"`
 	Image  string `json:"image"`
 	// User information
@@ -21,16 +21,14 @@ type OrderInfo struct {
 	CustomerRecvFCMToken string `json:"-"`
 	EmplCreateID         uint   `json:"empl_create_id"`
 	// Delivery information
-	OriginalSender  string `json:"original_sender" validate:"nonzero"`
 	Sender          string `json:"sender" validate:"nonzero"`
 	Receiver        string `json:"receiver" validate:"nonzero"`
 	TransportTypeID uint   `json:"transport_type_id" validate:"nonzero"`
 	Detail          string `json:"detail" validate:"nonzero"`
 	Note            string `json:"note"`
-	TotalPrice      int64
+	TotalPrice      int64  `json:"total_price"`
 	// Long ship and short ship
 	UseLongShip       bool  `json:"use_long_ship"`
-	UseShortShip      bool  `json:"use_short_ship"`
 	LongShipID        uint  `json:"long_ship_id"`
 	OrderLongShipID   uint  `json:"order_long_ship_id"`
 	OrderShortShipID  uint  `json:"order_short_ship_id"`
@@ -79,7 +77,6 @@ type OrderInfoForPayment struct {
 	ID                uint
 	CustomerSendID    uint
 	CustomerReceiveID uint
-	UseShortShip      bool
 	UseLongShip       bool
 	TotalPrice        int64
 }
@@ -90,7 +87,6 @@ type OrderInfoForShipment struct {
 	TransportTypeID      uint
 	CustomerSendFCMToken string
 	CustomerRecvFCMToken string
-	UseShortShip         bool
 	UseLongShip          bool
 	LongShipID           uint
 	CustomerReceiveID    uint

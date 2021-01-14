@@ -96,6 +96,9 @@ func RefreshDatabase() (err error) {
 	if err := createExampleOrder2(); err != nil {
 		return err
 	}
+	if err := createCustomerFCMToken(); err != nil {
+		return err
+	}
 	return
 }
 
@@ -319,10 +322,10 @@ func createExampleOrder() error {
 	orderInfo := &model.OrderInfo{
 		Weight: 2, Volume: 10, Type: "Normal", Image: "order1.png",
 		CustomerSendID: 1, EmplCreateID: 2,
-		Sender:       "269 Ngo Quyen, Quan 5, HCM",
-		Receiver:     "38 Tran Hung Dao, Quan 1,HCM",
-		Detail:       "May vi tinh ca nhan va ban phim may tinh",
-		UseShortShip: true, OrderShortShipID: 1, TransportTypeID: 1,
+		Sender:           "269 Ngo Quyen, Quan 5, HCM",
+		Receiver:         "38 Tran Hung Dao, Quan 1,HCM",
+		Detail:           "May vi tinh ca nhan va ban phim may tinh",
+		OrderShortShipID: 1, TransportTypeID: 1, ShortShipDistance: 20,
 		TotalPrice: 200000, Note: "Giao hang vao buoi sang",
 	}
 	if err := db.Create(orderInfo).Error; err != nil {
@@ -358,14 +361,24 @@ func createExampleOrder2() error {
 	orderInfo := &model.OrderInfo{
 		Weight: 3, Volume: 50, Type: "Special", Image: "order1.png",
 		CustomerSendID: 1, EmplCreateID: 2,
-		OriginalSender: "231-233 Le Hong Phong",
-		Sender:         "695-697 Quoc lo 20, Thi tran Lien Nghia, Huyen Duc Trong, Lam Dong",
-		Receiver:       "74 Phan Chau Trinh, Quan 3, DL",
-		Detail:         "May xay thit", UseLongShip: true,
-		UseShortShip: true, OrderShortShipID: 1, TransportTypeID: 3,
+		Sender:   "231-233 Le Hong Phong",
+		Receiver: "74 Phan Chau Trinh, Quan 3, DL",
+		Detail:   "May xay thit", UseLongShip: true, LongShipID: 1,
+		OrderShortShipID: 1, TransportTypeID: 3, ShortShipDistance: 20,
 		TotalPrice: 200000, Note: "Giao hang vao buoi trua",
 	}
 	if err := db.Create(orderInfo).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func createCustomerFCMToken() error {
+	orderPay := &model.UserFCMToken{
+		CustomerID: 1, UserAuthID: 5,
+		Token: "f09fih-jQ9GhMz3riGfmJv:APA91bH7opzi3nvIeY1GLvJb0zZClx19ZztB5-6Bgg4jIsBi-9fnZWHpqYo1Za78W93VbdyiQureIFkck0MA6AaFik7LwQ2gIburmRCV2eR4ZBIp-YjQKRhIUHAYbu6YyQmfEJPsDgbn",
+	}
+	if err := db.Create(orderPay).Error; err != nil {
 		return err
 	}
 	return nil

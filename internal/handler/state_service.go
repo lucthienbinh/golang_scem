@@ -26,7 +26,6 @@ func CreateWorkflowInstanceSS(c *gin.Context) {
 	orderWorkflowData.PayMethod = "Cash"
 	orderWorkflowData.ShipperReceiveMoney = true
 	orderWorkflowData.UseLongShip = true
-	orderWorkflowData.UseShortShip = true
 	orderWorkflowData.CustomerReceiveID = uint(11)
 
 	WorkflowKey, WorkflowInstanceKey, err := createWorkflowFullShipInstanceHandlerSS(&orderWorkflowData)

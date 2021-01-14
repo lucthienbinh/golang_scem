@@ -12,37 +12,29 @@ import (
 
 // GetOrderInfoListHandler in database
 func GetOrderInfoListHandler(c *gin.Context) {
-	orderInfoList := []model.OrderInfo{}
-	// selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, " +
-	// 	"c1.name as customer_send_name, c2.name as customer_receive_name, e1.name as empl_create_name, " +
-	// 	"ord.original_sender, ord.sender, ord.receiver, ord.detail, ord.total_price, ord.note, ord.created_at"
-	// leftJoin1 := "left join customers as c1 on ord.customer_send_id = c1.id"
-	// leftJoin2 := "left join customers as c2 on ord.customer_receive_id = c2.id"
-	// leftJoin3 := "left join transport_types as t on ord.transport_type_id = t.id"
-	// leftJoin4 := "left join employees as e1 on ord.empl_create_id = e1.id"
-	// leftJoin5 := "left join employees as e2 on ord.empl_ship_id = e2.id"
 
-	// db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin3).Joins(leftJoin4).Joins(leftJoin5).
-	// 	Order("ord.id asc").Find(&orderInfoList)
-	db.Order("id asc").Find(&orderInfoList)
+	type APIOrderList struct {
+		ID                uint   `json:"id"`
+		CustomerSendID    uint   `json:"customer_send_id" validate:"nonzero"`
+		CustomerReceiveID uint   `json:"customer_receive_id"`
+		Sender            string `json:"sender" validate:"nonzero"`
+		Receiver          string `json:"receiver" validate:"nonzero"`
+		TransportTypeID   uint   `json:"transport_type_id" validate:"nonzero"`
+		TotalPrice        int64  `json:"total_price"`
+	}
+	orderInfoList := []APIOrderList{}
+	db.Model(&model.OrderInfo{}).Order("id asc").Find(&orderInfoList)
+
 	c.JSON(http.StatusOK, gin.H{"order_info_list": orderInfoList})
 	return
 }
 
-func getOrderInfoOrNotFound(c *gin.Context) (*model.OrderInfoFetchDB, error) {
-	orderInfoFetchDB := &model.OrderInfoFetchDB{}
-	selectPart := "ord.id, ord.weight, ord.volume, ord.type, ord.image, " +
-		"c1.name as customer_send_name, c2.name as customer_receive_name, " +
-		"e1.name as empl_create_name, ord.receiver, ord.detail, ord.total_price, ord.note"
-	leftJoin1 := "left join customers as c1 on ord.customer_send_id = c1.id"
-	leftJoin2 := "left join customers as c2 on ord.customer_receive_id = c2.id"
-	leftJoin4 := "left join employees as e1 on ord.empl_create_id = e1.id"
-
-	if err := db.Table("order_infos as ord").Select(selectPart).Joins(leftJoin1).Joins(leftJoin2).Joins(leftJoin4).
-		Order("ord.id asc").First(orderInfoFetchDB, c.Param("id")).Error; err != nil {
-		return orderInfoFetchDB, err
+func getOrderInfoOrNotFound(c *gin.Context) (*model.OrderInfo, error) {
+	orderInfo := &model.OrderInfo{}
+	if err := db.First(orderInfo, c.Param("id")).Error; err != nil {
+		return orderInfo, err
 	}
-	return orderInfoFetchDB, nil
+	return orderInfo, nil
 }
 
 func getOrderInfoOrNotFoundForPayment(orderID uint) (*model.OrderInfoForPayment, error) {
@@ -67,12 +59,35 @@ func getOrderInfoOrNotFoundForShipment(orderID uint) (*model.OrderInfoForShipmen
 
 // GetOrderInfoHandler in database
 func GetOrderInfoHandler(c *gin.Context) {
-	orderInfoFetchDB, err := getOrderInfoOrNotFound(c)
+	orderInfo, err := getOrderInfoOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"order_info": &orderInfoFetchDB})
+	c.JSON(http.StatusOK, gin.H{"order_info": &orderInfo})
+	return
+}
+
+// CreateOrderFormData function
+func CreateOrderFormData(c *gin.Context) {
+	type APILongShipList struct {
+		ID                       uint   `json:"id"`
+		TransportTypeID          uint   `json:"transport_type_id"`
+		LicensePlate             string `json:"license_plate"`
+		EstimatedTimeOfDeparture int64  `json:"estimated_time_of_departure"`
+		EstimatedTimeOfArrival   int64  `json:"estimated_time_of_arrival"`
+		Finished                 bool   `json:"finished"`
+	}
+	longShips := []APILongShipList{}
+	db.Model(&model.LongShip{}).Order("id asc").Find(&longShips)
+
+	transportTypes := []model.TransportType{}
+	db.Where("same_city is ?", false).Order("id asc").Find(&transportTypes)
+
+	c.JSON(http.StatusOK, gin.H{
+		"long_ship_list":      &longShips,
+		"transport_type_list": &transportTypes,
+	})
 	return
 }
 
@@ -82,11 +97,9 @@ func calculateTotalPrice(orderInfo *model.OrderInfo) (int64, error) {
 		return 0, err
 	}
 	var totalPrice int64
+	totalPrice = transportType.ShortShipPricePerKm * orderInfo.ShortShipDistance
 	if orderInfo.UseLongShip == true {
 		totalPrice += transportType.LongShipPrice
-	}
-	if orderInfo.UseShortShip == true {
-		totalPrice += (transportType.ShortShipPricePerKm * orderInfo.ShortShipDistance)
 	}
 	return totalPrice, nil
 }
@@ -95,11 +108,13 @@ func calculateTotalPrice(orderInfo *model.OrderInfo) (int64, error) {
 func CreateOrderInfoHandler(c *gin.Context) {
 	orderInfo := &model.OrderInfo{}
 	if err := c.ShouldBindJSON(&orderInfo); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		// c.AbortWithStatus(http.StatusBadRequest)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	if err := validator.Validate(&orderInfo); err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		// c.AbortWithStatus(http.StatusBadRequest)
+		c.JSON(http.StatusInternalServerError, gin.H{"error2": err.Error()})
 		return
 	}
 	// Calculate total price

@@ -98,7 +98,7 @@
             "type": 2,
             "name": "CustomerReceive Info ?",
             "next_step_1": 13,
-            "next_step_2": 21
+            "next_step_2": 20
         },
         {
             "workflow_process_id": "full_ship_process_1",
@@ -148,21 +148,13 @@
             "step": 18,
             "type": 4,
             "name": "Long Ship Finished",
-            "next_step_1": 19,
+            "next_step_1": 6,
             "mapping_name": "LongShipFinished",
             "message_correlation_name": "order_id"
         },
         {
             "workflow_process_id": "full_ship_process_1",
             "step": 19,
-            "type": 2,
-            "name": "Short Ship ?",
-            "next_step_1": 6,
-            "next_step_2": 14
-        },
-        {
-            "workflow_process_id": "full_ship_process_1",
-            "step": 20,
             "type": 4,
             "name": "Shipper Received Money",
             "next_step_1": 11,
@@ -171,7 +163,7 @@
         },
         {
             "workflow_process_id": "full_ship_process_1",
-            "step": 21,
+            "step": 20,
             "type": 4,
             "name": "Shipper Confirmed",
             "next_step_1": 14,

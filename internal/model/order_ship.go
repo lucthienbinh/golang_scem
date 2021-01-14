@@ -16,7 +16,6 @@ type OrderWorkflowData struct {
 	// Variable use for Zeebe gateway
 	PayMethod           string `json:"pay_method"`
 	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
-	UseShortShip        bool   `json:"use_short_ship"`
 	UseLongShip         bool   `json:"use_long_ship"`
 	CustomerSendID      uint   `json:"customer_send_id"`
 	CustomerReceiveID   uint   `json:"customer_receive_id"`

@@ -60,6 +60,7 @@ func webRouter() http.Handler {
 	e := gin.Default()
 
 	e.Static("/api/images", os.Getenv("IMAGE_FILE_PATH"))
+	e.Static("/api/qrcode", os.Getenv("QR_CODE_FILE_PATH"))
 	// Set a lower memory limit for multipart forms (default is 32 MiB)
 	e.MaxMultipartMemory = 8 << 20 // 8 MiB
 
