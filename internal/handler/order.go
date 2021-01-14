@@ -25,7 +25,20 @@ func GetOrderInfoListHandler(c *gin.Context) {
 	orderInfoList := []APIOrderList{}
 	db.Model(&model.OrderInfo{}).Order("id asc").Find(&orderInfoList)
 
-	c.JSON(http.StatusOK, gin.H{"order_info_list": orderInfoList})
+	type APIOrderPay struct {
+		ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
+		OrderID             uint   `json:"order_id"`
+		PayMethod           string `json:"pay_method"`
+		PayStatus           bool   `json:"pay_status"`
+		TotalPrice          int64  `json:"total_price"`
+		FinishedStepOne     bool   `json:"finished_step_one"`
+		FinishedStepTwo     bool   `json:"finished_step_two"`
+		ShipperReceiveMoney bool   `json:"shipper_receive_money"`
+	}
+	orderPays := []APIOrderPay{}
+	db.Model(&model.OrderPay{}).Order("id asc").Find(&orderPays)
+
+	c.JSON(http.StatusOK, gin.H{"order_info_list": orderInfoList, "order_pay_list": &orderPays})
 	return
 }
 

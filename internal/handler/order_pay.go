@@ -63,7 +63,7 @@ func updateCustomerCreditAfterConfirmed(customerID uint, totalPrice int64) error
 	if customerCredit.AccountBalance < totalPrice {
 		return errors.New("Not enough money")
 	}
-	customerNewBalance := totalPrice - customerCredit.AccountBalance
+	customerNewBalance := customerCredit.AccountBalance - totalPrice
 	if err := updateCustomerCreditBalance(customerNewBalance, customerID); err != nil {
 		return err
 	}

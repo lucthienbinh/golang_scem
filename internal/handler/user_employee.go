@@ -91,7 +91,12 @@ func CreateEmployeeFormData(c *gin.Context) {
 	}
 
 	deliveryLocationOptions := []model.SelectStuct{}
-	selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
+	if os.Getenv("SELECT_DATABASE") == "3" {
+		selectPart = "dl.id as value, dl.city || ' - ' || dl.district as label "
+	} else {
+		selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
+	}
+
 	db.Table("delivery_locations as dl").Select(selectPart).Order("dl.id asc").Find(&deliveryLocationOptions)
 	for i := 0; i < len(deliveryLocationOptions); i++ {
 		deliveryLocationOptions[i].Name = "delivery_location_id"
@@ -154,7 +159,11 @@ func UpdateEmployeeFormData(c *gin.Context) {
 	}
 
 	deliveryLocationOptions := []model.SelectStuct{}
-	selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
+	if os.Getenv("SELECT_DATABASE") == "3" {
+		selectPart = "dl.id as value, dl.city || ' - ' || dl.district as label "
+	} else {
+		selectPart = "dl.id as value, concat(dl.city, ' - ', dl.district) as label "
+	}
 	db.Table("delivery_locations as dl").Select(selectPart).Order("dl.id asc").Find(&deliveryLocationOptions)
 	for i := 0; i < len(deliveryLocationOptions); i++ {
 		deliveryLocationOptions[i].Name = "delivery_location_id"
