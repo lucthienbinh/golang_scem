@@ -12,6 +12,11 @@ import (
 
 var db *gorm.DB
 
+// GetGormInstance function
+func GetGormInstance() *gorm.DB {
+	return db
+}
+
 // ConnectPostgres to open connect with database
 func ConnectPostgres() (err error) {
 	// https://github.com/go-gorm/postgres
@@ -56,6 +61,7 @@ func MigrationDatabase() (err error) {
 		&model.OrderLongShip{},
 		&model.OrderShortShip{},
 		&model.OrderWorkflowData{},
+		&model.LongShipWorkflowData{},
 	)
 }
 
@@ -122,6 +128,7 @@ func deleteDatabase() (err error) {
 		&model.OrderLongShip{},
 		&model.OrderShortShip{},
 		&model.OrderWorkflowData{},
+		&model.LongShipWorkflowData{},
 	)
 }
 

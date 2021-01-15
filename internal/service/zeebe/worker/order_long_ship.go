@@ -5,14 +5,15 @@ import (
 	"log"
 	"os"
 
-	"github.com/lucthienbinh/golang_scem/internal/handler"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
+
+	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
 )
 
-// RunLongShip to start this worker
-func RunLongShip() {
+// RunOrderLongShip to start this worker
+func RunOrderLongShip() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         os.Getenv("BROKER_ADDRESS"),
 		UsePlaintextConnection: true,
@@ -20,10 +21,10 @@ func RunLongShip() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("long_ship").Handler(handleJobLongShip).Open()
+	go client.NewJobWorker().JobType("order_long_ship").Handler(handleJobOrderLongShip).Open()
 }
 
-func handleJobLongShip(client worker.JobClient, job entities.Job) {
+func handleJobOrderLongShip(client worker.JobClient, job entities.Job) {
 	jobKey := job.GetKey()
 
 	variables, err := job.GetVariablesAsMap()
@@ -40,7 +41,7 @@ func handleJobLongShip(client worker.JobClient, job entities.Job) {
 		failJob(client, job)
 		return
 	}
-	orderLongShipID, err := handler.CreateOrderLongShip(uintOrderID)
+	orderLongShipID, err := CommonService.CreateOrderLongShip(uintOrderID)
 	if err != nil {
 		failJob(client, job)
 		return

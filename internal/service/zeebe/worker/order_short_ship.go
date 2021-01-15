@@ -5,14 +5,15 @@ import (
 	"log"
 	"os"
 
-	"github.com/lucthienbinh/golang_scem/internal/handler"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
+
+	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
 )
 
-// RunShortShip to start this worker
-func RunShortShip() {
+// RunOrderShortShip to start this worker
+func RunOrderShortShip() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         os.Getenv("BROKER_ADDRESS"),
 		UsePlaintextConnection: true,
@@ -20,10 +21,10 @@ func RunShortShip() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("long_ship").Handler(handleJobShortShip).Open()
+	go client.NewJobWorker().JobType("order_short_ship").Handler(handleJobOrderShortShip).Open()
 }
 
-func handleJobShortShip(client worker.JobClient, job entities.Job) {
+func handleJobOrderShortShip(client worker.JobClient, job entities.Job) {
 	jobKey := job.GetKey()
 
 	variables, err := job.GetVariablesAsMap()
@@ -40,12 +41,7 @@ func handleJobShortShip(client worker.JobClient, job entities.Job) {
 		failJob(client, job)
 		return
 	}
-	shipperReceiveMoney, ok := variables["shipper_receive_money"].(bool)
-	if ok == false {
-		failJob(client, job)
-		return
-	}
-	orderShortShipID, err := handler.CreateOrderShortShip(uintOrderID, shipperReceiveMoney)
+	orderShortShipID, err := CommonService.CreateOrderShortShip(uintOrderID)
 	if err != nil {
 		failJob(client, job)
 		return

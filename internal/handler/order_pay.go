@@ -6,6 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/model"
+	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
+	CommonMessage "github.com/lucthienbinh/golang_scem/internal/service/common_message"
 	"gopkg.in/validator.v2"
 	"gorm.io/gorm"
 )
@@ -154,7 +156,7 @@ func CreateOrderPayStepTwoHandler(c *gin.Context) {
 		CustomerReceiveID:   orderInfoForPayment.CustomerReceiveID,
 	}
 	// Create workflow instance in zeebe
-	WorkflowKey, WorkflowInstanceKey, err := CreateWorkflowFullShipInstanceHandler(orderWorkflowData)
+	WorkflowKey, WorkflowInstanceKey, err := CommonService.CreateWorkflowFullShipInstanceHandler(orderWorkflowData)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -204,6 +206,11 @@ func UpdateOrderPayConfirmHandler(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+	}
+	err = CommonMessage.PublishPaymentConfirmedMessage(getIDFromParam(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	if err := db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

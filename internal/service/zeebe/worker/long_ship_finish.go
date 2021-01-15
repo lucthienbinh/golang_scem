@@ -20,7 +20,7 @@ func RunLongShipFinish() {
 	if err != nil {
 		panic(err)
 	}
-	go client.NewJobWorker().JobType("long_ship").Handler(handleJobLongShipFinish).Open()
+	go client.NewJobWorker().JobType("long_ship_finish").Handler(handleJobLongShipFinish).Open()
 }
 
 func handleJobLongShipFinish(client worker.JobClient, job entities.Job) {

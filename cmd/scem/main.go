@@ -8,6 +8,7 @@ import (
 	"github.com/lucthienbinh/golang_scem/api/middleware"
 	"github.com/lucthienbinh/golang_scem/api/server"
 	"github.com/lucthienbinh/golang_scem/internal/handler"
+	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
 	ZBMessage "github.com/lucthienbinh/golang_scem/internal/service/zeebe/message"
 	ZBWorker "github.com/lucthienbinh/golang_scem/internal/service/zeebe/worker"
 	ZBWorkflow "github.com/lucthienbinh/golang_scem/internal/service/zeebe/workflow"
@@ -42,6 +43,9 @@ func main() {
 		log.Println("No database selected!")
 		os.Exit(1)
 	}
+
+	gormDB := handler.GetGormInstance()
+	CommonService.MappingGormDBConnection(gormDB)
 
 	if err := handler.RefreshDatabase(); err != nil {
 		// if err := handler.MigrationDatabase(); err != nil {
@@ -113,7 +117,7 @@ func connectZeebeClient() {
 	}
 	log.Println("Zeebe message package connected with zeebe!")
 	// Run Zebee service
-	ZBWorker.RunLongShip()
-	ZBWorker.RunShortShip()
+	ZBWorker.RunOrderLongShip()
+	ZBWorker.RunOrderShortShip()
 	ZBWorker.RunLongShipFinish()
 }

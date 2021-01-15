@@ -20,6 +20,14 @@ type OrderWorkflowData struct {
 	CustomerReceiveID   uint `json:"customer_receive_id"`
 }
 
+// LongShipWorkflowData structure
+type LongShipWorkflowData struct {
+	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
+	WorkflowKey         string `json:"workflow_key"`
+	WorkflowInstanceKey uint   `json:"workflow_instance_key"`
+	LongShipID          uint   `json:"long_ship_id"`
+}
+
 // LongShip structure
 type LongShip struct {
 	ID                       uint   `gorm:"primary_key;<-:false" json:"id"`

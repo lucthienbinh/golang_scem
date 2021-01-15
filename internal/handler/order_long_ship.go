@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/model"
+	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
+	CommonMessage "github.com/lucthienbinh/golang_scem/internal/service/common_message"
 	qrcode "github.com/skip2/go-qrcode"
 	"gopkg.in/validator.v2"
 )
@@ -95,6 +97,23 @@ func CreateLongShipHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Create workflow instance in zeebe
+	WorkflowKey, WorkflowInstanceKey, err := CommonService.CreateWorkflowLongShipInstanceHandler(longShip.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	longShipWorkflowData := &model.LongShipWorkflowData{}
+	longShipWorkflowData.LongShipID = longShip.ID
+	longShipWorkflowData.WorkflowKey = WorkflowKey
+	longShipWorkflowData.WorkflowInstanceKey = WorkflowInstanceKey
+	if err := db.Create(longShipWorkflowData).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusCreated, gin.H{"server_response": "A long ship has been created!"})
 	return
 }
@@ -156,6 +175,11 @@ func UpdateLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	err = CommonMessage.PublishPackageLoadedMessage(getIDFromParam(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	longShipUpdateInfo := model.LongShip{
 		CurrentLocation: "Location1",
 		PackageLoaded:   true,
@@ -185,6 +209,11 @@ func UpdateLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
 	}
 	if longShip.PackageLoaded == false || longShip.VehicleStarted == true {
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	err = CommonMessage.PublishVehicleStartedMessage(getIDFromParam(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	longShipUpdateInfo := model.LongShip{
@@ -218,6 +247,11 @@ func UpdateLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	err = CommonMessage.PublishVehicleArrivedMessage(getIDFromParam(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	longShipUpdateInfo := model.LongShip{
 		CurrentLocation: "Location3",
 		VehicleArrived:  true,
@@ -247,6 +281,16 @@ func UpdateLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 	}
 	if longShip.VehicleArrived == false || longShip.PackageUnloaded == true {
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	err = CommonMessage.PublishPackageUnloadedMessage(getIDFromParam(c))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	longShipUpdateInfo := model.LongShip{

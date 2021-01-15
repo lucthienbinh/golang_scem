@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/handler"
+	ServiceCommon "github.com/lucthienbinh/golang_scem/internal/service/common"
 )
 
 // OrderShipRoutes to manage user model
@@ -13,13 +14,12 @@ func OrderShipRoutes(rg *gin.RouterGroup) {
 	stateService := rg.Group("/state-service")
 	if os.Getenv("STATE_SERVICE") == "1" {
 		zeebe := stateService.Group("/zeebe")
-		zeebe.GET("/deploy-full-ship-workflow", handler.DeployWorkflowFullShipHandlerZB)
-		zeebe.GET("/deploy-long-ship-workflow", handler.DeployWorkflowLongShipHandlerZB)
+		zeebe.GET("/deploy-full-ship-workflow", ServiceCommon.DeployWorkflowFullShipHandlerZB)
+		zeebe.GET("/deploy-long-ship-workflow", ServiceCommon.DeployWorkflowLongShipHandlerZB)
 	} else {
 		stateScem := stateService.Group("/state-scem")
-		stateScem.GET("/deploy-full-ship-workflow", handler.DeployWorkflowFullShipHandlerSS)
-		stateScem.GET("/deploy-long-ship-workflow", handler.DeployWorkflowLongShipHandlerSS)
-		stateScem.GET("/test-create-instance", handler.CreateWorkflowInstanceSS)
+		stateScem.GET("/deploy-full-ship-workflow", ServiceCommon.DeployWorkflowFullShipHandlerSS)
+		stateScem.GET("/deploy-long-ship-workflow", ServiceCommon.DeployWorkflowLongShipHandlerSS)
 	}
 
 	longShip := rg.Group("/long-ship")
