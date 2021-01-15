@@ -37,6 +37,16 @@ func getOrderInfoOrNotFoundForShipment(orderID uint) (*model.OrderInfoForShipmen
 	return orderInfoForShipment, nil
 }
 
+func getOrderWorkflowDataByOrderID(orderID uint) (*model.OrderWorkflowData, error) {
+
+	orderWorkflowData := &model.OrderWorkflowData{}
+	err := db.Model(orderWorkflowData).Order("id asc").First(orderWorkflowData, "order_id = ?", orderID).Error
+	if err != nil {
+		return orderWorkflowData, err
+	}
+	return orderWorkflowData, nil
+}
+
 // CreateOrderLongShip in database
 func CreateOrderLongShip(orderID uint) (uint, error) {
 
@@ -75,6 +85,10 @@ func CreateOrderShortShip(orderID uint) (uint, error) {
 	if err != nil {
 		return uint(0), err
 	}
+	orderWorkflowData, err := getOrderWorkflowDataByOrderID(orderID)
+	if err != nil {
+		return uint(0), err
+	}
 
 	transportType := &model.TransportType{}
 	if err := db.First(transportType, orderInfoForShipment.TransportTypeID).Error; err != nil {
@@ -95,7 +109,7 @@ func CreateOrderShortShip(orderID uint) (uint, error) {
 	employeeList := []model.EmployeeInfoForShortShip{}
 	selectPart := "e.id, e.employee_type_id, e.delivery_location_id "
 	err = db.Table("employees as e").Select(selectPart).
-		Where("e.employee_type_id = ? AND e.delivery_location_id", 2, deliveryLocation.ID).Find(employeeList).Error
+		Where("e.employee_type_id = ? AND e.delivery_location_id", 2, deliveryLocation.ID).Find(&employeeList).Error
 	if err != nil {
 		return uint(0), err
 	}
@@ -106,8 +120,7 @@ func CreateOrderShortShip(orderID uint) (uint, error) {
 	orderShortShip.CustomerReceiveID = orderInfoForShipment.CustomerReceiveID
 	orderShortShip.CustomerSendFCMToken = orderInfoForShipment.CustomerSendFCMToken
 	orderShortShip.CustomerRecvFCMToken = orderInfoForShipment.CustomerRecvFCMToken
-	orderShortShip.CustomerSendFCMToken = orderInfoForShipment.CustomerRecvFCMToken
-	orderShortShip.ShipperReceiveMoney = shipperReceiveMoney
+	orderShortShip.ShipperReceiveMoney = orderWorkflowData.ShipperReceiveMoney
 	if err := db.Create(orderShortShip).Error; err != nil {
 		return uint(0), err
 	}

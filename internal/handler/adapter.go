@@ -343,6 +343,14 @@ func createDeliveryLocation() error {
 	if err := db.Create(location).Error; err != nil {
 		return err
 	}
+	location = &model.DeliveryLocation{City: "VT", District: "1"}
+	if err := db.Create(location).Error; err != nil {
+		return err
+	}
+	location = &model.DeliveryLocation{City: "VT", District: "2"}
+	if err := db.Create(location).Error; err != nil {
+		return err
+	}
 	return nil
 }
 
