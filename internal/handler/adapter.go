@@ -187,7 +187,7 @@ func createDefaultEmployee() error {
 	if err := db.Create(userAuth).Error; err != nil {
 		return err
 	}
-	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 37, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 4}
+	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Tuan", Age: 37, Phone: 776664993, Gender: "male", Address: "21 Nhat Tao", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 6}
 	if err := db.Create(employee).Error; err != nil {
 		return err
 	}
@@ -201,6 +201,19 @@ func createDefaultEmployee() error {
 		return err
 	}
 	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Hung", Age: 47, Phone: 776334958, Gender: "male", Address: "84 Nguyen Trau", IdentityCard: "17687t562765786", EmployeeTypeID: 4, Avatar: "image3.jpg"}
+	if err := db.Create(employee).Error; err != nil {
+		return err
+	}
+	userAuth.EmployeeID = employee.ID
+	if err := db.Model(&userAuth).Updates(&userAuth).Error; err != nil {
+		return err
+	}
+
+	userAuth = &model.UserAuthenticate{Email: "deliverystaff2@gmail.com", Password: "12345678"}
+	if err := db.Create(userAuth).Error; err != nil {
+		return err
+	}
+	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Hieu", Age: 37, Phone: 776664993, Gender: "male", Address: "21 Trung Son", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 11}
 	if err := db.Create(employee).Error; err != nil {
 		return err
 	}
@@ -291,11 +304,11 @@ func createTransportType() error {
 }
 
 func createLongShip() error {
-	longShip := &model.LongShip{LSQrCode: "1610662785_860de.jpg", TransportTypeID: 3, LicensePlate: "51A 435.22", EstimatedTimeOfDeparture: 1610599301, EstimatedTimeOfArrival: 1610999301, Finished: false}
+	longShip := &model.LongShip{LSQrCode: "1610662785_860de.jpg", TransportTypeID: 3, LicensePlate: "51A 435.22", EstimatedTimeOfDeparture: 1610599301, EstimatedTimeOfArrival: 1610999301, Finished: true}
 	if err := db.Create(longShip).Error; err != nil {
 		return err
 	}
-	longShip = &model.LongShip{TransportTypeID: 4, LicensePlate: "51B 425.82", EstimatedTimeOfDeparture: 1610099301, EstimatedTimeOfArrival: 1610399301, Finished: false}
+	longShip = &model.LongShip{TransportTypeID: 4, LicensePlate: "51B 425.82", EstimatedTimeOfDeparture: 1610099301, EstimatedTimeOfArrival: 1610399301, Finished: true}
 	if err := db.Create(longShip).Error; err != nil {
 		return err
 	}

@@ -30,7 +30,7 @@ type LongShipWorkflowData struct {
 
 // LongShip structure
 type LongShip struct {
-	ID                       uint   `gorm:"primary_key;<-:false" json:"id"`
+	ID                       uint   `gorm:"<-:create" json:"id"`
 	TransportTypeID          uint   `json:"transport_type_id" validate:"nonzero"`
 	LicensePlate             string `json:"license_plate" validate:"nonzero"`
 	EstimatedTimeOfDeparture int64  `json:"estimated_time_of_departure" validate:"nonzero"`

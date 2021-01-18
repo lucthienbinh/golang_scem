@@ -100,3 +100,15 @@ func CreateLongShipInstance(longShipID uint) (string, uint, error) {
 	log.Println(msg.String())
 	return strconv.Itoa(int(msg.WorkflowKey)), uint(msg.WorkflowInstanceKey), nil
 }
+
+// CancelFullShipInstance of workflow
+func CancelFullShipInstance(workflowInstanceKey uint) error {
+
+	ctx := context.Background()
+	_, err := zbClient.NewCancelInstanceCommand().WorkflowInstanceKey(int64(workflowInstanceKey)).Send(ctx)
+	if err != nil {
+		return err
+	}
+	log.Println("Canceled instance with workflow key", workflowInstanceKey)
+	return nil
+}

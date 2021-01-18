@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/lucthienbinh/golang_scem/internal/model"
 	"gopkg.in/validator.v2"
 )
@@ -61,12 +64,21 @@ func getOrderInfoOrNotFoundForPayment(orderID uint) (*model.OrderInfoForPayment,
 
 func getOrderInfoOrNotFoundForShipment(orderID uint) (*model.OrderInfoForShipment, error) {
 	orderInfoForShipment := &model.OrderInfoForShipment{}
-	selectPart := "ord.id, ord.customer_send_fcm_token, ord.customer_recv_fcm_token, ord.long_ship_id, ord.customer_receive_id "
-	err := db.Table("order_infos as ord").Select(selectPart).First(orderInfoForShipment, orderID).Error
+	err := db.Model(&model.OrderInfo{}).Order("id asc").First(&orderInfoForShipment, orderID).Error
 	if err != nil {
 		return orderInfoForShipment, err
 	}
 	return orderInfoForShipment, nil
+}
+
+func getOrderWorkflowDataByOrderID(orderID uint) (*model.OrderWorkflowData, error) {
+
+	orderWorkflowData := &model.OrderWorkflowData{}
+	err := db.Model(orderWorkflowData).Order("id asc").First(orderWorkflowData, "order_id = ?", orderID).Error
+	if err != nil {
+		return orderWorkflowData, err
+	}
+	return orderWorkflowData, nil
 }
 
 // GetOrderInfoHandler in database
@@ -91,7 +103,7 @@ func CreateOrderFormData(c *gin.Context) {
 		Finished                 bool   `json:"finished"`
 	}
 	longShips := []APILongShipList{}
-	db.Model(&model.LongShip{}).Order("id asc").Find(&longShips)
+	db.Model(&model.LongShip{}).Order("id asc").Find(&longShips, "finished is ?", false)
 
 	transportTypes := []model.TransportType{}
 	db.Where("same_city is ?", false).Order("id asc").Find(&transportTypes)
@@ -148,6 +160,11 @@ func CreateOrderInfoHandler(c *gin.Context) {
 		}
 		orderInfo.CustomerRecvFCMToken = cusReceiveFCMToken.Token
 	}
+	//Create order ID base on Time
+	current := uuid.New().Time()
+	currentString := fmt.Sprintf("%d", current)
+	rawUint, _ := strconv.ParseUint(currentString, 10, 64)
+	orderInfo.ID = uint(rawUint / 100000000000)
 	orderInfo.CustomerSendFCMToken = cusSendFCMToken.Token
 	// Create order info
 	if err := db.Create(orderInfo).Error; err != nil {
@@ -173,6 +190,7 @@ func UpdateOrderInfoHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	orderInfo.ID = getIDFromParam(c)
 	if err = db.Model(&orderInfo).Updates(&orderInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

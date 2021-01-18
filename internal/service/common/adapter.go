@@ -1,9 +1,13 @@
 package common
 
 import (
+	"fmt"
 	"math/rand"
+	"os"
+	"time"
 
 	"github.com/lucthienbinh/golang_scem/internal/model"
+	"github.com/skip2/go-qrcode"
 	"gorm.io/gorm"
 )
 
@@ -76,7 +80,7 @@ func CreateOrderLongShip(orderID uint) (uint, error) {
 
 // ++++++++++++++++++++ Order Short Ship Worker ++++++++++++++++++++
 
-// CreateOrderShortShip in database
+// CreateOrderShortShip function
 func CreateOrderShortShip(orderID uint) (uint, error) {
 
 	orderShortShip := &model.OrderShortShip{}
@@ -109,18 +113,37 @@ func CreateOrderShortShip(orderID uint) (uint, error) {
 	employeeList := []model.EmployeeInfoForShortShip{}
 	selectPart := "e.id, e.employee_type_id, e.delivery_location_id "
 	err = db.Table("employees as e").Select(selectPart).
-		Where("e.employee_type_id = ? AND e.delivery_location_id", 2, deliveryLocation.ID).Find(&employeeList).Error
+		Where("e.employee_type_id = ? AND e.delivery_location_id = ?", 3, deliveryLocation.ID).Find(&employeeList).Error
 	if err != nil {
 		return uint(0), err
 	}
+
 	length := len(employeeList)
-	index := rand.Intn(length - 1)
+	if length > 1 {
+		length = length - 1
+	}
+	index := rand.Intn(length)
 	orderShortShip.ShipperID = employeeList[index].ID
 	orderShortShip.CustomerSendID = orderInfoForShipment.CustomerSendID
 	orderShortShip.CustomerReceiveID = orderInfoForShipment.CustomerReceiveID
 	orderShortShip.CustomerSendFCMToken = orderInfoForShipment.CustomerSendFCMToken
 	orderShortShip.CustomerRecvFCMToken = orderInfoForShipment.CustomerRecvFCMToken
 	orderShortShip.ShipperReceiveMoney = orderWorkflowData.ShipperReceiveMoney
+
+	// Create QR code
+	b := make([]byte, 8)
+	if _, err := rand.Read(b); err != nil {
+		return uint(0), err
+	}
+	newName := fmt.Sprintf("%x", b)
+	createTime := fmt.Sprintf("%d", time.Now().Unix())
+	newName = createTime + "_" + newName + ".jpg"
+	filepath := os.Getenv("QR_CODE_FILE_PATH") + newName
+	if err := qrcode.WriteFile(newName, qrcode.Medium, 256, filepath); err != nil {
+		return uint(0), err
+	}
+	orderShortShip.OSSQrCode = newName
+
 	if err := db.Create(orderShortShip).Error; err != nil {
 		return uint(0), err
 	}

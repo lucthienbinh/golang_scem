@@ -69,3 +69,18 @@ func DeployWorkflowLongShipHandlerSS(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"server_response": "A workflow model has been created!"})
 	return
 }
+
+///////////////////////////////////////// CANCLE INSTANCE /////////////////////////////////////////
+
+////////+++++++++++ SERVICE SELECTOR +++++++++++////////
+
+// CancelWorkflowFullShipInstanceHandler will select private function
+func CancelWorkflowFullShipInstanceHandler(workflowInstanceKey uint) error {
+	if os.Getenv("STATE_SERVICE") == "1" {
+		return ZBWorkflow.CancelFullShipInstance(workflowInstanceKey)
+	}
+	if os.Getenv("STATE_SERVICE") == "2" {
+		return nil
+	}
+	return nil
+}

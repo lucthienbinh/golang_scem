@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/lucthienbinh/golang_scem/internal/model"
 	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
 	CommonMessage "github.com/lucthienbinh/golang_scem/internal/service/common_message"
@@ -93,6 +95,10 @@ func CreateLongShipHandler(c *gin.Context) {
 		return
 	}
 	longShip.LSQrCode = newName
+	current := uuid.New().Time()
+	currentString := fmt.Sprintf("%d", current)
+	rawUint, _ := strconv.ParseUint(currentString, 10, 64)
+	longShip.ID = uint(rawUint / 100000000000)
 	if err := db.Create(longShip).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

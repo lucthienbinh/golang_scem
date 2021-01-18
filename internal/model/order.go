@@ -8,7 +8,7 @@ import (
 
 // OrderInfo structure
 type OrderInfo struct {
-	ID uint `gorm:"primary_key;<-:false" json:"id"`
+	ID uint `gorm:"<-:create" json:"id"`
 	// Package information
 	Weight int64  `json:"weight"`
 	Volume int64  `json:"volume"`

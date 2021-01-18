@@ -10,6 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/model"
+	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
+	CommonMessage "github.com/lucthienbinh/golang_scem/internal/service/common_message"
 )
 
 // -------------------- ORDER SHORT SHIP HANDLER FUNTION --------------------
@@ -53,7 +55,11 @@ func UpdateOSSShipperCalledHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-
+	err = CommonMessage.PublishShipperCalledMessage(orderShortShip.OrderID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	orderShortShip.ID = getIDFromParam(c)
 	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperCalled: true}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -71,11 +77,15 @@ func UpdateOSSShipperReceivedMoneyHandler(c *gin.Context) {
 		return
 	}
 
-	if orderShortShip.ShipperReceivedMoney == true || orderShortShip.ShipperCalled == false || orderShortShip.Canceled == true {
+	if orderShortShip.ShipperReceiveMoney == false || orderShortShip.ShipperReceivedMoney == true || orderShortShip.ShipperCalled == false || orderShortShip.Canceled == true {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-
+	err = CommonMessage.PublishShipperReceivedMoneyMessage(orderShortShip.OrderID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	orderShortShip.ID = getIDFromParam(c)
 	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
 		ShipperReceivedMoney: true,
@@ -100,9 +110,13 @@ func UpdateOSSShipperShippedHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-
+	err = CommonMessage.PublishShipperShippedMessage(orderShortShip.OrderID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperShipped: true}).Error; err != nil {
+	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperShipped: true, ShippedTime: time.Now().Unix()}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -146,7 +160,11 @@ func UpdateOSSShipperConfirmedHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
+	err = CommonMessage.PublishShipperConfirmedMessage(orderShortShip.OrderID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	orderShortShip.ID = getIDFromParam(c)
 	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
 		ShipperConfirmed:     newName,
@@ -173,9 +191,21 @@ func CancelOrderShortShipHandler(c *gin.Context) {
 		return
 	}
 
+	orderWorkflowData, err := getOrderWorkflowDataByOrderID(orderShortShip.OrderID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	canceleReason := c.PostForm("canceled_reason")
-
 	orderShortShip.ID = getIDFromParam(c)
+
+	// Create workflow instance in zeebe
+	err = CommonService.CancelWorkflowFullShipInstanceHandler(orderWorkflowData.WorkflowInstanceKey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{Canceled: true, CanceledReason: canceleReason}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
