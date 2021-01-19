@@ -27,6 +27,7 @@ func GetLongShipListHandler(c *gin.Context) {
 		LicensePlate             string `json:"license_plate"`
 		EstimatedTimeOfDeparture int64  `json:"estimated_time_of_departure"`
 		EstimatedTimeOfArrival   int64  `json:"estimated_time_of_arrival"`
+		PackageLoaded            bool   `json:"package_loaded"`
 		Finished                 bool   `json:"finished"`
 	}
 	longShips := []APILongShipList{}
@@ -35,9 +36,32 @@ func GetLongShipListHandler(c *gin.Context) {
 	transportTypes := []model.TransportType{}
 	db.Where("same_city is ?", false).Order("id asc").Find(&transportTypes)
 
+	availableTotal := 0
+	runningTotal := 0
+	finishedTotal := 0
+	for i := 0; i < len(longShips); i++ {
+		timeNow := time.Now()
+		stillValidTime := timeNow.Before(time.Unix(longShips[i].EstimatedTimeOfDeparture, 0))
+		inProgressTime := timeNow.After(time.Unix(longShips[i].EstimatedTimeOfDeparture, 0)) && (longShips[i].Finished == false) && (longShips[i].PackageLoaded == true)
+
+		if longShips[i].Finished {
+			finishedTotal++
+		}
+		if stillValidTime {
+			availableTotal++
+		}
+		if inProgressTime {
+			runningTotal++
+		}
+
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"long_ship_list":      &longShips,
 		"transport_type_list": &transportTypes,
+		"available_total":     availableTotal,
+		"running_total":       runningTotal,
+		"finished_total":      finishedTotal,
 	})
 	return
 }

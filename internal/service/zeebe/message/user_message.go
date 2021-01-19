@@ -17,9 +17,9 @@ func PaymentConfirmed(orderID uint) error {
 }
 
 // PackageLoaded send mesage to zeebe engine
-func PackageLoaded(orderID uint) error {
+func PackageLoaded(longShipID uint) error {
 	ctx := context.Background()
-	_, err := zbClient.NewPublishMessageCommand().MessageName("PackageLoaded").CorrelationKey(fmt.Sprint(orderID)).TimeToLive(1 * time.Minute).Send(ctx)
+	_, err := zbClient.NewPublishMessageCommand().MessageName("PackageLoaded").CorrelationKey(fmt.Sprint(longShipID)).TimeToLive(1 * time.Minute).Send(ctx)
 	if err != nil {
 		return nil
 	}
@@ -27,9 +27,9 @@ func PackageLoaded(orderID uint) error {
 }
 
 // VehicleStarted send mesage to zeebe engine
-func VehicleStarted(orderID uint) error {
+func VehicleStarted(longShipID uint) error {
 	ctx := context.Background()
-	_, err := zbClient.NewPublishMessageCommand().MessageName("VehicleStarted").CorrelationKey(fmt.Sprint(orderID)).TimeToLive(1 * time.Minute).Send(ctx)
+	_, err := zbClient.NewPublishMessageCommand().MessageName("VehicleStarted").CorrelationKey(fmt.Sprint(longShipID)).TimeToLive(1 * time.Minute).Send(ctx)
 	if err != nil {
 		// failed to set the updated variables
 		return err
@@ -38,9 +38,9 @@ func VehicleStarted(orderID uint) error {
 }
 
 // VehicleArrived send mesage to zeebe engine
-func VehicleArrived(orderID uint) error {
+func VehicleArrived(longShipID uint) error {
 	ctx := context.Background()
-	_, err := zbClient.NewPublishMessageCommand().MessageName("VehicleArrived").CorrelationKey(fmt.Sprint(orderID)).TimeToLive(1 * time.Minute).Send(ctx)
+	_, err := zbClient.NewPublishMessageCommand().MessageName("VehicleArrived").CorrelationKey(fmt.Sprint(longShipID)).TimeToLive(1 * time.Minute).Send(ctx)
 	if err != nil {
 		// failed to set the updated variables
 		return err
@@ -49,9 +49,9 @@ func VehicleArrived(orderID uint) error {
 }
 
 // PackageUnloaded send mesage to zeebe engine
-func PackageUnloaded(orderID uint) error {
+func PackageUnloaded(longShipID uint) error {
 	ctx := context.Background()
-	_, err := zbClient.NewPublishMessageCommand().MessageName("PackageUnloaded").CorrelationKey(fmt.Sprint(orderID)).TimeToLive(1 * time.Minute).Send(ctx)
+	_, err := zbClient.NewPublishMessageCommand().MessageName("PackageUnloaded").CorrelationKey(fmt.Sprint(longShipID)).TimeToLive(1 * time.Minute).Send(ctx)
 	if err != nil {
 		return nil
 	}

@@ -1,6 +1,7 @@
 package message
 
 import (
+	"log"
 	"os"
 
 	ZBMessage "github.com/lucthienbinh/golang_scem/internal/service/zeebe/message"
@@ -18,13 +19,30 @@ func PublishPaymentConfirmedMessage(orderID uint) error {
 	if os.Getenv("STATE_SERVICE") == "2" {
 		return nil
 	}
+	orderWorkflowData, err := getOrderWorkflowDataByOrderID(orderID)
+	if err != nil {
+		return err
+	}
+	if orderWorkflowData.UseLongShip == true {
+		orderLongShipID, err := CreateOrderLongShip(orderID)
+		if err != nil {
+			return err
+		}
+		log.Println("Created order long ship id:", orderLongShipID)
+	} else {
+		orderShortShipID, err := CreateOrderShortShip(orderID)
+		if err != nil {
+			return err
+		}
+		log.Println("Created order short ship id:", orderShortShipID)
+	}
 	return nil
 }
 
 // PublishPackageLoadedMessage will select private function
-func PublishPackageLoadedMessage(orderID uint) error {
+func PublishPackageLoadedMessage(longShipID uint) error {
 	if os.Getenv("STATE_SERVICE") == "1" {
-		return ZBMessage.PackageLoaded(orderID)
+		return ZBMessage.PackageLoaded(longShipID)
 	}
 	if os.Getenv("STATE_SERVICE") == "2" {
 		return nil
@@ -33,9 +51,9 @@ func PublishPackageLoadedMessage(orderID uint) error {
 }
 
 // PublishVehicleStartedMessage will select private function
-func PublishVehicleStartedMessage(orderID uint) error {
+func PublishVehicleStartedMessage(longShipID uint) error {
 	if os.Getenv("STATE_SERVICE") == "1" {
-		return ZBMessage.VehicleStarted(orderID)
+		return ZBMessage.VehicleStarted(longShipID)
 	}
 	if os.Getenv("STATE_SERVICE") == "2" {
 		return nil
@@ -44,9 +62,9 @@ func PublishVehicleStartedMessage(orderID uint) error {
 }
 
 // PublishVehicleArrivedMessage will select private function
-func PublishVehicleArrivedMessage(orderID uint) error {
+func PublishVehicleArrivedMessage(longShipID uint) error {
 	if os.Getenv("STATE_SERVICE") == "1" {
-		return ZBMessage.VehicleArrived(orderID)
+		return ZBMessage.VehicleArrived(longShipID)
 	}
 	if os.Getenv("STATE_SERVICE") == "2" {
 		return nil
@@ -55,12 +73,25 @@ func PublishVehicleArrivedMessage(orderID uint) error {
 }
 
 // PublishPackageUnloadedMessage will select private function
-func PublishPackageUnloadedMessage(orderID uint) error {
+func PublishPackageUnloadedMessage(longShipID uint) error {
 	if os.Getenv("STATE_SERVICE") == "1" {
-		return ZBMessage.PackageUnloaded(orderID)
+		return ZBMessage.PackageUnloaded(longShipID)
 	}
 	if os.Getenv("STATE_SERVICE") == "2" {
 		return nil
+	}
+	// Unloaded Pakage message -> Long Ship Finished -> Order Short Ship Service
+	orderLongShips, err := GetOrderLongShipList(longShipID)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < len(orderLongShips); i++ {
+		orderID := orderLongShips[i].OrderID
+		orderShortShipID, err := CreateOrderShortShip(orderID)
+		if err != nil {
+			return err
+		}
+		log.Println("Created order short ship id:", orderShortShipID)
 	}
 	return nil
 }

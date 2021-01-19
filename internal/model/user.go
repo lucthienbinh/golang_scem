@@ -131,6 +131,7 @@ type EmployeeInfoFetchDB struct {
 	Gender                   string `json:"gender"`
 	Address                  string `json:"address"`
 	IdentityCard             string `json:"identity_card"`
+	EmployeeTypeID           uint   `json:"employee_type_id"`
 	EmployeeTypeName         string `json:"employee_type_name"`
 	Avatar                   string `json:"avatar"`
 	DeliveryLocationCity     string `json:"delivery_location_city"`

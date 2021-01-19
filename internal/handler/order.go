@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -103,7 +104,7 @@ func CreateOrderFormData(c *gin.Context) {
 		Finished                 bool   `json:"finished"`
 	}
 	longShips := []APILongShipList{}
-	db.Model(&model.LongShip{}).Order("id asc").Find(&longShips, "finished is ?", false)
+	db.Model(&model.LongShip{}).Order("id asc").Find(&longShips, "finished is ? and estimated_time_of_departure > ?", false, time.Now().Unix())
 
 	transportTypes := []model.TransportType{}
 	db.Where("same_city is ?", false).Order("id asc").Find(&transportTypes)
