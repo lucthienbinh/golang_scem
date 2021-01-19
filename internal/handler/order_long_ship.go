@@ -21,6 +21,9 @@ import (
 
 // GetLongShipListHandler in database
 func GetLongShipListHandler(c *gin.Context) {
+	queryStrings := c.Request.URL.Query()
+	sortByCondition := queryStrings.Get("sortByCondition")
+
 	type APILongShipList struct {
 		ID                       uint   `json:"id"`
 		TransportTypeID          uint   `json:"transport_type_id"`
@@ -31,34 +34,55 @@ func GetLongShipListHandler(c *gin.Context) {
 		Finished                 bool   `json:"finished"`
 	}
 	longShips := []APILongShipList{}
+	longShips2 := []APILongShipList{}
 	db.Model(&model.LongShip{}).Order("id asc").Find(&longShips)
+	if sortByCondition == "available" {
+		db.Model(&model.LongShip{}).Order("id asc").Find(&longShips2, "estimated_time_of_departure > ?", time.Now().Unix())
+	} else if sortByCondition == "ready" {
+		db.Model(&model.LongShip{}).Order("id asc").Find(&longShips2, "estimated_time_of_departure < ? AND finished is ? AND package_loaded is ?", time.Now().Unix(), false, false)
+	} else if sortByCondition == "running" {
+		db.Model(&model.LongShip{}).Order("id asc").Find(&longShips2, "estimated_time_of_departure < ? AND finished is ? AND package_loaded is ?", time.Now().Unix(), false, true)
+	} else if sortByCondition == "finished" {
+		db.Model(&model.LongShip{}).Order("id asc").Find(&longShips2, "finished is ?", true)
+	} else if sortByCondition == "" {
+		longShips2 = longShips
+	}
 
 	transportTypes := []model.TransportType{}
 	db.Where("same_city is ?", false).Order("id asc").Find(&transportTypes)
 
+	longShipTotal := 0
+	readyTotal := 0
 	availableTotal := 0
 	runningTotal := 0
 	finishedTotal := 0
 	for i := 0; i < len(longShips); i++ {
+		longShipTotal++
 		timeNow := time.Now()
-		stillValidTime := timeNow.Before(time.Unix(longShips[i].EstimatedTimeOfDeparture, 0))
-		inProgressTime := timeNow.After(time.Unix(longShips[i].EstimatedTimeOfDeparture, 0)) && (longShips[i].Finished == false) && (longShips[i].PackageLoaded == true)
+		beforeDeptTime := timeNow.Before(time.Unix(longShips[i].EstimatedTimeOfDeparture, 0))
+		afterDeptTime := timeNow.After(time.Unix(longShips[i].EstimatedTimeOfDeparture, 0)) && (longShips[i].Finished == false) && (longShips[i].PackageLoaded == false)
+		afterDeptRunTime := timeNow.After(time.Unix(longShips[i].EstimatedTimeOfDeparture, 0)) && (longShips[i].Finished == false) && (longShips[i].PackageLoaded == true)
 
 		if longShips[i].Finished {
 			finishedTotal++
 		}
-		if stillValidTime {
+		if beforeDeptTime {
 			availableTotal++
 		}
-		if inProgressTime {
+		if afterDeptTime {
+			readyTotal++
+		}
+		if afterDeptRunTime {
 			runningTotal++
 		}
 
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"long_ship_list":      &longShips,
+		"long_ship_list":      &longShips2,
 		"transport_type_list": &transportTypes,
+		"long_ship_total":     longShipTotal,
+		"ready_total":         readyTotal,
 		"available_total":     availableTotal,
 		"running_total":       runningTotal,
 		"finished_total":      finishedTotal,
