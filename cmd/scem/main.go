@@ -28,9 +28,11 @@ func main() {
 		runWebAuth()
 	}
 
-	// Initial app auth middleware
-	if os.Getenv("RUN_APP_AUTH") == "yes" {
-		runAppAuth()
+	// Select app auth middleware
+	if os.Getenv("RUN_APP_AUTH") == "redis" {
+		runAppAuthRedis()
+	} else if os.Getenv("RUN_APP_AUTH") == "buntdb" {
+		log.Println("Selected BuntDB to run app auth")
 	}
 
 	// Select database
@@ -75,8 +77,8 @@ func runWebAuth() {
 	log.Println("Web authenticate activated!")
 }
 
-func runAppAuth() {
-	if err := middleware.RunAppAuth(); err != nil {
+func runAppAuthRedis() {
+	if err := middleware.RunAppAuthRedis(); err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}

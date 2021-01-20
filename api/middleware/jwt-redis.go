@@ -19,8 +19,8 @@ import (
 
 var client *redis.Client
 
-// RunAppAuth to connect redis server
-func RunAppAuth() error {
+// RunAppAuthRedis to connect redis server
+func RunAppAuthRedis() error {
 	//Initializing redis
 	dsn := os.Getenv("REDIS_DSN")
 	client = redis.NewClient(&redis.Options{
@@ -35,8 +35,8 @@ func RunAppAuth() error {
 
 // -------------------- Public function --------------------
 
-// CreateAppToken after logged in successful
-func CreateAppToken(c *gin.Context, userAuthID uint) {
+// CreateAppTokenRedis after logged in successful
+func CreateAppTokenRedis(c *gin.Context, userAuthID uint) {
 
 	ts, err := createToken(userAuthID)
 	if err != nil {
@@ -56,8 +56,8 @@ func CreateAppToken(c *gin.Context, userAuthID uint) {
 	c.JSON(http.StatusCreated, tokens)
 }
 
-// ValidateAppToken secure private routes
-func ValidateAppToken() gin.HandlerFunc {
+// ValidateAppTokenRedis secure private routes
+func ValidateAppTokenRedis() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := tokenValid(c.Request)
 		if err != nil {
@@ -69,8 +69,8 @@ func ValidateAppToken() gin.HandlerFunc {
 	}
 }
 
-// ValidateAppTokenForRefresh secure private routes
-func ValidateAppTokenForRefresh() gin.HandlerFunc {
+// ValidateAppTokenForRefreshRedis secure private routes
+func ValidateAppTokenForRefreshRedis() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := tokenValid(c.Request)
 		if err != nil {
@@ -87,8 +87,8 @@ func ValidateAppTokenForRefresh() gin.HandlerFunc {
 	}
 }
 
-// DeleteAppToken after logged out successful
-func DeleteAppToken(c *gin.Context) {
+// DeleteAppTokenRedis after logged out successful
+func DeleteAppTokenRedis(c *gin.Context) {
 	metadata, err := extractTokenMetadata(c.Request)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, "unauthorized")
@@ -102,13 +102,13 @@ func DeleteAppToken(c *gin.Context) {
 	c.JSON(http.StatusOK, "Successfully logged out")
 }
 
-// CheckOldToken to check when open app
-func CheckOldToken(c *gin.Context) {
+// CheckOldTokenRedis to check when open app
+func CheckOldTokenRedis(c *gin.Context) {
 	c.JSON(http.StatusOK, "Valid app access token")
 }
 
-// RefreshAppToken function
-func RefreshAppToken(c *gin.Context) {
+// RefreshAppTokenRedis function
+func RefreshAppTokenRedis(c *gin.Context) {
 	mapToken := map[string]string{}
 	if err := c.ShouldBindJSON(&mapToken); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, err.Error())
@@ -180,8 +180,8 @@ func RefreshAppToken(c *gin.Context) {
 	}
 }
 
-// GetUserAuthIDInToken function
-func GetUserAuthIDInToken(c *gin.Context) (uint, error) {
+// GetUserAuthIDInTokenRedis function
+func GetUserAuthIDInTokenRedis(c *gin.Context) (uint, error) {
 	//Extract the access token metadata
 	metadata, err := extractTokenMetadata(c.Request)
 	if err != nil {

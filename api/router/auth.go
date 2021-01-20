@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/api/middleware"
@@ -46,19 +47,19 @@ func webLogoutHandler(c *gin.Context) {
 	return
 }
 
-// ------------------------------------- App auth -------------------------------------
+// ------------------------------------- App auth Redis -------------------------------------
 
-// AppAuthRoutes for login/logout app
-func AppAuthRoutes(rg *gin.RouterGroup) {
-	rg.POST("/loginJSON", appLoginHandler)
-	rg.GET("/logout", appLogoutHandler)
+// AppAuthRedisRoutes for login/logout app
+func AppAuthRedisRoutes(rg *gin.RouterGroup) {
+	rg.POST("/loginJSON", appLoginHandlerRedis)
+	rg.GET("/logout", appLogoutHandlerRedis)
 	// validate old token
-	accessToken := rg.Group("/access-token", middleware.ValidateAppTokenForRefresh())
-	accessToken.POST("/get-new", appReloginHandler)
-	accessToken.GET("/check-old", appOpenHandler)
+	accessToken := rg.Group("/access-token", middleware.ValidateAppTokenForRefreshRedis())
+	accessToken.POST("/get-new", appReloginHandlerRedis)
+	accessToken.GET("/check-old", appOpenHandlerRedis)
 }
 
-func appLoginHandler(c *gin.Context) {
+func appLoginHandlerRedis(c *gin.Context) {
 	var user loginRequest
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -73,22 +74,68 @@ func appLoginHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	middleware.CreateAppToken(c, userAuthID)
+	middleware.CreateAppTokenRedis(c, userAuthID)
 	return
 }
 
-func appLogoutHandler(c *gin.Context) {
-	middleware.DeleteAppToken(c)
+func appLogoutHandlerRedis(c *gin.Context) {
+	middleware.DeleteAppTokenRedis(c)
 	return
 }
 
-func appReloginHandler(c *gin.Context) {
-	middleware.RefreshAppToken(c)
+func appReloginHandlerRedis(c *gin.Context) {
+	middleware.RefreshAppTokenRedis(c)
 	return
 }
 
-func appOpenHandler(c *gin.Context) {
-	middleware.CheckOldToken(c)
+func appOpenHandlerRedis(c *gin.Context) {
+	middleware.CheckOldTokenRedis(c)
+	return
+}
+
+// ------------------------------------- App auth BuntDB -------------------------------------
+
+// AppAuthBuntDBRoutes for login/logout app
+func AppAuthBuntDBRoutes(rg *gin.RouterGroup) {
+	rg.POST("/loginJSON", appLoginHandlerBuntDB)
+	rg.GET("/logout", appLogoutHandlerBuntDB)
+	// validate old token
+	accessToken := rg.Group("/access-token", middleware.ValidateAppTokenForRefreshBuntDB())
+	accessToken.POST("/get-new", appReloginHandlerBuntDB)
+	accessToken.GET("/check-old", appOpenHandlerBuntDB)
+}
+
+func appLoginHandlerBuntDB(c *gin.Context) {
+	var user loginRequest
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if err := validator.Validate(&user); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	userAuthID, validated := handler.ValidateUserAuth(user.Email, user.Password)
+	if validated == false {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	middleware.CreateAppTokenBuntDB(c, userAuthID)
+	return
+}
+
+func appLogoutHandlerBuntDB(c *gin.Context) {
+	middleware.DeleteAppTokenBuntDB(c)
+	return
+}
+
+func appReloginHandlerBuntDB(c *gin.Context) {
+	middleware.RefreshAppTokenBuntDB(c)
+	return
+}
+
+func appOpenHandlerBuntDB(c *gin.Context) {
+	middleware.CheckOldTokenBuntDB(c)
 	return
 }
 
@@ -113,10 +160,21 @@ func saveFCMToken(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	userAuthID, err := middleware.GetUserAuthIDInToken(c)
-	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
+	var userAuthID uint
+	var err error
+	if os.Getenv("RUN_APP_AUTH") == "redis" {
+		userAuthID, err = middleware.GetUserAuthIDInTokenRedis(c)
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+	} else if os.Getenv("RUN_APP_AUTH") == "buntdb" {
+		userAuthID, err = middleware.GetUserAuthIDInTokenBuntDB(c)
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
 	}
 	handler.SaveFCMTokenWithUserAuthID(c, userAuthID, request.Token)
+	return
 }

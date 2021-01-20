@@ -12,6 +12,7 @@ require (
 	github.com/google/uuid v1.1.4
 	github.com/joho/godotenv v1.3.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
+	github.com/tidwall/buntdb v1.1.7
 	github.com/zeebe-io/zeebe/clients/go v0.25.1
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208

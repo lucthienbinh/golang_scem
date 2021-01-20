@@ -80,17 +80,21 @@ func appRouter() http.Handler {
 	e := gin.Default()
 	e.Static("/api/image", "./public/upload/images")
 
-	appAuth := e.Group("/app-auth")
-	router.AppAuthRoutes(appAuth)
-
 	fcmAuth := e.Group("/fcm-auth")
 	router.AppFMCToken(fcmAuth)
 
 	api := e.Group("/api")
+	appAuth := e.Group("/app-auth")
 
-	// Active app auth
-	if os.Getenv("RUN_APP_AUTH") == "yes" {
-		api.Use(middleware.ValidateAppToken())
+	// Select app auth database
+	if os.Getenv("RUN_APP_AUTH") == "redis" {
+		router.AppAuthRedisRoutes(appAuth)
+		api.Use(middleware.ValidateAppTokenRedis())
+
+	} else if os.Getenv("RUN_APP_AUTH") == "buntdb" {
+		router.AppAuthBuntDBRoutes(appAuth)
+		api.Use(middleware.ValidateAppTokenBuntDB())
+
 	}
 	router.UserRoutes(api)
 
