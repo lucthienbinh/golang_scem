@@ -146,7 +146,7 @@ func RefreshAppTokenBuntDB(c *gin.Context) {
 			return
 		}
 		//save the tokens metadata to redis
-		saveErr := createAuth(userIDConvert, ts)
+		saveErr := createAuthBuntDB(userIDConvert, ts)
 		if saveErr != nil {
 			c.JSON(http.StatusForbidden, saveErr.Error())
 			return
