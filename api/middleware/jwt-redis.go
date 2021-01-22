@@ -36,7 +36,7 @@ func RunAppAuthRedis() error {
 // -------------------- Public function --------------------
 
 // CreateAppTokenRedis after logged in successful
-func CreateAppTokenRedis(c *gin.Context, userAuthID uint) {
+func CreateAppTokenRedis(c *gin.Context, userAuthID uint, frontEndContext map[string]interface{}) {
 
 	ts, err := createToken(userAuthID)
 	if err != nil {
@@ -53,7 +53,11 @@ func CreateAppTokenRedis(c *gin.Context, userAuthID uint) {
 		"token_type":    "Bearer ",
 		"expires":       strconv.FormatInt(ts.AtExpires, 10),
 	}
-	c.JSON(http.StatusCreated, tokens)
+	c.JSON(http.StatusCreated, gin.H{
+		"tokens":            tokens,
+		"front_end_context": frontEndContext,
+	})
+	return
 }
 
 // ValidateAppTokenRedis secure private routes
@@ -209,7 +213,7 @@ type tokenDetails struct {
 
 func createToken(userid uint) (*tokenDetails, error) {
 	td := &tokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
+	td.AtExpires = time.Now().Add(time.Minute * 1).Unix()
 	td.AccessUUID = uuid.New().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()

@@ -33,7 +33,7 @@ func webLoginHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	userAuthID, validated := handler.ValidateUserAuth(user.Email, user.Password)
+	_, userAuthID, validated := handler.ValidateUserAuth(user.Email, user.Password)
 	if validated == false {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
@@ -69,12 +69,12 @@ func appLoginHandlerRedis(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	userAuthID, validated := handler.ValidateUserAuth(user.Email, user.Password)
+	frontEndContext, userAuthID, validated := handler.ValidateUserAuth(user.Email, user.Password)
 	if validated == false {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	middleware.CreateAppTokenRedis(c, userAuthID)
+	middleware.CreateAppTokenRedis(c, userAuthID, frontEndContext)
 	return
 }
 
@@ -115,12 +115,12 @@ func appLoginHandlerBuntDB(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	userAuthID, validated := handler.ValidateUserAuth(user.Email, user.Password)
+	frontEndContext, userAuthID, validated := handler.ValidateUserAuth(user.Email, user.Password)
 	if validated == false {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	middleware.CreateAppTokenBuntDB(c, userAuthID)
+	middleware.CreateAppTokenBuntDB(c, userAuthID, frontEndContext)
 	return
 }
 

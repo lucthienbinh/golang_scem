@@ -11,12 +11,39 @@ import (
 // -------------------- USER AUTHENTICATION HANDLER FUNTION --------------------
 
 // ValidateUserAuth in database
-func ValidateUserAuth(email, password string) (uint, bool) {
+func ValidateUserAuth(email, password string) (map[string]interface{}, uint, bool) {
+	variables := make(map[string]interface{})
 	userAuth := &model.UserAuthenticate{}
 	if err := db.Where("email = ? AND active = true", email).First(userAuth).Error; err != nil {
-		return uint(0), false
+		return nil, 0, false
 	}
-	return userAuth.ID, true
+	if userAuth.EmployeeID != 0 {
+		variables["employee_id"] = userAuth.EmployeeID
+		variables["customer_id"] = 0
+		employee := &model.Employee{}
+		if err := db.First(employee, userAuth.EmployeeID).Error; err != nil {
+			return nil, 0, false
+		}
+		variables["name"] = employee.Name
+		variables["address"] = employee.Address
+		variables["phone"] = employee.Phone
+		variables["gender"] = employee.Gender
+		variables["age"] = employee.Age
+	}
+	if userAuth.CustomerID != 0 {
+		variables["customer_id"] = userAuth.CustomerID
+		variables["employee_id"] = 0
+		customer := &model.Customer{}
+		if err := db.First(customer, userAuth.CustomerID).Error; err != nil {
+			return nil, 0, false
+		}
+		variables["name"] = customer.Name
+		variables["address"] = customer.Address
+		variables["phone"] = customer.Phone
+		variables["gender"] = customer.Gender
+		variables["age"] = customer.Age
+	}
+	return variables, 0, true
 }
 
 // -------------------- FCM HANDLER FUNTION --------------------
