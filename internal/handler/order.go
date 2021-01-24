@@ -2,6 +2,7 @@ package handler
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/lucthienbinh/golang_scem/internal/model"
+	"golang.org/x/sync/errgroup"
 	"gopkg.in/validator.v2"
 )
 
@@ -125,10 +127,30 @@ func CreateOrderFormData(c *gin.Context) {
 		Finished                 bool   `json:"finished"`
 	}
 	longShips := []APILongShipList{}
-	db.Model(&model.LongShip{}).Order("id asc").Find(&longShips, "finished is ? and estimated_time_of_departure > ?", false, time.Now().Unix())
-
 	transportTypes := []model.TransportType{}
-	db.Where("same_city is ?", false).Order("id asc").Find(&transportTypes)
+	// Run concurrency
+	var g errgroup.Group
+
+	// Get long ship list
+	g.Go(func() error {
+		if err := db.Model(&model.LongShip{}).Order("id asc").Find(&longShips, "finished is ? and estimated_time_of_departure > ?", false, time.Now().Unix()).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Calculate total price and Create order ID base on Time
+	g.Go(func() error {
+		if err := db.Where("same_city is ?", false).Order("id asc").Find(&transportTypes).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"long_ship_list":      &longShips,
@@ -191,18 +213,41 @@ func CreateOrderInfoHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	// Calculate total price
-	totalPrice, err := calculateTotalPrice(orderInfo)
-	if err != nil {
+
+	// Run concurrency
+	var g errgroup.Group
+
+	// Check customer sender id and customer receive id
+	g.Go(func() error {
+		if err := db.First(&model.Customer{}, orderInfo.CustomerSendID).Error; err != nil {
+			return err
+		}
+		if orderInfo.CustomerReceiveID > 0 {
+			if err := db.First(&model.Customer{}, orderInfo.CustomerReceiveID).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	// Calculate total price and Create order ID base on Time
+	g.Go(func() error {
+		var err error
+		orderInfo.TotalPrice, err = calculateTotalPrice(orderInfo)
+		if err != nil {
+			return err
+		}
+		current := uuid.New().Time()
+		currentString := fmt.Sprintf("%d", current)
+		rawUint, _ := strconv.ParseUint(currentString, 10, 64)
+		orderInfo.ID = uint(rawUint / 100000000000)
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderInfo.TotalPrice = totalPrice
-	//Create order ID base on Time
-	current := uuid.New().Time()
-	currentString := fmt.Sprintf("%d", current)
-	rawUint, _ := strconv.ParseUint(currentString, 10, 64)
-	orderInfo.ID = uint(rawUint / 100000000000)
 
 	// Create order info
 	if err := db.Create(orderInfo).Error; err != nil {
@@ -212,7 +257,7 @@ func CreateOrderInfoHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"server_response": "An order info has been created!",
 		"order_id":        orderInfo.ID,
-		"total_price":     totalPrice,
+		"total_price":     orderInfo.TotalPrice,
 	})
 	return
 }
@@ -229,31 +274,59 @@ func CreateOrderUseVoucherInfoHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+
 	orderInfo, orderVoucherID := orderInfoWithVoucher.ConvertToBasicOrder()
-	// Calculate total price
-	totalPrice, err := calculateTotalPrice(orderInfo)
-	if err != nil {
+
+	// Run concurrency
+	var g errgroup.Group
+	var voucherDiscount int64
+
+	// Check customer sender id and customer receive id
+	g.Go(func() error {
+		if err := db.First(&model.Customer{}, orderInfo.CustomerSendID).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Check voucher id and get voucher discount
+	g.Go(func() error {
+		if orderVoucherID != 0 {
+			orderVoucher := &model.OrderVoucher{}
+			if err := db.Find(&orderVoucher, "id = ? AND start_date < ? AND end_date > ?", orderVoucherID, time.Now().Unix(), time.Now().Unix()).Error; err != nil {
+				return err
+			}
+			if *orderVoucher == (model.OrderVoucher{}) {
+				return errors.New("Bad request sent to server")
+			}
+			voucherDiscount = orderVoucher.Discount
+			return nil
+		}
+		voucherDiscount = 0
+		return nil
+	})
+
+	// Calculate total price and Create order ID base on Time
+	g.Go(func() error {
+		var err error
+		orderInfo.TotalPrice, err = calculateTotalPrice(orderInfo)
+		if err != nil {
+			return err
+		}
+		current := uuid.New().Time()
+		currentString := fmt.Sprintf("%d", current)
+		rawUint, _ := strconv.ParseUint(currentString, 10, 64)
+		orderInfo.ID = uint(rawUint / 100000000000)
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if orderVoucherID != 0 {
-		orderVoucher := &model.OrderVoucher{}
-		if err := db.Find(&orderVoucher, "id = ? AND start_date < ? AND end_date > ?", orderVoucherID, time.Now().Unix(), time.Now().Unix()).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		if *orderVoucher == (model.OrderVoucher{}) {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-		totalPrice = totalPrice - orderVoucher.Discount
-	}
-	orderInfo.TotalPrice = totalPrice
-	//Create order ID base on Time
-	current := uuid.New().Time()
-	currentString := fmt.Sprintf("%d", current)
-	rawUint, _ := strconv.ParseUint(currentString, 10, 64)
-	orderInfo.ID = uint(rawUint / 100000000000)
+
+	orderInfo.TotalPrice -= voucherDiscount
+
 	// Create order info
 	if err := db.Create(orderInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -262,7 +335,7 @@ func CreateOrderUseVoucherInfoHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"server_response": "An order info has been created!",
 		"order_id":        orderInfo.ID,
-		"total_price":     totalPrice,
+		"total_price":     orderInfo.TotalPrice,
 	})
 	return
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/lucthienbinh/golang_scem/internal/model"
 	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
 	CommonMessage "github.com/lucthienbinh/golang_scem/internal/service/common_message"
+	"golang.org/x/sync/errgroup"
 	"gopkg.in/validator.v2"
 	"gorm.io/gorm"
 )
@@ -83,33 +84,50 @@ func CreateOrderPayStepOneHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+
 	// Get order info for payment
 	orderInfoForPayment, err := getOrderInfoOrNotFoundForPayment(stepOneRequest.OrderID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Run concurrency
+	var g errgroup.Group
+	var useCredit bool
+
 	// Compare customer balance and TotalPrice to decide if customer can use credit or not
-	useCredit, err := compareCustomerBalanceVsTotalPrice(orderInfoForPayment.CustomerSendID, orderInfoForPayment.TotalPrice)
-	if err != nil {
+	g.Go(func() error {
+		var err error
+		useCredit, err = compareCustomerBalanceVsTotalPrice(orderInfoForPayment.CustomerSendID, orderInfoForPayment.TotalPrice)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Check if order pay is created or not
+	g.Go(func() error {
+		orderPay, err := getOrderPayOrNotFoundByOrderID(stepOneRequest.OrderID)
+		if err != nil {
+			// if not we will create a new data
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				orderPay = &model.OrderPay{OrderID: stepOneRequest.OrderID, TotalPrice: orderInfoForPayment.TotalPrice, FinishedStepOne: true}
+				if err := db.Create(orderPay).Error; err != nil {
+					return err
+				}
+			} else {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// Check if order pay is created or not
-	orderPay, err := getOrderPayOrNotFoundByOrderID(stepOneRequest.OrderID)
-	if err != nil {
-		// if not we will create a new data
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			orderPay = &model.OrderPay{OrderID: stepOneRequest.OrderID, TotalPrice: orderInfoForPayment.TotalPrice, FinishedStepOne: true}
-			if err := db.Create(orderPay).Error; err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-	}
+
 	// Return hideCreditButton = true if customer balance is lower than TotalPrice
 	if useCredit == true {
 		c.JSON(http.StatusCreated, gin.H{"hideCreditButton": false})
@@ -131,25 +149,43 @@ func CreateOrderPayStepTwoHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+
+	// Run concurrency
+	var g errgroup.Group
+	orderPay := &model.OrderPay{}
+	orderInfoForPayment := &model.OrderInfoForPayment{}
+
+	// Get order pay info for validate step 1
+	g.Go(func() error {
+		var err error
+		orderPay, err = getOrderPayOrNotFoundByOrderID(stepTwoRequest.OrderID)
+		if err != nil {
+			return err
+		}
+		if orderPay.FinishedStepOne == false {
+			return errors.New("Bad request sent to server")
+		}
+		return nil
+	})
+
 	// Get order info for payment
-	orderInfoForPayment, err := getOrderInfoOrNotFoundForPayment(stepTwoRequest.OrderID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	g.Go(func() error {
+		var err error
+		orderInfoForPayment, err = getOrderInfoOrNotFoundForPayment(stepTwoRequest.OrderID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// Get order pay info for validate step 1 and create workflow instance
-	orderPay, err := getOrderPayOrNotFoundByOrderID(stepTwoRequest.OrderID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	if orderPay.FinishedStepOne == false {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
+
 	// shipper_receive_money will be sent when using app
 	orderWorkflowData := &model.OrderWorkflowData{
-		OrderID:             orderPay.OrderID,
+		OrderID:             stepTwoRequest.OrderID,
 		ShipperReceiveMoney: stepTwoRequest.ShipperReceiveMoney,
 		UseLongShip:         orderInfoForPayment.UseLongShip,
 		CustomerSendID:      orderInfoForPayment.CustomerSendID,
@@ -165,7 +201,6 @@ func CreateOrderPayStepTwoHandler(c *gin.Context) {
 	orderWorkflowData.LongShipID = orderInfoForPayment.LongShipID
 	orderWorkflowData.WorkflowKey = WorkflowKey
 	orderWorkflowData.WorkflowInstanceKey = WorkflowInstanceKey
-
 	// Create workflow data in database
 	if err := db.Create(orderWorkflowData).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -185,37 +220,60 @@ func CreateOrderPayStepTwoHandler(c *gin.Context) {
 
 // UpdateOrderPayConfirmHandler in database
 func UpdateOrderPayConfirmHandler(c *gin.Context) {
-	orderPay, err := getOrderPayOrNotFoundByOrderID(getIDFromParam(c))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	if orderPay.FinishedStepTwo == false {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	orderInfoForPayment, err := getOrderInfoOrNotFoundForPayment(getIDFromParam(c))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	orderPay.PayStatus = true
-	if orderPay.PayMethod == "credit" {
-		err = updateCustomerCreditAfterConfirmed(orderInfoForPayment.CustomerSendID, orderPay.TotalPrice)
+	var orderID = getIDFromParam(c)
+	// Run concurrency
+	var g errgroup.Group
+	orderPay := &model.OrderPay{}
+	orderInfoForPayment := &model.OrderInfoForPayment{}
+
+	// Get order pay info for validate step 2
+	g.Go(func() error {
+		var err error
+		orderPay, err = getOrderPayOrNotFoundByOrderID(orderID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			return err
 		}
-	}
-	err = CommonMessage.PublishPaymentConfirmedMessage(getIDFromParam(c))
-	if err != nil {
+		if orderPay.FinishedStepTwo == false {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return errors.New("Bad request sent to server")
+		}
+		return nil
+	})
+
+	// Update customer credit
+	g.Go(func() error {
+		var err error
+		orderInfoForPayment, err = getOrderInfoOrNotFoundForPayment(orderID)
+		if err != nil {
+			return err
+		}
+		orderPay.PayStatus = true
+		if orderPay.PayMethod == "credit" {
+			err = updateCustomerCreditAfterConfirmed(orderInfoForPayment.CustomerSendID, orderPay.TotalPrice)
+			if err != nil {
+				return err
+			}
+		}
+		if err = db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update customer credit
+	g.Go(func() error {
+		err := CommonMessage.PublishPaymentConfirmedMessage(orderID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if err := db.Model(&orderPay).Updates(&orderPay).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"server_response": "Order payment money has been received and confirmed!"})
 	return
 }

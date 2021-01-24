@@ -491,29 +491,29 @@ func createOrderVoucher() error {
 
 func createCustomerNotification() error {
 	customerNotification := &model.CustomerNotification{
-		CustomerID: 1, Title: "Your package has loaded on truck!",
-		Content: "Employee load ID: 4",
+		CustomerID: 1, Title: "Your order has started long ship trip",
+		Content: "Order id: 1349014 Long ship id: 1268070",
 	}
 	if err := db.Create(customerNotification).Error; err != nil {
 		return err
 	}
 	customerNotification = &model.CustomerNotification{
-		CustomerID: 1, Title: "Your long ship truck has started!",
-		Content: "Employee driver ID: 4",
+		CustomerID: 1, Title: "Your order has finished long ship trip",
+		Content: "Order id: 1349014 Long ship id: 1268070",
 	}
 	if err := db.Create(customerNotification).Error; err != nil {
 		return err
 	}
 	customerNotification = &model.CustomerNotification{
-		CustomerID: 1, Title: "Your long ship truck has arrived!",
-		Content: "Employee driver ID: 3",
+		CustomerID: 1, Title: "Shipper has called you",
+		Content: "Your order id: 1349014 has been verified",
 	}
 	if err := db.Create(customerNotification).Error; err != nil {
 		return err
 	}
 	customerNotification = &model.CustomerNotification{
-		CustomerID: 1, Title: "Your package has unloaded off truck!",
-		Content: "Employee unload ID: 2",
+		CustomerID: 1, Title: "Shipper has confirmed your package",
+		Content: "Thanks for using our service. Finished order id: 1349014",
 	}
 	if err := db.Create(customerNotification).Error; err != nil {
 		return err

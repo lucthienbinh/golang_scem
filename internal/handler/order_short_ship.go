@@ -77,7 +77,7 @@ func UpdateOSSShipperCalledHandler(c *gin.Context) {
 
 	// Update order long ship in database
 	g.Go(func() error {
-		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperCalled: true}).Error; err != nil {
+		if err := db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperCalled: true}).Error; err != nil {
 			return err
 		}
 		return nil
@@ -118,7 +118,7 @@ func UpdateOSSShipperReceivedMoneyHandler(c *gin.Context) {
 
 	// Update order long ship in database
 	g.Go(func() error {
-		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
+		if err := db.Model(&orderShortShip).Updates(model.OrderShortShip{
 			ShipperReceivedMoney: true,
 			ReceivedMoneyTime:    time.Now().Unix(),
 		}).Error; err != nil {
@@ -162,7 +162,7 @@ func UpdateOSSShipperShippedHandler(c *gin.Context) {
 
 	// Update order long ship in database
 	g.Go(func() error {
-		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperShipped: true, ShippedTime: time.Now().Unix()}).Error; err != nil {
+		if err := db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperShipped: true, ShippedTime: time.Now().Unix()}).Error; err != nil {
 			return err
 		}
 		return nil
@@ -234,7 +234,7 @@ func UpdateOSSShipperConfirmedHandler(c *gin.Context) {
 
 	// Update order long ship in database
 	g.Go(func() error {
-		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
+		if err := db.Model(&orderShortShip).Updates(model.OrderShortShip{
 			ShipperConfirmed:     newName,
 			ShipperConfirmedTime: time.Now().Unix(),
 			Finished:             true,
@@ -294,7 +294,7 @@ func CancelOrderShortShipHandler(c *gin.Context) {
 
 	// Update order long ship in database
 	g.Go(func() error {
-		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{Canceled: true, CanceledReason: canceleReason}).Error; err != nil {
+		if err := db.Model(&orderShortShip).Updates(model.OrderShortShip{Canceled: true, CanceledReason: canceleReason}).Error; err != nil {
 			return err
 		}
 		return nil

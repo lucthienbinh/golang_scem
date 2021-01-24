@@ -29,10 +29,10 @@ func WebOrderShipRoutes(rg *gin.RouterGroup) {
 	longShip.POST("/create", handler.CreateLongShipHandler)
 	longShip.GET("/update-form-data/:id", handler.UpdateLongShipFormData)
 	longShip.PUT("/update/:id", handler.UpdateLongShipHandler)
-	longShip.PUT("/update-load-package/:id", updateLSLoadPackageHandler)
-	longShip.PUT("/update-start-vehicle/:id", updateLSStartVehicleHandler)
-	longShip.PUT("/update-vehicle-arrived/:id", updateLSVehicleArrivedHandler)
-	longShip.PUT("/update-unload-package/:id", updateLSUnloadPackageHandler)
+	longShip.PUT("/update-load-package/qrcode/:qrcode", updateLSLoadPackageHandler)
+	longShip.PUT("/update-start-vehicle/qrcode/:qrcode", updateLSStartVehicleHandler)
+	longShip.PUT("/update-vehicle-arrived/qrcode/:qrcode", updateLSVehicleArrivedHandler)
+	longShip.PUT("/update-unload-package/qrcode/:qrcode", updateLSUnloadPackageHandler)
 	longShip.DELETE("/delete/:id", handler.DeleteLongShipHandler)
 
 	orderShortShip := rg.Group("/order-short-ship")
@@ -91,7 +91,17 @@ func AppOrderShipRoutes(rg *gin.RouterGroup) {
 
 	longShip := rg.Group("/long-ship")
 	longShip.GET("/id/:id", handler.GetLongShipHandler)
+	longShip.PUT("/update-load-package/qrcode/:qrcode", updateLSLoadPackageHandler)
+	longShip.PUT("/update-start-vehicle/qrcode/:qrcode", updateLSStartVehicleHandler)
+	longShip.PUT("/update-vehicle-arrived/qrcode/:qrcode", updateLSVehicleArrivedHandler)
+	longShip.PUT("/update-unload-package/qrcode/:qrcode", updateLSUnloadPackageHandler)
 
 	orderShortShip := rg.Group("/order-short-ship")
 	orderShortShip.GET("/id/:id", handler.GetOrderShortShipHandler)
+	orderShortShip.PUT("/update/shipper-called/:id", handler.UpdateOSSShipperCalledHandler)
+	orderShortShip.PUT("/update/shipper-received-money/:id", handler.UpdateOSSShipperReceivedMoneyHandler)
+	orderShortShip.PUT("/update/shipper-shipped/:id", handler.UpdateOSSShipperShippedHandler)
+	orderShortShip.PUT("/update/shipper-confirmed/:id", handler.UpdateOSSShipperConfirmedHandler)
+	orderShortShip.PUT("/update/cancel-order/:id", handler.CancelOrderShortShipHandler)
+
 }

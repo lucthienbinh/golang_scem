@@ -99,6 +99,14 @@ func getLongShipOrNotFound(c *gin.Context) (*model.LongShip, error) {
 	return longShip, nil
 }
 
+func getLongShipOrNotFoundByQrcode(c *gin.Context) (*model.LongShip, error) {
+	longShip := &model.LongShip{}
+	if err := db.First(longShip, "ls_qr_code LIKE ?", c.Param("qrcode")).Error; err != nil {
+		return longShip, err
+	}
+	return longShip, nil
+}
+
 // GetLongShipHandler in database
 func GetLongShipHandler(c *gin.Context) {
 	longShip, err := getLongShipOrNotFound(c)
@@ -129,42 +137,54 @@ func CreateLongShipHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	// Create QR code
-	b := make([]byte, 8)
-	if _, err := rand.Read(b); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	newName := fmt.Sprintf("%x", b)
-	createTime := fmt.Sprintf("%d", time.Now().Unix())
-	newName = createTime + "_" + newName + ".jpg"
-	filepath := os.Getenv("QR_CODE_FILE_PATH") + newName
-	if err := qrcode.WriteFile(newName, qrcode.Medium, 256, filepath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	longShip.LSQrCode = newName
+
+	// Create long ship id base on Time
 	current := uuid.New().Time()
 	currentString := fmt.Sprintf("%d", current)
 	rawUint, _ := strconv.ParseUint(currentString, 10, 64)
 	longShip.ID = uint(rawUint / 100000000000)
-	if err := db.Create(longShip).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
 
-	// Create workflow instance in zeebe
-	WorkflowKey, WorkflowInstanceKey, err := CommonService.CreateWorkflowLongShipInstanceHandler(longShip.ID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+	// Run concurrency
+	var g errgroup.Group
 
-	longShipWorkflowData := &model.LongShipWorkflowData{}
-	longShipWorkflowData.LongShipID = longShip.ID
-	longShipWorkflowData.WorkflowKey = WorkflowKey
-	longShipWorkflowData.WorkflowInstanceKey = WorkflowInstanceKey
-	if err := db.Create(longShipWorkflowData).Error; err != nil {
+	// Create QR code
+	g.Go(func() error {
+		b := make([]byte, 8)
+		if _, err := rand.Read(b); err != nil {
+			return err
+		}
+		newQrCode := fmt.Sprintf("%x", b)
+		createTime := fmt.Sprintf("%d", time.Now().Unix())
+		newQrCode = createTime + "_" + newQrCode + ".jpg"
+		filepath := os.Getenv("QR_CODE_FILE_PATH") + newQrCode
+		if err := qrcode.WriteFile(newQrCode, qrcode.Medium, 256, filepath); err != nil {
+			return err
+		}
+		longShip.LSQrCode = newQrCode
+		if err := db.Create(longShip).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Create workflow instance in zeebe in state machine and save to long ship workflow data
+	g.Go(func() error {
+		WorkflowKey, WorkflowInstanceKey, err := CommonService.CreateWorkflowLongShipInstanceHandler(longShip.ID)
+		if err != nil {
+			return err
+		}
+
+		longShipWorkflowData := &model.LongShipWorkflowData{}
+		longShipWorkflowData.LongShipID = longShip.ID
+		longShipWorkflowData.WorkflowKey = WorkflowKey
+		longShipWorkflowData.WorkflowInstanceKey = WorkflowInstanceKey
+		if err := db.Create(longShipWorkflowData).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -222,7 +242,7 @@ func UpdateLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 		return
 	}
 	// QRcode will replace this line
-	longShip, err := getLongShipOrNotFound(c)
+	longShip, err := getLongShipOrNotFoundByQrcode(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -258,7 +278,7 @@ func UpdateLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 			EmplLoadID:      employeeID,
 			LoadedTime:      time.Now().Unix(),
 		}
-		if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
+		if err := db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
 			return err
 		}
 		return nil
@@ -281,7 +301,7 @@ func UpdateLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
 		return
 	}
 	// QRcode will replace this line
-	longShip, err := getLongShipOrNotFound(c)
+	longShip, err := getLongShipOrNotFoundByQrcode(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -309,7 +329,7 @@ func UpdateLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
 			EmplDriver1ID:   employeeID,
 			StartedTime:     time.Now().Unix(),
 		}
-		if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
+		if err := db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
 			return err
 		}
 		return nil
@@ -332,7 +352,7 @@ func UpdateLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
 		return
 	}
 	// QRcode will replace this line
-	longShip, err := getLongShipOrNotFound(c)
+	longShip, err := getLongShipOrNotFoundByQrcode(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -361,7 +381,7 @@ func UpdateLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
 			EmplDriver2ID:   employeeID,
 			ArrivedTime:     time.Now().Unix(),
 		}
-		if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
+		if err := db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
 			return err
 		}
 		return nil
@@ -384,7 +404,7 @@ func UpdateLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 		return
 	}
 	// QRcode will replace this line
-	longShip, err := getLongShipOrNotFound(c)
+	longShip, err := getLongShipOrNotFoundByQrcode(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
@@ -422,7 +442,7 @@ func UpdateLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 			UnloadedTime:    time.Now().Unix(),
 			Finished:        true,
 		}
-		if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
+		if err := db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
 			return err
 		}
 		return nil
