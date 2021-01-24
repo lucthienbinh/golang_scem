@@ -244,7 +244,7 @@ func UpdateLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 
 	// Send notification to FCM cloud and store in database
 	g.Go(func() error {
-		if err := createCustomerNotificationLongShipHandler(longShip.ID, 1, employeeID); err != nil {
+		if err := createCustomerNotificationLongShipHandler(longShip.ID, 1); err != nil {
 			return err
 		}
 		return nil
@@ -301,14 +301,6 @@ func UpdateLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
 		return nil
 	})
 
-	// Send notification to FCM cloud and store in database
-	g.Go(func() error {
-		if err := createCustomerNotificationLongShipHandler(longShip.ID, 2, employeeID); err != nil {
-			return err
-		}
-		return nil
-	})
-
 	// Update long ship in database
 	g.Go(func() error {
 		longShipUpdateInfo := model.LongShip{
@@ -356,14 +348,6 @@ func UpdateLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
 	// Send message to sate machine (Zeebe or State Scem)
 	g.Go(func() error {
 		if err := CommonMessage.PublishVehicleArrivedMessage(longShip.ID); err != nil {
-			return err
-		}
-		return nil
-	})
-
-	// Send notification to FCM cloud and store in database
-	g.Go(func() error {
-		if err := createCustomerNotificationLongShipHandler(longShip.ID, 3, employeeID); err != nil {
 			return err
 		}
 		return nil
@@ -423,7 +407,7 @@ func UpdateLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 
 	// Send notification to FCM cloud and store in database
 	g.Go(func() error {
-		if err := createCustomerNotificationLongShipHandler(longShip.ID, 4, employeeID); err != nil {
+		if err := createCustomerNotificationLongShipHandler(longShip.ID, 2); err != nil {
 			return err
 		}
 		return nil

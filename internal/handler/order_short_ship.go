@@ -69,7 +69,7 @@ func UpdateOSSShipperCalledHandler(c *gin.Context) {
 
 	// Send notification to FCM cloud and store in database
 	g.Go(func() error {
-		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 2, ""); err != nil {
+		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 1, ""); err != nil {
 			return err
 		}
 		return nil
@@ -116,14 +116,6 @@ func UpdateOSSShipperReceivedMoneyHandler(c *gin.Context) {
 		return nil
 	})
 
-	// Send notification to FCM cloud and store in database
-	g.Go(func() error {
-		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 3, ""); err != nil {
-			return err
-		}
-		return nil
-	})
-
 	// Update order long ship in database
 	g.Go(func() error {
 		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
@@ -163,14 +155,6 @@ func UpdateOSSShipperShippedHandler(c *gin.Context) {
 	// Send message to state machine (Zeebe or State Scem)
 	g.Go(func() error {
 		if err := CommonMessage.PublishShipperShippedMessage(orderShortShip.OrderID); err != nil {
-			return err
-		}
-		return nil
-	})
-
-	// Send notification to FCM cloud and store in database
-	g.Go(func() error {
-		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 4, ""); err != nil {
 			return err
 		}
 		return nil
@@ -242,7 +226,7 @@ func UpdateOSSShipperConfirmedHandler(c *gin.Context) {
 
 	// Send notification to FCM cloud and store in database
 	g.Go(func() error {
-		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 5, ""); err != nil {
+		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 2, ""); err != nil {
 			return err
 		}
 		return nil
@@ -302,7 +286,7 @@ func CancelOrderShortShipHandler(c *gin.Context) {
 
 	// Send notification to FCM cloud and store in database
 	g.Go(func() error {
-		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 6, canceleReason); err != nil {
+		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 3, canceleReason); err != nil {
 			return err
 		}
 		return nil

@@ -19,34 +19,29 @@ func GetCustomerNotificationListByCustomerIDHandler(c *gin.Context) {
 	return
 }
 
-func createCustomerNotificationLongShipHandler(longShipID uint, titleIndex int, employeeID uint) error {
+func createCustomerNotificationLongShipHandler(longShipID uint, titleIndex int) error {
 	var title string
-	var content string
-	var employyIDString = strconv.FormatUint(uint64(employeeID), 10)
+	var orderIDString string
+	var longIDString = strconv.FormatUint(uint64(longShipID), 10)
+
 	switch titleIndex {
 	case 1:
-		title = "Your package has loaded on truck"
-		content = "Employee load ID: " + employyIDString
+		title = "Your order has started long ship trip"
 	case 2:
-		title = "Your long ship truck has started"
-		content = "Employee driver 1 ID: " + employyIDString
-	case 3:
-		title = "Your long ship truck has arrived"
-		content = "Employee driver 2 ID: " + employyIDString
-	case 4:
-		title = "Your package has unloaded off truck"
-		content = "Employee unload ID: " + employyIDString
+		title = "Your order has finished long ship trip"
 	default:
 		return errors.New("Server error")
 	}
-	customerNotification := &model.CustomerNotification{Title: title, Content: content}
+	customerNotification := &model.CustomerNotification{Title: title}
 	orderLongShips := []model.OrderLongShip{}
 	if err := db.Where("long_ship_id == ?", longShipID).Find(&orderLongShips).Error; err != nil {
 		return err
 	}
 
 	for i := 0; i < len(orderLongShips); i++ {
+		orderIDString = strconv.FormatUint(uint64(orderLongShips[i].OrderID), 10)
 		customerNotification.CustomerID = orderLongShips[i].CustomerSendID
+		customerNotification.Content = "Order id: " + orderIDString + " Long ship id: " + longIDString
 		if err := db.Create(customerNotification).Error; err != nil {
 			return err
 		}
@@ -62,21 +57,12 @@ func createCustomerNotificationLShortShipHandler(orderID, customerSendID uint, t
 	var orderIDString = strconv.FormatUint(uint64(orderID), 10)
 	switch titleIndex {
 	case 1:
-		title = "Selected shipper for your order"
-		content = "Our shipper has received your order with id: " + orderIDString
-	case 2:
 		title = "Shipper has called you"
 		content = "Your order id: " + orderIDString + " has been verified"
+	case 2:
+		title = "Shipper has confirmed your package"
+		content = "Thanks for using our service. Finished order id: " + orderIDString
 	case 3:
-		title = "Shipper received your money"
-		content = "Thanks for paying your order with id: " + orderIDString
-	case 4:
-		title = "Shipper shipped your package"
-		content = "Your order id: " + orderIDString + " has arrived"
-	case 5:
-		title = "Shipper confirmed your package"
-		content = "Thanks for using our service"
-	case 6:
 		title = "Your order has been canceled"
 		content = canceledReason
 	default:
