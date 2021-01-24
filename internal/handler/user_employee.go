@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -83,10 +82,9 @@ func ImageEmployeeHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	extension := strings.Split(file.Filename, ".")
 	newName := fmt.Sprintf("%x", b)
 	createTime := fmt.Sprintf("%d", time.Now().Unix())
-	newName = createTime + "_" + newName + "." + extension[1]
+	newName = createTime + "_" + newName + ".jpg"
 	filepath := os.Getenv("IMAGE_FILE_PATH") + newName
 
 	// Upload the file to specific dst.

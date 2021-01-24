@@ -322,11 +322,11 @@ func createTransportType() error {
 }
 
 func createLongShip() error {
-	longShip := &model.LongShip{LSQrCode: "1610662785_860de.jpg", TransportTypeID: 3, LicensePlate: "51A 435.22", EstimatedTimeOfDeparture: 1610599301, EstimatedTimeOfArrival: 1610999301, Finished: true}
+	longShip := &model.LongShip{LSQrCode: "1611463545_4f163f5f0f9a621d.jpg", TransportTypeID: 3, LicensePlate: "51A 435.22", EstimatedTimeOfDeparture: 1610599301, EstimatedTimeOfArrival: 1610999301, Finished: true}
 	if err := db.Create(longShip).Error; err != nil {
 		return err
 	}
-	longShip = &model.LongShip{TransportTypeID: 4, LicensePlate: "51B 425.82", EstimatedTimeOfDeparture: 1610099301, EstimatedTimeOfArrival: 1610399301, Finished: true}
+	longShip = &model.LongShip{LSQrCode: "1611463464_d90bf90bbaa6cd39.jpg", TransportTypeID: 4, LicensePlate: "51B 425.82", EstimatedTimeOfDeparture: 1610099301, EstimatedTimeOfArrival: 1610399301, Finished: true}
 	if err := db.Create(longShip).Error; err != nil {
 		return err
 	}
@@ -413,7 +413,7 @@ func createExampleOrderPay() error {
 
 func createExampleOrderShortShip() error {
 	orderShortShip := &model.OrderShortShip{
-		OrderID: 1, ShipperID: 3, CustomerSendID: 1, OSSQrCode: "1610662785_860de.jpg",
+		OrderID: 1, ShipperID: 3, CustomerSendID: 1, OSSQrCode: "1611465837_1e708c0f8e9a0213.jpg",
 	}
 	if err := db.Create(orderShortShip).Error; err != nil {
 		return err
