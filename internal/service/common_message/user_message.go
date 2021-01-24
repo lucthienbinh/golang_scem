@@ -19,6 +19,7 @@ func PublishPaymentConfirmedMessage(orderID uint) error {
 	if os.Getenv("STATE_SERVICE") == "2" {
 		return nil
 	}
+	// Run without any state machine
 	orderWorkflowData, err := getOrderWorkflowDataByOrderID(orderID)
 	if err != nil {
 		return err
@@ -80,6 +81,7 @@ func PublishPackageUnloadedMessage(longShipID uint) error {
 	if os.Getenv("STATE_SERVICE") == "2" {
 		return nil
 	}
+	// Run without any state machine
 	// Unloaded Pakage message -> Long Ship Finished -> Order Short Ship Service
 	orderLongShips, err := GetOrderLongShipList(longShipID)
 	if err != nil {

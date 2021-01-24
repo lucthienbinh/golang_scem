@@ -63,6 +63,7 @@ func MigrationDatabase() (err error) {
 		&model.OrderWorkflowData{},
 		&model.LongShipWorkflowData{},
 		&model.OrderVoucher{},
+		&model.CustomerNotification{},
 	)
 }
 
@@ -113,6 +114,9 @@ func RefreshDatabase() (err error) {
 	if err := createOrderVoucher(); err != nil {
 		return err
 	}
+	if err := createCustomerNotification(); err != nil {
+		return err
+	}
 	return
 }
 
@@ -134,6 +138,7 @@ func deleteDatabase() (err error) {
 		&model.OrderWorkflowData{},
 		&model.LongShipWorkflowData{},
 		&model.OrderVoucher{},
+		&model.CustomerNotification{},
 	)
 }
 
@@ -479,6 +484,38 @@ func createOrderVoucher() error {
 		StartDate: 1612390576, EndDate: 1620390576, Discount: 100000,
 	}
 	if err := db.Create(orderVoucher).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func createCustomerNotification() error {
+	customerNotification := &model.CustomerNotification{
+		CustomerID: 1, Title: "Your package has loaded on truck!",
+		Content: "Employee load ID: 4",
+	}
+	if err := db.Create(customerNotification).Error; err != nil {
+		return err
+	}
+	customerNotification = &model.CustomerNotification{
+		CustomerID: 1, Title: "Your long ship truck has started!",
+		Content: "Employee driver ID: 4",
+	}
+	if err := db.Create(customerNotification).Error; err != nil {
+		return err
+	}
+	customerNotification = &model.CustomerNotification{
+		CustomerID: 1, Title: "Your long ship truck has arrived!",
+		Content: "Employee driver ID: 3",
+	}
+	if err := db.Create(customerNotification).Error; err != nil {
+		return err
+	}
+	customerNotification = &model.CustomerNotification{
+		CustomerID: 1, Title: "Your package has unloaded off truck!",
+		Content: "Employee unload ID: 2",
+	}
+	if err := db.Create(customerNotification).Error; err != nil {
 		return err
 	}
 	return nil

@@ -48,6 +48,15 @@ type CustomerCredit struct {
 	UpdatedAt      int64 `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
+// CustomerNotification structure
+type CustomerNotification struct {
+	ID         uint   `gorm:"primary_key;<-:false" json:"id"`
+	CustomerID uint   `json:"customer_id"`
+	Title      string `json:"title"`
+	Content    string `json:"content"`
+	CreatedAt  int64  `gorm:"autoCreateTime" json:"created_at"`
+}
+
 // Employee structure
 type Employee struct {
 	ID                 uint   `gorm:"primary_key;<-:false" json:"id"`

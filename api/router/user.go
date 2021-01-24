@@ -5,8 +5,8 @@ import (
 	"github.com/lucthienbinh/golang_scem/internal/handler"
 )
 
-// UserRoutes to manage user model
-func UserRoutes(rg *gin.RouterGroup) {
+// WebUserRoutes to manage user model
+func WebUserRoutes(rg *gin.RouterGroup) {
 
 	rg.PUT("customer/update-credit/balance/admin-role/:id", handler.UpdateCustomerCreditBalanceHandler)
 
@@ -41,5 +41,20 @@ func UserRoutes(rg *gin.RouterGroup) {
 	deliveryLocation.POST("/create", handler.CreateDeliveryLocationHandler)
 	deliveryLocation.PUT("/update/:id", handler.UpdateDeliveryLocationHandler)
 	deliveryLocation.DELETE("/delete/:id", handler.DeleteDeliveryLocationHandler)
+
+}
+
+// AppUserRoutes to manage user model
+func AppUserRoutes(rg *gin.RouterGroup) {
+
+	customer := rg.Group("/customer")
+	customer.GET("/id/:id", handler.GetCustomerHandler)
+	customer.PUT("/update/:id", handler.UpdateCustomerHandler)
+
+	customerNotification := rg.Group("/customer-notification")
+	customerNotification.GET("/list/customer-id/:id", handler.GetCustomerNotificationListByCustomerIDHandler)
+
+	employee := rg.Group("/employee")
+	employee.GET("/id/:id", handler.GetEmployeeHandler)
 
 }

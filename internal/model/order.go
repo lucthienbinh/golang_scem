@@ -15,11 +15,9 @@ type OrderInfo struct {
 	Type   string `json:"type"`
 	Image  string `json:"image"`
 	// User information
-	CustomerSendID       uint   `json:"customer_send_id" validate:"nonzero"`
-	CustomerReceiveID    uint   `json:"customer_receive_id"`
-	CustomerSendFCMToken string `json:"-"`
-	CustomerRecvFCMToken string `json:"-"`
-	EmplCreateID         uint   `json:"empl_create_id"`
+	CustomerSendID    uint `json:"customer_send_id" validate:"nonzero"`
+	CustomerReceiveID uint `json:"customer_receive_id"`
+	EmplCreateID      uint `json:"empl_create_id"`
 	// Delivery information
 	Sender          string `json:"sender" validate:"nonzero"`
 	Receiver        string `json:"receiver" validate:"nonzero"`
@@ -90,14 +88,12 @@ type OrderInfoForPayment struct {
 
 // OrderInfoForShipment structure (create short ship)
 type OrderInfoForShipment struct {
-	ID                   uint
-	TransportTypeID      uint
-	CustomerSendFCMToken string
-	CustomerRecvFCMToken string
-	UseLongShip          bool
-	LongShipID           uint
-	CustomerSendID       uint
-	CustomerReceiveID    uint
+	ID                uint
+	TransportTypeID   uint
+	UseLongShip       bool
+	LongShipID        uint
+	CustomerSendID    uint
+	CustomerReceiveID uint
 }
 
 // OrderInfoWithVoucher structure

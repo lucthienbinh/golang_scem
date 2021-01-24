@@ -49,18 +49,19 @@ func GetOrderInfoListHandler(c *gin.Context) {
 	return
 }
 
-// GetOrderListByCutomerIDInfoHandler in database
-func GetOrderListByCutomerIDInfoHandler(c *gin.Context) {
+// GetOrderListByCustomerIDHandler in database
+func GetOrderListByCustomerIDHandler(c *gin.Context) {
 
 	type APIOrderList struct {
-		ID         uint   `json:"id"`
-		CreatedAt  int64  `json:"created_at"`
-		Detail     string `json:"detail"`
-		TotalPrice int64  `json:"total_price"`
-		Image      string `json:"image"`
+		ID             uint   `json:"id"`
+		CustomerSendID uint   `json:"customer_send_id"`
+		CreatedAt      int64  `json:"created_at"`
+		Detail         string `json:"detail"`
+		TotalPrice     int64  `json:"total_price"`
+		Image          string `json:"image"`
 	}
 	orderInfoList := []APIOrderList{}
-	db.Model(&model.OrderInfo{}).Order("id asc").Find(&orderInfoList)
+	db.Model(&model.OrderInfo{}).Order("id asc").Find(&orderInfoList, "customer_send_id = ?", c.Param("id"))
 
 	c.JSON(http.StatusOK, gin.H{"order_info_list": orderInfoList})
 	return
@@ -197,26 +198,12 @@ func CreateOrderInfoHandler(c *gin.Context) {
 		return
 	}
 	orderInfo.TotalPrice = totalPrice
-	// Insert customer FCM token to orderInfo to send message
-	cusSendFCMToken := &model.UserFCMToken{}
-	if err := db.Where("customer_id = ?", orderInfo.CustomerSendID).First(cusSendFCMToken).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	cusReceiveFCMToken := &model.UserFCMToken{}
-	if orderInfo.CustomerReceiveID != 0 {
-		if err := db.Where("customer_id = ?", orderInfo.CustomerReceiveID).First(cusReceiveFCMToken).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		orderInfo.CustomerRecvFCMToken = cusReceiveFCMToken.Token
-	}
 	//Create order ID base on Time
 	current := uuid.New().Time()
 	currentString := fmt.Sprintf("%d", current)
 	rawUint, _ := strconv.ParseUint(currentString, 10, 64)
 	orderInfo.ID = uint(rawUint / 100000000000)
-	orderInfo.CustomerSendFCMToken = cusSendFCMToken.Token
+
 	// Create order info
 	if err := db.Create(orderInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -262,26 +249,11 @@ func CreateOrderUseVoucherInfoHandler(c *gin.Context) {
 		totalPrice = totalPrice - orderVoucher.Discount
 	}
 	orderInfo.TotalPrice = totalPrice
-	// Insert customer FCM token to orderInfo to send message
-	cusSendFCMToken := &model.UserFCMToken{}
-	if err := db.Where("customer_id = ?", orderInfo.CustomerSendID).First(cusSendFCMToken).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	cusReceiveFCMToken := &model.UserFCMToken{}
-	if orderInfo.CustomerReceiveID != 0 {
-		if err := db.Where("customer_id = ?", orderInfo.CustomerReceiveID).First(cusReceiveFCMToken).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-		orderInfo.CustomerRecvFCMToken = cusReceiveFCMToken.Token
-	}
 	//Create order ID base on Time
 	current := uuid.New().Time()
 	currentString := fmt.Sprintf("%d", current)
 	rawUint, _ := strconv.ParseUint(currentString, 10, 64)
 	orderInfo.ID = uint(rawUint / 100000000000)
-	orderInfo.CustomerSendFCMToken = cusSendFCMToken.Token
 	// Create order info
 	if err := db.Create(orderInfo).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

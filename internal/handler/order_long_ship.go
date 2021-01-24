@@ -14,6 +14,7 @@ import (
 	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
 	CommonMessage "github.com/lucthienbinh/golang_scem/internal/service/common_message"
 	qrcode "github.com/skip2/go-qrcode"
+	"golang.org/x/sync/errgroup"
 	"gopkg.in/validator.v2"
 )
 
@@ -220,6 +221,7 @@ func UpdateLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	// QRcode will replace this line
 	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -229,22 +231,44 @@ func UpdateLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	err = CommonMessage.PublishPackageLoadedMessage(getIDFromParam(c))
-	if err != nil {
+	// Run concurrency
+	var g errgroup.Group
+
+	// Send message to sate machine (Zeebe or State Scem)
+	g.Go(func() error {
+		if err := CommonMessage.PublishPackageLoadedMessage(longShip.ID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Send notification to FCM cloud and store in database
+	g.Go(func() error {
+		if err := createCustomerNotificationLongShipHandler(longShip.ID, 1, employeeID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update long ship in database
+	g.Go(func() error {
+		longShipUpdateInfo := model.LongShip{
+			CurrentLocation: "Location1",
+			PackageLoaded:   true,
+			EmplLoadID:      employeeID,
+			LoadedTime:      time.Now().Unix(),
+		}
+		if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	longShipUpdateInfo := model.LongShip{
-		CurrentLocation: "Location1",
-		PackageLoaded:   true,
-		EmplLoadID:      employeeID,
-		LoadedTime:      time.Now().Unix(),
-	}
-	longShip.ID = getIDFromParam(c)
-	if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
 	return
 }
@@ -256,6 +280,7 @@ func UpdateLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	// QRcode will replace this line
 	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -265,22 +290,44 @@ func UpdateLSStartVehicleHandler(c *gin.Context, userAuthID uint) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	err = CommonMessage.PublishVehicleStartedMessage(getIDFromParam(c))
-	if err != nil {
+	// Run concurrency
+	var g errgroup.Group
+
+	// Send message to sate machine (Zeebe or State Scem)
+	g.Go(func() error {
+		if err := CommonMessage.PublishVehicleStartedMessage(longShip.ID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Send notification to FCM cloud and store in database
+	g.Go(func() error {
+		if err := createCustomerNotificationLongShipHandler(longShip.ID, 2, employeeID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update long ship in database
+	g.Go(func() error {
+		longShipUpdateInfo := model.LongShip{
+			CurrentLocation: "Location2",
+			VehicleStarted:  true,
+			EmplDriver1ID:   employeeID,
+			StartedTime:     time.Now().Unix(),
+		}
+		if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	longShipUpdateInfo := model.LongShip{
-		CurrentLocation: "Location2",
-		VehicleStarted:  true,
-		EmplDriver1ID:   employeeID,
-		StartedTime:     time.Now().Unix(),
-	}
-	longShip.ID = getIDFromParam(c)
-	if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
 	return
 }
@@ -292,6 +339,7 @@ func UpdateLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	// QRcode will replace this line
 	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -301,22 +349,45 @@ func UpdateLSVehicleArrivedHandler(c *gin.Context, userAuthID uint) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	err = CommonMessage.PublishVehicleArrivedMessage(getIDFromParam(c))
-	if err != nil {
+
+	// Run concurrency
+	var g errgroup.Group
+
+	// Send message to sate machine (Zeebe or State Scem)
+	g.Go(func() error {
+		if err := CommonMessage.PublishVehicleArrivedMessage(longShip.ID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Send notification to FCM cloud and store in database
+	g.Go(func() error {
+		if err := createCustomerNotificationLongShipHandler(longShip.ID, 3, employeeID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update long ship in database
+	g.Go(func() error {
+		longShipUpdateInfo := model.LongShip{
+			CurrentLocation: "Location3",
+			VehicleArrived:  true,
+			EmplDriver2ID:   employeeID,
+			ArrivedTime:     time.Now().Unix(),
+		}
+		if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	longShipUpdateInfo := model.LongShip{
-		CurrentLocation: "Location3",
-		VehicleArrived:  true,
-		EmplDriver2ID:   employeeID,
-		ArrivedTime:     time.Now().Unix(),
-	}
-	longShip.ID = getIDFromParam(c)
-	if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
 	return
 }
@@ -328,6 +399,7 @@ func UpdateLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	// QRcode will replace this line
 	longShip, err := getLongShipOrNotFound(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -338,27 +410,45 @@ func UpdateLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 		return
 	}
 
-	if err != nil {
+	// Run concurrency
+	var g errgroup.Group
+
+	// Send message to sate machine (Zeebe or State Scem)
+	g.Go(func() error {
+		if err := CommonMessage.PublishPackageUnloadedMessage(longShip.ID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Send notification to FCM cloud and store in database
+	g.Go(func() error {
+		if err := createCustomerNotificationLongShipHandler(longShip.ID, 4, employeeID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update long ship in database
+	g.Go(func() error {
+		longShipUpdateInfo := model.LongShip{
+			CurrentLocation: "Location4",
+			PackageUnloaded: true,
+			EmplUnloadID:    employeeID,
+			UnloadedTime:    time.Now().Unix(),
+			Finished:        true,
+		}
+		if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	err = CommonMessage.PublishPackageUnloadedMessage(getIDFromParam(c))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	longShipUpdateInfo := model.LongShip{
-		CurrentLocation: "Location4",
-		PackageUnloaded: true,
-		EmplUnloadID:    employeeID,
-		UnloadedTime:    time.Now().Unix(),
-		Finished:        true,
-	}
-	longShip.ID = getIDFromParam(c)
-	if err = db.Model(&longShip).Updates(longShipUpdateInfo).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
 	return
 }

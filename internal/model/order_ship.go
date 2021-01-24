@@ -61,23 +61,21 @@ type LongShip struct {
 
 // OrderLongShip structure
 type OrderLongShip struct {
-	ID                   uint   `gorm:"primary_key;<-:false" json:"id"`
-	OrderID              uint   `json:"order_id"`
-	LongShipID           uint   `json:"long_ship_id"`
-	CustomerSendFCMToken string `json:"-"`
-	CustomerRecvFCMToken string `json:"-"`
+	ID                uint `gorm:"primary_key;<-:false" json:"id"`
+	OrderID           uint `json:"order_id"`
+	LongShipID        uint `json:"long_ship_id"`
+	CustomerSendID    uint `json:"customer_send_id"`
+	CustomerReceiveID uint `json:"customer_receive_id"`
 }
 
 // OrderShortShip structure
 type OrderShortShip struct {
-	ID                   uint   `gorm:"primary_key;<-:false" json:"id"`
-	OrderID              uint   `json:"order_id" validate:"nonzero"`
-	ShipperID            uint   `json:"shipper_id" validate:"nonzero"`
-	CustomerSendID       uint   `json:"customer_send_id"`
-	CustomerReceiveID    uint   `json:"customer_receive_id"`
-	CustomerSendFCMToken string `json:"-"`
-	CustomerRecvFCMToken string `json:"-"`
-	ShipperReceiveMoney  bool   `json:"shipper_receive_money"`
+	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
+	OrderID             uint `json:"order_id" validate:"nonzero"`
+	ShipperID           uint `json:"shipper_id" validate:"nonzero"`
+	CustomerSendID      uint `json:"customer_send_id"`
+	CustomerReceiveID   uint `json:"customer_receive_id"`
+	ShipperReceiveMoney bool `json:"shipper_receive_money"`
 	// Message data in workflow - Start
 	// Shipper Called
 	ShipperCalled bool `json:"shipper_called"`

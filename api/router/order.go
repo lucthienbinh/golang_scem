@@ -38,7 +38,7 @@ func WebOrderRoutes(rg *gin.RouterGroup) {
 func AppOrderRoutes(rg *gin.RouterGroup) {
 
 	order := rg.Group("/order")
-	order.GET("/list/customer-id/:customer_id", handler.GetOrderListByCutomerIDInfoHandler)
+	order.GET("/list/customer-id/:id", handler.GetOrderListByCustomerIDHandler)
 	order.GET("/id/:id", handler.GetOrderInfoHandler)
 	order.POST("/create-use-voucher", handler.CreateOrderUseVoucherInfoHandler)
 	order.POST("/upload/image", handler.ImageOrderHandler)

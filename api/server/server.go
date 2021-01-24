@@ -70,7 +70,7 @@ func webRouter() http.Handler {
 	if os.Getenv("RUN_WEB_AUTH") == "yes" {
 		api.Use(middleware.ValidateWebSession())
 	}
-	router.UserRoutes(api)
+	router.WebUserRoutes(api)
 	router.WebOrderRoutes(api)
 	router.WebOrderShipRoutes(api)
 	return e
@@ -96,7 +96,7 @@ func appRouter() http.Handler {
 		api.Use(middleware.ValidateAppTokenBuntDB())
 
 	}
-	router.UserRoutes(api)
+	router.AppUserRoutes(api)
 	router.AppOrderRoutes(api)
 	router.AppOrderShipRoutes(api)
 	return e

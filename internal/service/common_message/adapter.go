@@ -62,8 +62,8 @@ func CreateOrderLongShip(orderID uint) (uint, error) {
 	orderLongShip := &model.OrderLongShip{}
 	orderLongShip.OrderID = orderID
 	orderLongShip.LongShipID = orderInfoForShipment.LongShipID
-	orderLongShip.CustomerSendFCMToken = orderInfoForShipment.CustomerSendFCMToken
-	orderLongShip.CustomerRecvFCMToken = orderInfoForShipment.CustomerRecvFCMToken
+	orderLongShip.CustomerSendID = orderInfoForShipment.CustomerSendID
+	orderLongShip.CustomerReceiveID = orderInfoForShipment.CustomerReceiveID
 
 	if err := db.Create(orderLongShip).Error; err != nil {
 		return uint(0), err
@@ -126,8 +126,6 @@ func CreateOrderShortShip(orderID uint) (uint, error) {
 	orderShortShip.ShipperID = employeeList[index].ID
 	orderShortShip.CustomerSendID = orderInfoForShipment.CustomerSendID
 	orderShortShip.CustomerReceiveID = orderInfoForShipment.CustomerReceiveID
-	orderShortShip.CustomerSendFCMToken = orderInfoForShipment.CustomerSendFCMToken
-	orderShortShip.CustomerRecvFCMToken = orderInfoForShipment.CustomerRecvFCMToken
 	orderShortShip.ShipperReceiveMoney = orderWorkflowData.ShipperReceiveMoney
 
 	// Create QR code
