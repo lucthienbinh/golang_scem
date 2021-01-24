@@ -8,8 +8,8 @@ import (
 	ServiceCommon "github.com/lucthienbinh/golang_scem/internal/service/common"
 )
 
-// OrderShipRoutes to manage user model
-func OrderShipRoutes(rg *gin.RouterGroup) {
+// WebOrderShipRoutes to manage user model
+func WebOrderShipRoutes(rg *gin.RouterGroup) {
 
 	stateService := rg.Group("/state-service")
 	if os.Getenv("STATE_SERVICE") == "1" {
@@ -84,4 +84,14 @@ func updateLSUnloadPackageHandler(c *gin.Context) {
 	// }
 	// handler.UpdateLSUnloadPackageHandler(c, userAuthID)
 	handler.UpdateLSUnloadPackageHandler(c, uint(4))
+}
+
+// AppOrderShipRoutes to manage user model
+func AppOrderShipRoutes(rg *gin.RouterGroup) {
+
+	longShip := rg.Group("/long-ship")
+	longShip.GET("/id/:id", handler.GetLongShipHandler)
+
+	orderShortShip := rg.Group("/order-short-ship")
+	orderShortShip.GET("/id/:id", handler.GetOrderShortShipHandler)
 }

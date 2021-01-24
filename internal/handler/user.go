@@ -43,7 +43,7 @@ func ValidateUserAuth(email, password string) (map[string]interface{}, uint, boo
 		variables["gender"] = customer.Gender
 		variables["age"] = customer.Age
 	}
-	return variables, 0, true
+	return variables, userAuth.ID, true
 }
 
 // -------------------- FCM HANDLER FUNTION --------------------

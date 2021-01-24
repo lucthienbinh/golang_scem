@@ -1,9 +1,13 @@
 package handler
 
 import (
+	"crypto/rand"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,6 +47,23 @@ func GetOrderInfoListHandler(c *gin.Context) {
 	db.Model(&model.OrderPay{}).Order("id asc").Find(&orderPays)
 
 	c.JSON(http.StatusOK, gin.H{"order_info_list": orderInfoList, "order_pay_list": &orderPays})
+	return
+}
+
+// GetOrderListByCutomerIDInfoHandler in database
+func GetOrderListByCutomerIDInfoHandler(c *gin.Context) {
+
+	type APIOrderList struct {
+		ID         uint   `json:"id"`
+		CreatedAt  int64  `json:"created_at"`
+		Detail     string `json:"detail"`
+		TotalPrice int64  `json:"total_price"`
+		Image      string `json:"image"`
+	}
+	orderInfoList := []APIOrderList{}
+	db.Model(&model.OrderInfo{}).Order("id asc").Find(&orderInfoList)
+
+	c.JSON(http.StatusOK, gin.H{"order_info_list": orderInfoList})
 	return
 }
 
@@ -116,6 +137,37 @@ func CreateOrderFormData(c *gin.Context) {
 	return
 }
 
+// ImageOrderHandler updload image of employee
+func ImageOrderHandler(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	log.Println(file.Filename)
+
+	b := make([]byte, 8)
+
+	if _, err := rand.Read(b); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	extension := strings.Split(file.Filename, ".")
+	newName := fmt.Sprintf("%x", b)
+	createTime := fmt.Sprintf("%d", time.Now().Unix())
+	newName = createTime + "_" + newName + "." + extension[1]
+	filepath := os.Getenv("IMAGE_FILE_PATH") + newName
+
+	// Upload the file to specific dst.
+	if err := c.SaveUploadedFile(file, filepath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"filename": newName})
+	return
+}
+
 func calculateTotalPrice(orderInfo *model.OrderInfo) (int64, error) {
 	transportType := &model.TransportType{}
 	if err := db.First(transportType, orderInfo.TransportTypeID).Error; err != nil {
@@ -145,6 +197,71 @@ func CreateOrderInfoHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+	orderInfo.TotalPrice = totalPrice
+	// Insert customer FCM token to orderInfo to send message
+	cusSendFCMToken := &model.UserFCMToken{}
+	if err := db.Where("customer_id = ?", orderInfo.CustomerSendID).First(cusSendFCMToken).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	cusReceiveFCMToken := &model.UserFCMToken{}
+	if orderInfo.CustomerReceiveID != 0 {
+		if err := db.Where("customer_id = ?", orderInfo.CustomerReceiveID).First(cusReceiveFCMToken).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		orderInfo.CustomerRecvFCMToken = cusReceiveFCMToken.Token
+	}
+	//Create order ID base on Time
+	current := uuid.New().Time()
+	currentString := fmt.Sprintf("%d", current)
+	rawUint, _ := strconv.ParseUint(currentString, 10, 64)
+	orderInfo.ID = uint(rawUint / 100000000000)
+	orderInfo.CustomerSendFCMToken = cusSendFCMToken.Token
+	// Create order info
+	if err := db.Create(orderInfo).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"server_response": "An order info has been created!",
+		"order_id":        orderInfo.ID,
+		"total_price":     totalPrice,
+	})
+	return
+}
+
+// CreateOrderUseVoucherInfoHandler in database
+func CreateOrderUseVoucherInfoHandler(c *gin.Context) {
+
+	orderInfoWithVoucher := &model.OrderInfoWithVoucher{}
+	if err := c.ShouldBindJSON(&orderInfoWithVoucher); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	if err := validator.Validate(&orderInfoWithVoucher); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	orderInfo, orderVoucherID := orderInfoWithVoucher.ConvertToBasicOrder()
+	// Calculate total price
+	totalPrice, err := calculateTotalPrice(orderInfo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if orderVoucherID != 0 {
+		orderVoucher := &model.OrderVoucher{}
+		if err := db.Find(&orderVoucher, "id = ? AND start_date < ? AND end_date > ?", orderVoucherID, time.Now().Unix(), time.Now().Unix()).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if *orderVoucher == (model.OrderVoucher{}) {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		totalPrice = totalPrice - orderVoucher.Discount
 	}
 	orderInfo.TotalPrice = totalPrice
 	// Insert customer FCM token to orderInfo to send message

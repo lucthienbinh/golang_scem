@@ -62,6 +62,7 @@ func MigrationDatabase() (err error) {
 		&model.OrderShortShip{},
 		&model.OrderWorkflowData{},
 		&model.LongShipWorkflowData{},
+		&model.OrderVoucher{},
 	)
 }
 
@@ -109,6 +110,9 @@ func RefreshDatabase() (err error) {
 	if err := createCustomerFCMToken(); err != nil {
 		return err
 	}
+	if err := createOrderVoucher(); err != nil {
+		return err
+	}
 	return
 }
 
@@ -129,6 +133,7 @@ func deleteDatabase() (err error) {
 		&model.OrderShortShip{},
 		&model.OrderWorkflowData{},
 		&model.LongShipWorkflowData{},
+		&model.OrderVoucher{},
 	)
 }
 
@@ -214,6 +219,19 @@ func createDefaultEmployee() error {
 		return err
 	}
 	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Hieu", Age: 37, Phone: 776664993, Gender: "male", Address: "21 Trung Son", IdentityCard: "17687t562765786", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 11}
+	if err := db.Create(employee).Error; err != nil {
+		return err
+	}
+	userAuth.EmployeeID = employee.ID
+	if err := db.Model(&userAuth).Updates(&userAuth).Error; err != nil {
+		return err
+	}
+
+	userAuth = &model.UserAuthenticate{Email: "deliverystaff3@gmail.com", Password: "12345678"}
+	if err := db.Create(userAuth).Error; err != nil {
+		return err
+	}
+	employee = &model.Employee{UserAuthID: userAuth.ID, Name: "Thao", Age: 37, Phone: 776662293, Gender: "female", Address: "32 Xuan Son", IdentityCard: "17687t562774286", EmployeeTypeID: 3, Avatar: "image3.jpg", DeliveryLocationID: 1}
 	if err := db.Create(employee).Error; err != nil {
 		return err
 	}
@@ -369,10 +387,10 @@ func createDeliveryLocation() error {
 
 func createExampleOrder() error {
 	orderInfo := &model.OrderInfo{
-		Weight: 2, Volume: 10, Type: "Normal", Image: "order1.png",
+		Weight: 2, Volume: 10, Type: "Normal", Image: "box.jpg",
 		CustomerSendID: 1, EmplCreateID: 2,
-		Sender:           "269 Ngo Quyen, Quan 5, HCM",
-		Receiver:         "38 Tran Hung Dao, Quan 1,HCM",
+		Sender:           "Customer One - 269 Ngo Quyen, Quan 5, HCM - 5676765678",
+		Receiver:         "Mai Thi Cuc - 38 Tran Hung Dao, Quan 1, HCM - 6765677867",
 		Detail:           "May vi tinh ca nhan va ban phim may tinh",
 		OrderShortShipID: 1, TransportTypeID: 1, ShortShipDistance: 20,
 		TotalPrice: 200000, Note: "Giao hang vao buoi sang",
@@ -405,11 +423,11 @@ func createExampleOrderShortShip() error {
 
 func createExampleOrder2() error {
 	orderInfo := &model.OrderInfo{
-		Weight: 3, Volume: 50, Type: "Special", Image: "order1.png",
-		CustomerSendID: 1, EmplCreateID: 2,
-		Sender:   "231-233 Le Hong Phong",
-		Receiver: "74 Phan Chau Trinh, Quan 3, DL",
-		Detail:   "May xay thit", UseLongShip: true, LongShipID: 1,
+		Weight: 3, Volume: 50, Type: "Special", Image: "box.jpg",
+		CustomerSendID: 1,
+		Sender:         "Customer one - 231-233 Le Hong Phong - 6578678678",
+		Receiver:       "Mac Thi Buoi - 74 Phan Chau Trinh, Quan 3, DL - 567865676",
+		Detail:         "May xay thit", UseLongShip: true, LongShipID: 1,
 		OrderShortShipID: 1, TransportTypeID: 3, ShortShipDistance: 20,
 		TotalPrice: 200000, Note: "Giao hang vao buoi trua",
 	}
@@ -425,6 +443,42 @@ func createCustomerFCMToken() error {
 		Token: "f09fih-jQ9GhMz3riGfmJv:APA91bH7opzi3nvIeY1GLvJb0zZClx19ZztB5-6Bgg4jIsBi-9fnZWHpqYo1Za78W93VbdyiQureIFkck0MA6AaFik7LwQ2gIburmRCV2eR4ZBIp-YjQKRhIUHAYbu6YyQmfEJPsDgbn",
 	}
 	if err := db.Create(orderPay).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func createOrderVoucher() error {
+	orderVoucher := &model.OrderVoucher{
+		Title:     "Khuyen mai ngay he 1",
+		Content:   "Tan huong nhung ngay he sang khoang voi Move nice VN nha. Giam gia 30.000 tu hom nay den cuoi thang.",
+		StartDate: 1611390576, EndDate: 1619390576, Discount: 30000,
+	}
+	if err := db.Create(orderVoucher).Error; err != nil {
+		return err
+	}
+	orderVoucher = &model.OrderVoucher{
+		Title:     "Khuyen mai ngay xuan 2",
+		Content:   "Tan huong nhung ngay xuan mat me voi Move nice VN nha. Giam gia 50.000 tu hom nay den cuoi thang.",
+		StartDate: 1615690576, EndDate: 1619390576, Discount: 50000,
+	}
+	if err := db.Create(orderVoucher).Error; err != nil {
+		return err
+	}
+	orderVoucher = &model.OrderVoucher{
+		Title:     "Khuyen mai ngay dong 3",
+		Content:   "Tan huong nhung ngay xuan mat me voi Move nice VN nha. Giam gia 70.000 tu hom nay den cuoi thang.",
+		StartDate: 1612390576, EndDate: 1620390576, Discount: 70000,
+	}
+	if err := db.Create(orderVoucher).Error; err != nil {
+		return err
+	}
+	orderVoucher = &model.OrderVoucher{
+		Title:     "Khuyen mai ngay phu nu 5",
+		Content:   "Chuc mung ngay quoc te phu nu voi Move nice VN nha. Giam gia 100.000 tu hom nay den cuoi thang.",
+		StartDate: 1612390576, EndDate: 1620390576, Discount: 100000,
+	}
+	if err := db.Create(orderVoucher).Error; err != nil {
 		return err
 	}
 	return nil

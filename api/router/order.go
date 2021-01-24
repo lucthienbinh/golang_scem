@@ -20,6 +20,7 @@ func WebOrderRoutes(rg *gin.RouterGroup) {
 	order.GET("/id/:id", handler.GetOrderInfoHandler)
 	order.GET("/create-form-data", handler.CreateOrderFormData)
 	order.POST("/create", handler.CreateOrderInfoHandler)
+	order.POST("/upload/image", handler.ImageOrderHandler)
 	order.PUT("/update/:id", handler.UpdateOrderInfoHandler)
 	order.DELETE("/delete/:id", handler.DeleteOrderInfoHandler)
 
@@ -28,6 +29,27 @@ func WebOrderRoutes(rg *gin.RouterGroup) {
 	orderPay.POST("/create-step-one", handler.CreateOrderPayStepOneHandler)
 	orderPay.POST("/create-step-two", handler.CreateOrderPayStepTwoHandler)
 	orderPay.PUT("/update-payment-confirm/orderid/:id", handler.UpdateOrderPayConfirmHandler)
+
+	orderVoucher := rg.Group("/order-voucher")
+	orderVoucher.GET("/list", handler.GetOrderVoucherListHandler)
+}
+
+// AppOrderRoutes to manage order model
+func AppOrderRoutes(rg *gin.RouterGroup) {
+
+	order := rg.Group("/order")
+	order.GET("/list/customer-id/:customer_id", handler.GetOrderListByCutomerIDInfoHandler)
+	order.GET("/id/:id", handler.GetOrderInfoHandler)
+	order.POST("/create-use-voucher", handler.CreateOrderUseVoucherInfoHandler)
+	order.POST("/upload/image", handler.ImageOrderHandler)
+
+	orderPay := rg.Group("/order-pay")
+	orderPay.POST("/create-step-one", handler.CreateOrderPayStepOneHandler)
+	orderPay.POST("/create-step-two", handler.CreateOrderPayStepTwoHandler)
+	orderPay.PUT("/update-payment-confirm/orderid/:id", handler.UpdateOrderPayConfirmHandler)
+
+	orderVoucher := rg.Group("/order-voucher")
+	orderVoucher.GET("/list", handler.GetOrderVoucherListHandler)
 }
 
 // Todo: get user token first then go to handler

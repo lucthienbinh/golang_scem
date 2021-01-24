@@ -175,6 +175,10 @@ func saveFCMToken(c *gin.Context) {
 			return
 		}
 	}
+	if userAuthID == 0 {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 	handler.SaveFCMTokenWithUserAuthID(c, userAuthID, request.Token)
 	return
 }

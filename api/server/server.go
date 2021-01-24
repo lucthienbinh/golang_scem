@@ -72,13 +72,13 @@ func webRouter() http.Handler {
 	}
 	router.UserRoutes(api)
 	router.WebOrderRoutes(api)
-	router.OrderShipRoutes(api)
+	router.WebOrderShipRoutes(api)
 	return e
 }
 
 func appRouter() http.Handler {
 	e := gin.Default()
-	e.Static("/api/image", "./public/upload/images")
+	e.Static("/api/images", os.Getenv("IMAGE_FILE_PATH"))
 
 	fcmAuth := e.Group("/fcm-auth")
 	router.AppFMCToken(fcmAuth)
@@ -97,6 +97,7 @@ func appRouter() http.Handler {
 
 	}
 	router.UserRoutes(api)
-
+	router.AppOrderRoutes(api)
+	router.AppOrderShipRoutes(api)
 	return e
 }

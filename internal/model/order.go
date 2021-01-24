@@ -66,6 +66,16 @@ type OrderPay struct {
 	UpdatedAt           int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
+// OrderVoucher structure
+type OrderVoucher struct {
+	ID        uint   `gorm:"primary_key;<-:false" json:"id"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	StartDate int64  `json:"start_date"`
+	EndDate   int64  `json:"end_date"`
+	Discount  int64  `json:"discount"`
+}
+
 // -------------------- Struct uses to fetch data from database --------------------
 
 // OrderInfoForPayment structure (create workflow)
@@ -90,22 +100,29 @@ type OrderInfoForShipment struct {
 	CustomerReceiveID    uint
 }
 
-// OrderInfoFetchDB structure
-type OrderInfoFetchDB struct {
-	ID                  uint   `json:"id"`
-	Weight              int16  `json:"weight"`
-	Volume              int16  `json:"volume"`
-	Type                string `json:"type"`
-	Image               string `json:"image"`
-	CustomerSendName    string `json:"customer_send_name"`
-	CustomerReceiveName string `json:"customer_receive_name"`
-	EmplCreateName      string `json:"empl_create_name"`
-	EmplShipName        string `json:"empl_ship_name"`
-	Receiver            string `json:"receiver"`
-	TransportType       string `json:"transport_type"`
-	Detail              string `json:"detail"`
-	TotalPrice          int64  `json:"total_price"`
-	Note                string `json:"note"`
-	CreatedAt           int64  `json:"created_at"`
-	UpdatedAt           int64  `json:"updated_at"`
+// OrderInfoWithVoucher structure
+type OrderInfoWithVoucher struct {
+	CustomerSendID    uint   `json:"customer_send_id" validate:"nonzero"`
+	Sender            string `json:"sender" validate:"nonzero"`
+	Receiver          string `json:"receiver" validate:"nonzero"`
+	TransportTypeID   uint   `json:"transport_type_id" validate:"nonzero"`
+	Detail            string `json:"detail" validate:"nonzero"`
+	Note              string `json:"note"`
+	ShortShipDistance int64  `json:"short_ship_distance"`
+	Image             string `json:"image"`
+	OrderVoucherID    uint   `json:"order_voucher_id"`
+}
+
+// ConvertToBasicOrder function
+func (ord *OrderInfoWithVoucher) ConvertToBasicOrder() (*OrderInfo, uint) {
+	return &OrderInfo{
+		CustomerSendID:    ord.CustomerSendID,
+		Sender:            ord.Sender,
+		Receiver:          ord.Receiver,
+		TransportTypeID:   ord.TransportTypeID,
+		Detail:            ord.Detail,
+		Note:              ord.Note,
+		ShortShipDistance: ord.ShortShipDistance,
+		Image:             ord.Image,
+	}, ord.OrderVoucherID
 }

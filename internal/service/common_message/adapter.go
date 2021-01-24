@@ -23,7 +23,7 @@ func MappingGormDBConnection(_db *gorm.DB) {
 // GetOrderLongShipList function
 func GetOrderLongShipList(longShipID uint) ([]model.OrderLongShip, error) {
 	orderLongShips := []model.OrderLongShip{}
-	if err := db.Where("long_ship_id == ?", longShipID).Order("id asc").Find(&orderLongShips).Error; err != nil {
+	if err := db.Where("long_ship_id == ?", longShipID).Find(&orderLongShips).Error; err != nil {
 		return nil, err
 	}
 	return orderLongShips, nil
