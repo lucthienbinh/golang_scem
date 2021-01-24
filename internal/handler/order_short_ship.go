@@ -11,6 +11,7 @@ import (
 	"github.com/lucthienbinh/golang_scem/internal/model"
 	CommonService "github.com/lucthienbinh/golang_scem/internal/service/common"
 	CommonMessage "github.com/lucthienbinh/golang_scem/internal/service/common_message"
+	"golang.org/x/sync/errgroup"
 )
 
 // -------------------- ORDER SHORT SHIP HANDLER FUNTION --------------------
@@ -54,16 +55,39 @@ func UpdateOSSShipperCalledHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	err = CommonMessage.PublishShipperCalledMessage(orderShortShip.OrderID)
-	if err != nil {
+
+	// Run concurrency
+	var g errgroup.Group
+
+	// Send message to state machine (Zeebe or State Scem)
+	g.Go(func() error {
+		if err := CommonMessage.PublishShipperCalledMessage(orderShortShip.OrderID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Send notification to FCM cloud and store in database
+	g.Go(func() error {
+		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 2, ""); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update order long ship in database
+	g.Go(func() error {
+		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperCalled: true}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperCalled: true}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
 	return
 }
@@ -80,19 +104,42 @@ func UpdateOSSShipperReceivedMoneyHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	err = CommonMessage.PublishShipperReceivedMoneyMessage(orderShortShip.OrderID)
-	if err != nil {
+
+	// Run concurrency
+	var g errgroup.Group
+
+	// Send message to state machine (Zeebe or State Scem)
+	g.Go(func() error {
+		if err := CommonMessage.PublishShipperReceivedMoneyMessage(orderShortShip.OrderID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Send notification to FCM cloud and store in database
+	g.Go(func() error {
+		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 3, ""); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update order long ship in database
+	g.Go(func() error {
+		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
+			ShipperReceivedMoney: true,
+			ReceivedMoneyTime:    time.Now().Unix(),
+		}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
-		ShipperReceivedMoney: true,
-		ReceivedMoneyTime:    time.Now().Unix(),
-	}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
 	return
 }
@@ -109,16 +156,39 @@ func UpdateOSSShipperShippedHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	err = CommonMessage.PublishShipperShippedMessage(orderShortShip.OrderID)
-	if err != nil {
+
+	// Run concurrency
+	var g errgroup.Group
+
+	// Send message to state machine (Zeebe or State Scem)
+	g.Go(func() error {
+		if err := CommonMessage.PublishShipperShippedMessage(orderShortShip.OrderID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Send notification to FCM cloud and store in database
+	g.Go(func() error {
+		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 4, ""); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update order long ship in database
+	g.Go(func() error {
+		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperShipped: true, ShippedTime: time.Now().Unix()}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{ShipperShipped: true, ShippedTime: time.Now().Unix()}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
 	return
 }
@@ -158,20 +228,43 @@ func UpdateOSSShipperConfirmedHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	err = CommonMessage.PublishShipperConfirmedMessage(orderShortShip.OrderID)
-	if err != nil {
+
+	// Run concurrency
+	var g errgroup.Group
+
+	// Send message to state machine (Zeebe or State Scem)
+	g.Go(func() error {
+		if err := CommonMessage.PublishShipperConfirmedMessage(orderShortShip.OrderID); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Send notification to FCM cloud and store in database
+	g.Go(func() error {
+		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 5, ""); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update order long ship in database
+	g.Go(func() error {
+		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
+			ShipperConfirmed:     newName,
+			ShipperConfirmedTime: time.Now().Unix(),
+			Finished:             true,
+		}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	orderShortShip.ID = getIDFromParam(c)
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{
-		ShipperConfirmed:     newName,
-		ShipperConfirmedTime: time.Now().Unix(),
-		Finished:             true,
-	}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
 	return
 }
@@ -195,19 +288,39 @@ func CancelOrderShortShipHandler(c *gin.Context) {
 		return
 	}
 	canceleReason := c.PostForm("canceled_reason")
-	orderShortShip.ID = getIDFromParam(c)
 
-	// Create workflow instance in zeebe
-	err = CommonService.CancelWorkflowFullShipInstanceHandler(orderWorkflowData.WorkflowInstanceKey)
-	if err != nil {
+	// Run concurrency
+	var g errgroup.Group
+
+	// Send message to state machine (Zeebe or State Scem)
+	g.Go(func() error {
+		if err := CommonService.CancelWorkflowFullShipInstanceHandler(orderWorkflowData.WorkflowInstanceKey); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Send notification to FCM cloud and store in database
+	g.Go(func() error {
+		if err := createCustomerNotificationLShortShipHandler(orderShortShip.OrderID, orderShortShip.CustomerSendID, 6, canceleReason); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	// Update order long ship in database
+	g.Go(func() error {
+		if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{Canceled: true, CanceledReason: canceleReason}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err = db.Model(&orderShortShip).Updates(model.OrderShortShip{Canceled: true, CanceledReason: canceleReason}).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
 	c.JSON(http.StatusOK, gin.H{"server_response": "Your information has been updated!"})
 	return
 }

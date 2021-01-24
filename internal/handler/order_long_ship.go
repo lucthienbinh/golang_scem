@@ -413,7 +413,7 @@ func UpdateLSUnloadPackageHandler(c *gin.Context, userAuthID uint) {
 	// Run concurrency
 	var g errgroup.Group
 
-	// Send message to sate machine (Zeebe or State Scem)
+	// Send message to state machine (Zeebe or State Scem)
 	g.Go(func() error {
 		if err := CommonMessage.PublishPackageUnloadedMessage(longShip.ID); err != nil {
 			return err

@@ -11,15 +11,6 @@ import (
 
 // -------------------- DELIVERY LOCATION HANDLER FUNTION --------------------
 
-var (
-	longShipMessage = []string{
-		"Your package has loaded on truck!",
-		"Your long ship truck has started!",
-		"Your long ship truck has arrived!",
-		"Your package has unloaded off truck!",
-	}
-)
-
 // GetCustomerNotificationListByCustomerIDHandler in database
 func GetCustomerNotificationListByCustomerIDHandler(c *gin.Context) {
 	customerNotification := []model.CustomerNotification{}
@@ -59,31 +50,40 @@ func createCustomerNotificationLongShipHandler(longShipID uint, titleIndex int, 
 		if err := db.Create(customerNotification).Error; err != nil {
 			return err
 		}
+		// Todo: send this notification ton gorush to push to FCM after created
 	}
 
 	return nil
 }
 
-func createCustomerNotificationLShortShipHandler(customerID uint, titleIndex int, content string) error {
+func createCustomerNotificationLShortShipHandler(orderID, customerSendID uint, titleIndex int, canceledReason string) error {
 	var title string
+	var content string
+	var orderIDString = strconv.FormatUint(uint64(orderID), 10)
 	switch titleIndex {
 	case 1:
 		title = "Selected shipper for your order"
+		content = "Our shipper has received your order with id: " + orderIDString
 	case 2:
-		title = "Shipper to verified"
+		title = "Shipper has called you"
+		content = "Your order id: " + orderIDString + " has been verified"
 	case 3:
 		title = "Shipper received your money"
+		content = "Thanks for paying your order with id: " + orderIDString
 	case 4:
 		title = "Shipper shipped your package"
+		content = "Your order id: " + orderIDString + " has arrived"
 	case 5:
 		title = "Shipper confirmed your package"
+		content = "Thanks for using our service"
 	case 6:
-		title = "Your order canceled"
+		title = "Your order has been canceled"
+		content = canceledReason
 	default:
 		return errors.New("Server error")
 	}
 	customerNotification := &model.CustomerNotification{
-		CustomerID: customerID, Title: title, Content: content,
+		CustomerID: customerSendID, Title: title, Content: content,
 	}
 	if err := db.Create(customerNotification).Error; err != nil {
 		return err
