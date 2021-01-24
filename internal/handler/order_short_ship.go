@@ -39,7 +39,7 @@ func GetOrderShortShipHandler(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"order_long_ship_info": &orderShortShip})
+	c.JSON(http.StatusOK, gin.H{"order_short_ship_info": &orderShortShip})
 	return
 }
 
