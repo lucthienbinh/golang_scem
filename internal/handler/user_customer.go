@@ -134,6 +134,14 @@ func updateCustomerCreditBalance(accountBalance int64, customerID uint) error {
 	return nil
 }
 
+// GetCustomerCreditListHandler in database
+func GetCustomerCreditListHandler(c *gin.Context) {
+	customerCredits := []model.CustomerCredit{}
+	db.Order("id asc").Find(&customerCredits)
+	c.JSON(http.StatusOK, gin.H{"customer_credit_list": &customerCredits})
+	return
+}
+
 // UpdateCustomerCreditBalanceHandler in database
 // The usecase of this function when customer report about update customer credit balance bug.
 // We should we an automatic mechanism update customer credit balance when customer transfered money from bank/ online bank
