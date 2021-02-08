@@ -82,7 +82,7 @@ func runAppAuthRedis() {
 		log.Println(err)
 		os.Exit(1)
 	}
-	log.Println("App authenticate activated!")
+	log.Println("Selected Redis to run app auth!")
 }
 
 func connectPostgress() {

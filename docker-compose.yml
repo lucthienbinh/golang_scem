@@ -9,49 +9,49 @@ volumes:
   golangscem-data:
 
 services:
-  gorush:
-    container_name: gorush_docker
-    image: appleboy/gorush
-    restart: always
-    ports:
-      - "8088:8088"
-      - "9000:9000"
-    logging:
-      options:
-        max-size: "100k"
-        max-file: "3"
-    environment:
-      - GORUSH_CORE_QUEUE_NUM=512
-      - GORUSH_GRPC_ENABLED=true
-      - GORUSH_ANDROID_ENABLED=true
-      - GORUSH_ANDROID_APIKEY="AAAAFRYpOig:APA91bEcWiimq-Autq8mFpc4iBGsN3oUn2qouo_Th1_fcfRAdG4Nu8EfD4hbXF7Jjz1qQWDF--xRl7yuUAX4v3gt3qhTKWewQlD3WU35oyAZU77gaHUjgc7xIb3SZNEbCnbf9NLgKdGf"
-    networks:
-      - scem-net
-  redis:
-    container_name: redis_docker
-    image: redis:6.2-rc1-alpine
-    restart: always
-    command: ["redis-server", "--appendonly", "yes","--port", "6379"]
-    hostname: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - scem-net
-    volumes:
-      - redis-data:/data
-  postgres:
-    container_name: scem_postgres_docker
-    image: postgres:13.1-alpine
-    restart: always
-    hostname: postgres
-    ports:
-      - "5432:5432"
-    env_file:
-      - ./docker/scem_database.env # configure postgres
-    volumes:
-      - postgres-data:/var/lib/postgresql/data/
-    networks:
-      - scem-net
+  # gorush:
+  #   container_name: gorush_docker
+  #   image: appleboy/gorush
+  #   restart: always
+  #   ports:
+  #     - "8088:8088"
+  #     - "9000:9000"
+  #   logging:
+  #     options:
+  #       max-size: "100k"
+  #       max-file: "3"
+  #   environment:
+  #     - GORUSH_CORE_QUEUE_NUM=512
+  #     - GORUSH_GRPC_ENABLED=true
+  #     - GORUSH_ANDROID_ENABLED=true
+  #     - GORUSH_ANDROID_APIKEY=""
+  #   networks:
+  #     - scem-net
+  # redis:
+  #   container_name: redis_docker
+  #   image: redis:6.2-rc1-alpine
+  #   restart: always
+  #   command: ["redis-server", "--appendonly", "yes","--port", "6379"]
+  #   hostname: redis
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - scem-net
+  #   volumes:
+  #     - redis-data:/data
+  # postgres:
+  #   container_name: scem_postgres_docker
+  #   image: postgres:13.1-alpine
+  #   restart: always
+  #   hostname: postgres
+  #   ports:
+  #     - "5432:5432"
+  #   env_file:
+  #     - ./docker/scem_database.env # configure postgres
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data/
+  #   networks:
+  #     - scem-net
   # golang_scem:
   #   container_name: golang_scem_docker
   #   # build: .
