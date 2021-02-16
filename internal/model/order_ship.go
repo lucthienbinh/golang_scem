@@ -70,12 +70,14 @@ type OrderLongShip struct {
 
 // OrderShortShip structure
 type OrderShortShip struct {
-	ID                  uint `gorm:"primary_key;<-:false" json:"id"`
-	OrderID             uint `json:"order_id" validate:"nonzero"`
-	ShipperID           uint `json:"shipper_id" validate:"nonzero"`
-	CustomerSendID      uint `json:"customer_send_id"`
-	CustomerReceiveID   uint `json:"customer_receive_id"`
-	ShipperReceiveMoney bool `json:"shipper_receive_money"`
+	ID                  uint   `gorm:"primary_key;<-:false" json:"id"`
+	OrderID             uint   `json:"order_id" validate:"nonzero"`
+	ShipperID           uint   `json:"shipper_id" validate:"nonzero"`
+	CustomerSendID      uint   `json:"customer_send_id"`
+	CustomerReceiveID   uint   `json:"customer_receive_id"`
+	Sender              string `json:"sender"`
+	Receiver            string `json:"receiver"`
+	ShipperReceiveMoney bool   `json:"shipper_receive_money"`
 	// Message data in workflow - Start
 	// Shipper Called
 	ShipperCalled bool `json:"shipper_called"`
@@ -93,5 +95,6 @@ type OrderShortShip struct {
 	CanceledReason string `json:"canceled_reason"`
 	Finished       bool   `json:"finished"`
 	OSSQrCode      string `json:"oss_qr_code"`
+	CreatedAt      int64  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt      int64  `gorm:"autoUpdateTime" json:"updated_at"`
 }

@@ -105,6 +105,9 @@ func RefreshDatabase() (err error) {
 	if err := createExampleOrderShortShip(); err != nil {
 		return err
 	}
+	if err := createExampleOrderWorkflowData(); err != nil {
+		return err
+	}
 	if err := createExampleOrder2(); err != nil {
 		return err
 	}
@@ -416,9 +419,21 @@ func createExampleOrderPay() error {
 	return nil
 }
 
+func createExampleOrderWorkflowData() error {
+	orderPay := &model.OrderWorkflowData{
+		OrderID: 1, WorkflowKey: "123abc", WorkflowInstanceKey: 321123321123, OrderPayID: 1, CustomerSendID: 1,
+	}
+	if err := db.Create(orderPay).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func createExampleOrderShortShip() error {
 	orderShortShip := &model.OrderShortShip{
 		OrderID: 1, ShipperID: 3, CustomerSendID: 1, OSSQrCode: "1611465837_1e708c0f8e9a0213.jpg",
+		Sender:   "Customer One - 269 Ngo Quyen, Quan 5, HCM - 5676765678",
+		Receiver: "Mai Thi Cuc - 38 Tran Hung Dao, Quan 1, HCM - 6765677867",
 	}
 	if err := db.Create(orderShortShip).Error; err != nil {
 		return err

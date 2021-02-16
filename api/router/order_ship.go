@@ -97,6 +97,7 @@ func AppOrderShipRoutes(rg *gin.RouterGroup) {
 	longShip.PUT("/update-unload-package/qrcode/:qrcode", updateLSUnloadPackageHandler)
 
 	orderShortShip := rg.Group("/order-short-ship")
+	orderShortShip.GET("/list/employee-id/:id", handler.GetOrderShortShipListByEmployeeIDHandler)
 	orderShortShip.GET("/id/:id", handler.GetOrderShortShipHandler)
 	orderShortShip.PUT("/update/shipper-called/:id", handler.UpdateOSSShipperCalledHandler)
 	orderShortShip.PUT("/update/shipper-received-money/:id", handler.UpdateOSSShipperReceivedMoneyHandler)

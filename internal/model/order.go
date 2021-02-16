@@ -94,6 +94,8 @@ type OrderInfoForShipment struct {
 	LongShipID        uint
 	CustomerSendID    uint
 	CustomerReceiveID uint
+	Sender            string
+	Receiver          string
 }
 
 // OrderInfoWithVoucher structure

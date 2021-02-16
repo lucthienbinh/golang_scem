@@ -24,7 +24,28 @@ func GetOrderShortShipListHandler(c *gin.Context) {
 	return
 }
 
+// GetOrderShortShipListByEmployeeIDHandler in database
+func GetOrderShortShipListByEmployeeIDHandler(c *gin.Context) {
+
+	type APIOrderShortShipList struct {
+		ID        uint   `json:"id"`
+		OrderID   uint   `json:"order_id"`
+		ShipperID uint   `json:"shipper_id"`
+		Sender    string `json:"sender"`
+		Receiver  string `json:"receiver"`
+		Canceled  bool   `json:"canceled"`
+		Finished  bool   `json:"finished"`
+		CreatedAt int64  `json:"created_at"`
+	}
+	orderShortShipList := []APIOrderShortShipList{}
+	db.Model(&model.OrderShortShip{}).Order("id asc").Find(&orderShortShipList, "shipper_id = ?", c.Param("id"))
+
+	c.JSON(http.StatusOK, gin.H{"order_short_ship_list": &orderShortShipList})
+	return
+}
+
 func getOrderShortShipOrNotFound(c *gin.Context) (*model.OrderShortShip, error) {
+
 	orderShortShip := &model.OrderShortShip{}
 	if err := db.First(orderShortShip, c.Param("id")).Error; err != nil {
 		return orderShortShip, err
@@ -51,7 +72,7 @@ func UpdateOSSShipperCalledHandler(c *gin.Context) {
 		return
 	}
 
-	if orderShortShip.ShipperCalled == true {
+	if orderShortShip.ShipperCalled == true || orderShortShip.Canceled == true {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}

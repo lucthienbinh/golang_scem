@@ -126,6 +126,8 @@ func CreateOrderShortShip(orderID uint) (uint, error) {
 	orderShortShip.ShipperID = employeeList[index].ID
 	orderShortShip.CustomerSendID = orderInfoForShipment.CustomerSendID
 	orderShortShip.CustomerReceiveID = orderInfoForShipment.CustomerReceiveID
+	orderShortShip.Sender = orderInfoForShipment.Sender
+	orderShortShip.Receiver = orderInfoForShipment.Receiver
 	orderShortShip.ShipperReceiveMoney = orderWorkflowData.ShipperReceiveMoney
 
 	// Create QR code
