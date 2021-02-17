@@ -33,27 +33,29 @@ func ConnectZeebeEngine() error {
 }
 
 // DeployFullShipWorkflow function
-func DeployFullShipWorkflow() {
+func DeployFullShipWorkflow() error {
 
 	ctx := context.Background()
 	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("FULL_SHIP_ZB_FILE_1")).Send(ctx)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	fmt.Println(response.String())
+	return nil
 }
 
 // DeployLongShipWorkflow function
-func DeployLongShipWorkflow() {
+func DeployLongShipWorkflow() error {
 
 	ctx := context.Background()
 	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("LONG_SHIP_ZB_FILE_1")).Send(ctx)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	fmt.Println(response.String())
+	return nil
 }
 
 // CreateFullShipInstance of workflow
@@ -62,6 +64,29 @@ func CreateFullShipInstance(orderWorkflowData *model.OrderWorkflowData) (string,
 	// After the workflow is deployed.
 	variables := make(map[string]interface{})
 	variables["order_id"] = orderWorkflowData.OrderID
+	variables["shipper_receive_money"] = orderWorkflowData.ShipperReceiveMoney
+	variables["use_long_ship"] = orderWorkflowData.UseLongShip
+	variables["customer_receive_id"] = orderWorkflowData.CustomerReceiveID
+
+	request, err := zbClient.NewCreateInstanceCommand().BPMNProcessId(os.Getenv("FULL_SHIP_ZB_ID_1")).LatestVersion().VariablesFromMap(variables)
+	if err != nil {
+		return "", uint(0), err
+	}
+
+	ctx := context.Background()
+	msg, err := request.Send(ctx)
+	if err != nil {
+		return "", uint(0), err
+	}
+	log.Println(msg.String())
+	return strconv.Itoa(int(msg.WorkflowKey)), uint(msg.WorkflowInstanceKey), nil
+}
+
+// CreateFullShipInstanceWithBug of workflow
+func CreateFullShipInstanceWithBug(orderWorkflowData *model.OrderWorkflowData) (string, uint, error) {
+
+	// After the workflow is deployed.
+	variables := make(map[string]interface{})
 	variables["shipper_receive_money"] = orderWorkflowData.ShipperReceiveMoney
 	variables["use_long_ship"] = orderWorkflowData.UseLongShip
 	variables["customer_receive_id"] = orderWorkflowData.CustomerReceiveID

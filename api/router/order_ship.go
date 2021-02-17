@@ -14,12 +14,15 @@ func WebOrderShipRoutes(rg *gin.RouterGroup) {
 	stateService := rg.Group("/state-service")
 	if os.Getenv("STATE_SERVICE") == "1" {
 		zeebe := stateService.Group("/zeebe")
-		zeebe.GET("/deploy-full-ship-workflow", ServiceCommon.DeployWorkflowFullShipHandlerZB)
-		zeebe.GET("/deploy-long-ship-workflow", ServiceCommon.DeployWorkflowLongShipHandlerZB)
+		zeebe.GET("/full-ship-workflow/deploy", ServiceCommon.DeployWorkflowFullShipHandlerZB)
+		zeebe.GET("/full-ship-workflow/create-instance", ServiceCommon.CreateInstanceWorkflowFSHandlerZB)
+		zeebe.GET("/full-ship-workflow/create-instance-internal-bug", ServiceCommon.CreateInstanceInternalBugWorkflowFSHandlerZB)
+		zeebe.GET("/full-ship-workflow/create-instance-missing-param-bug", ServiceCommon.CreateInstanceMissingParamBugWorkflowFSHandlerZB)
+		zeebe.GET("/long-ship-workflow/deploy", ServiceCommon.DeployWorkflowLongShipHandlerZB)
 	} else {
 		stateScem := stateService.Group("/state-scem")
-		stateScem.GET("/deploy-full-ship-workflow", ServiceCommon.DeployWorkflowFullShipHandlerSS)
-		stateScem.GET("/deploy-long-ship-workflow", ServiceCommon.DeployWorkflowLongShipHandlerSS)
+		stateScem.GET("/full-ship-workflow/deploy", ServiceCommon.DeployWorkflowFullShipHandlerSS)
+		stateScem.GET("/long-ship-workflow/deploy", ServiceCommon.DeployWorkflowLongShipHandlerSS)
 	}
 
 	longShip := rg.Group("/long-ship")
