@@ -79,6 +79,9 @@ func appLoginHandlerRedis(c *gin.Context) {
 }
 
 func appLogoutHandlerRedis(c *gin.Context) {
+	if err := removeFCMToken(c); err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
 	middleware.DeleteAppTokenRedis(c)
 	return
 }
@@ -125,6 +128,9 @@ func appLoginHandlerBuntDB(c *gin.Context) {
 }
 
 func appLogoutHandlerBuntDB(c *gin.Context) {
+	if err := removeFCMToken(c); err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
 	middleware.DeleteAppTokenBuntDB(c)
 	return
 }
@@ -175,10 +181,23 @@ func saveFCMToken(c *gin.Context) {
 			return
 		}
 	}
-	if userAuthID == 0 {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
 	handler.SaveFCMTokenWithUserAuthID(c, userAuthID, request.Token)
 	return
+}
+
+func removeFCMToken(c *gin.Context) error {
+	var userAuthID uint
+	var err error
+	if os.Getenv("RUN_APP_AUTH") == "redis" {
+		userAuthID, err = middleware.GetUserAuthIDInTokenRedis(c)
+		if err != nil {
+			return err
+		}
+	} else if os.Getenv("RUN_APP_AUTH") == "buntdb" {
+		userAuthID, err = middleware.GetUserAuthIDInTokenBuntDB(c)
+		if err != nil {
+			return err
+		}
+	}
+	return handler.RemoveFCMTokenWithUserAuthID(c, userAuthID)
 }

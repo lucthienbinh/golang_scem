@@ -1,32 +1,32 @@
 version: '3'
 
-networks:
-  scem-net:
+# networks:
+#   scem-net:
 
-volumes:
-  redis-data:
-  postgres-data:
-  golangscem-data:
+# volumes:
+#   redis-data:
+#   postgres-data:
+#   golangscem-data:
 
 services:
-  # gorush:
-  #   container_name: gorush_docker
-  #   image: appleboy/gorush
-  #   restart: always
-  #   ports:
-  #     - "8088:8088"
-  #     - "9000:9000"
-  #   logging:
-  #     options:
-  #       max-size: "100k"
-  #       max-file: "3"
-  #   environment:
-  #     - GORUSH_CORE_QUEUE_NUM=512
-  #     - GORUSH_GRPC_ENABLED=true
-  #     - GORUSH_ANDROID_ENABLED=true
-  #     - GORUSH_ANDROID_APIKEY=""
-  #   networks:
-  #     - scem-net
+  gorush:
+    container_name: gorush_docker
+    image: appleboy/gorush
+    restart: always
+    ports:
+      - "7088:8088"
+      - "7000:9000"
+    logging:
+      options:
+        max-size: "100k"
+        max-file: "3"
+    environment:
+      - GORUSH_CORE_QUEUE_NUM=512
+      - GORUSH_GRPC_ENABLED=true
+      - GORUSH_ANDROID_ENABLED=true
+      - GORUSH_ANDROID_APIKEY=AAAAFRYpOig:APA91bEcWiimq-Autq8mFpc4iBGsN3oUn2qouo_Th1_fcfRAdG4Nu8EfD4hbXF7Jjz1qQWDF--xRl7yuUAX4v3gt3qhTKWewQlD3WU35oyAZU77gaHUjgc7xIb3SZNEbCnbf9NLgKdGf
+    # networks:
+    #   - scem-net
   # redis:
   #   container_name: redis_docker
   #   image: redis:6.2-rc1-alpine

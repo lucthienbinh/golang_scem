@@ -105,13 +105,13 @@ func RefreshDatabase() (err error) {
 	if err := createExampleOrderShortShip(); err != nil {
 		return err
 	}
+	if err := createExampleOrderLongShip(); err != nil {
+		return err
+	}
 	if err := createExampleOrderWorkflowData(); err != nil {
 		return err
 	}
 	if err := createExampleOrder2(); err != nil {
-		return err
-	}
-	if err := createCustomerFCMToken(); err != nil {
 		return err
 	}
 	if err := createOrderVoucher(); err != nil {
@@ -429,6 +429,16 @@ func createExampleOrderWorkflowData() error {
 	return nil
 }
 
+func createExampleOrderLongShip() error {
+	orderLongShip := &model.OrderLongShip{
+		OrderID: 1, LongShipID: 1, CustomerSendID: 1,
+	}
+	if err := db.Create(orderLongShip).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func createExampleOrderShortShip() error {
 	orderShortShip := &model.OrderShortShip{
 		OrderID: 1, ShipperID: 3, CustomerSendID: 1, OSSQrCode: "1611465837_1e708c0f8e9a0213.jpg",
@@ -452,17 +462,6 @@ func createExampleOrder2() error {
 		TotalPrice: 200000, Note: "Giao hang vao buoi trua",
 	}
 	if err := db.Create(orderInfo).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func createCustomerFCMToken() error {
-	orderPay := &model.UserFCMToken{
-		CustomerID: 1, UserAuthID: 5,
-		Token: "f09fih-jQ9GhMz3riGfmJv:APA91bH7opzi3nvIeY1GLvJb0zZClx19ZztB5-6Bgg4jIsBi-9fnZWHpqYo1Za78W93VbdyiQureIFkck0MA6AaFik7LwQ2gIburmRCV2eR4ZBIp-YjQKRhIUHAYbu6YyQmfEJPsDgbn",
-	}
-	if err := db.Create(orderPay).Error; err != nil {
 		return err
 	}
 	return nil

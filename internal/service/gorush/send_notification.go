@@ -1,8 +1,9 @@
-package main
+package gorush
 
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/appleboy/gorush/rpc/proto"
 
@@ -10,24 +11,23 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	address = "localhost:9000"
-)
-
-func main() {
+// Client to connect gorush
+func Client(tokenString, title, message string) error {
+	address := os.Getenv("GORUSH_ADDRESS")
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
+		return err
 	}
 	defer conn.Close()
 	c := proto.NewGorushClient(conn)
-
+	log.Println("token:", tokenString)
 	r, err := c.Send(context.Background(), &proto.NotificationRequest{
 		Platform: 2,
-		Tokens:   []string{"f09fih-jQ9GhMz3riGfmJv:APA91bH7opzi3nvIeY1GLvJb0zZClx19ZztB5-6Bgg4jIsBi-9fnZWHpqYo1Za78W93VbdyiQureIFkck0MA6AaFik7LwQ2gIburmRCV2eR4ZBIp-YjQKRhIUHAYbu6YyQmfEJPsDgbn"},
-		Message:  "Your package will arrive soon!",
-		Title:    "Attention!",
+		Tokens:   []string{tokenString},
+		Message:  message,
+		Title:    title,
 		Sound:    "test",
 		Data: &structpb.Struct{
 			Fields: map[string]*structpb.Value{
@@ -42,7 +42,9 @@ func main() {
 	})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
+		return err
 	}
 	log.Printf("Success: %t\n", r.Success)
 	log.Printf("Count: %d\n", r.Counts)
+	return nil
 }

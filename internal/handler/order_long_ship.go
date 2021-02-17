@@ -247,10 +247,10 @@ func UpdateLSLoadPackageHandler(c *gin.Context, userAuthID uint) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	if longShip.PackageLoaded == true {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
+	// if longShip.PackageLoaded == true {
+	// 	c.AbortWithStatus(http.StatusBadRequest)
+	// 	return
+	// }
 	// Run concurrency
 	var g errgroup.Group
 

@@ -83,6 +83,28 @@ func SaveFCMTokenWithUserAuthID(c *gin.Context, userAuthID uint, appToken string
 	}
 }
 
+// RemoveFCMTokenWithUserAuthID to database
+func RemoveFCMTokenWithUserAuthID(c *gin.Context, userAuthID uint) error {
+	userAuthenticate := &model.UserAuthenticate{}
+	if err := db.First(userAuthenticate, userAuthID).Error; err != nil {
+		return err
+	}
+	if userAuthenticate.EmployeeID != 0 {
+		employeeFCMToken := &model.UserFCMToken{}
+		if err := db.Model(employeeFCMToken).Where("employee_id = ?", userAuthenticate.EmployeeID).Delete(employeeFCMToken).Error; err != nil {
+			return err
+		}
+
+	}
+	if userAuthenticate.CustomerID != 0 {
+		customerFCMToken := &model.UserFCMToken{}
+		if err := db.Model(customerFCMToken).Where("customer_id = ?", userAuthenticate.CustomerID).Delete(customerFCMToken).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // -------------------- COMMON FUNTION --------------------
 func getIDFromParam(c *gin.Context) uint {
 	rawUint64, _ := strconv.ParseUint(c.Param("id"), 10, 64)

@@ -3,13 +3,15 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lucthienbinh/golang_scem/internal/model"
+	GorushClient "github.com/lucthienbinh/golang_scem/internal/service/gorush"
+	"golang.org/x/sync/errgroup"
+	"gorm.io/gorm"
 )
-
-// -------------------- DELIVERY LOCATION HANDLER FUNTION --------------------
 
 // GetCustomerNotificationListByCustomerIDHandler in database
 func GetCustomerNotificationListByCustomerIDHandler(c *gin.Context) {
@@ -38,14 +40,54 @@ func createCustomerNotificationLongShipHandler(longShipID uint, titleIndex int) 
 		return err
 	}
 
-	for i := 0; i < len(orderLongShips); i++ {
-		orderIDString = strconv.FormatUint(uint64(orderLongShips[i].OrderID), 10)
-		customerNotification.CustomerID = orderLongShips[i].CustomerSendID
-		customerNotification.Content = "Order id: " + orderIDString + " Long ship id: " + longIDString
-		if err := db.Create(customerNotification).Error; err != nil {
-			return err
+	gorushStatus := os.Getenv("GORUSH_STATUS")
+	if gorushStatus == "1" {
+		for i := 0; i < len(orderLongShips); i++ {
+			orderIDString = strconv.FormatUint(uint64(orderLongShips[i].OrderID), 10)
+			customerNotification.CustomerID = orderLongShips[i].CustomerSendID
+			customerNotification.Content = "Order id: " + orderIDString + " Long ship id: " + longIDString
+			userFCMToken := &model.UserFCMToken{}
+			loggedIn := false
+
+			// Run concurrency
+			var g errgroup.Group
+
+			// Save to database
+			g.Go(func() error {
+				if err := db.Create(customerNotification).Error; err != nil {
+					return err
+				}
+				return nil
+			})
+
+			// Send to gorush -> FCM cloud -> Android
+			g.Go(func() error {
+				err := db.Model(userFCMToken).Order("id asc").First(userFCMToken, "customer_id = ?", customerNotification.CustomerID).Error
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return nil
+				}
+				loggedIn = true
+				return err
+			})
+
+			if err := g.Wait(); err != nil {
+				return err
+			}
+			if loggedIn == true {
+				if err := GorushClient.Client(userFCMToken.Token, title, customerNotification.Content); err != nil {
+					return err
+				}
+			}
 		}
-		// Todo: send this notification ton gorush to push to FCM after created
+	} else {
+		for i := 0; i < len(orderLongShips); i++ {
+			orderIDString = strconv.FormatUint(uint64(orderLongShips[i].OrderID), 10)
+			customerNotification.CustomerID = orderLongShips[i].CustomerSendID
+			customerNotification.Content = "Order id: " + orderIDString + " Long ship id: " + longIDString
+			if err := db.Create(customerNotification).Error; err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -71,8 +113,44 @@ func createCustomerNotificationLShortShipHandler(orderID, customerSendID uint, t
 	customerNotification := &model.CustomerNotification{
 		CustomerID: customerSendID, Title: title, Content: content,
 	}
-	if err := db.Create(customerNotification).Error; err != nil {
-		return err
+
+	gorushStatus := os.Getenv("GORUSH_STATUS")
+	if gorushStatus == "1" {
+		userFCMToken := &model.UserFCMToken{}
+		// Run concurrency
+		var g errgroup.Group
+		loggedIn := false
+
+		// Save to database
+		g.Go(func() error {
+			if err := db.Create(customerNotification).Error; err != nil {
+				return err
+			}
+			return nil
+		})
+
+		// Send to gorush -> FCM cloud -> Android
+		g.Go(func() error {
+			err := db.Model(userFCMToken).Order("id asc").First(userFCMToken, "customer_id = ?", customerSendID).Error
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil
+			}
+			loggedIn = true
+			return err
+		})
+
+		if err := g.Wait(); err != nil {
+			return err
+		}
+		if loggedIn == true {
+			if err := GorushClient.Client(userFCMToken.Token, title, content); err != nil {
+				return err
+			}
+		}
+	} else {
+		if err := db.Create(customerNotification).Error; err != nil {
+			return err
+		}
 	}
 	return nil
 }
