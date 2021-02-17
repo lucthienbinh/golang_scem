@@ -18,7 +18,7 @@ type UserAuthenticate struct {
 
 // UserFCMToken structure for Firebase Cloud Messaging
 type UserFCMToken struct {
-	gorm.Model `json:"-"`
+	ID         uint   `gorm:"primary_key;<-:false" json:"id"`
 	UserAuthID uint   `json:"user_auth_id"`
 	CustomerID uint   `json:"customer_id"`
 	EmployeeID uint   `json:"employee_id"`
