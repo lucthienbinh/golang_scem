@@ -20,7 +20,7 @@ Some cool technology using in this project:
 - Redis to replace BuntDB (production)
 - MySQL to replace SQLite (production)
 
-**Config Server Information with server environment file in cmd/scem/ !**
+**Configure Server Information with server environment file in cmd/scem/ !**
 
 ## Running Script
 
