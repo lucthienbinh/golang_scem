@@ -1,6 +1,6 @@
 # Golang App - Supply Chain Event Management 
 
-Some technology in this project:
+Some technology using in this project:
 
 - Gin gonic (Golang framework)
 - Gorm (Golang Object-relational mapping)
@@ -12,7 +12,23 @@ Some technology in this project:
 ## Project Basic Needs
 
 - Golang - (go1.15.5)
-- Gcc version - (gcc version 7.5.0) 
+- Gcc version - (gcc version 7.5.0) to run SQLite
+
+## Project Advance Needs
+
+- Docker Compose to run Zeebe and Gorush
+- Redis to replace BuntDB (production)
+- MySQL to replace SQLite (production)
+- 
+**Config Server Information in cmd/scem/.env**
+
+## Run script
+
+In cmd/scem run below script to start the server.
+
+### `go run main.go`
+
+**There will 2 servers. Server port 5000 for Web and 5001 for Application**
 
 ## Project Information
 
