@@ -1,6 +1,6 @@
 # Golang App - Supply Chain Event Management 
 
-Some technology using in this project:
+Some cool technology using in this project:
 
 - Gin gonic (Golang framework)
 - Gorm (Golang Object-relational mapping)
@@ -20,7 +20,7 @@ Some technology using in this project:
 - Redis to replace BuntDB (production)
 - MySQL to replace SQLite (production)
 
-**Config Server Information in cmd/scem/.env!**
+**Config Server Information with server environment file in cmd/scem/ ! **
 
 ## Running Script
 
@@ -28,7 +28,7 @@ In folder cmd/scem/ run the below script to start the server.
 
 ### `go run main.go`
 
-**There will be 2 servers. Server port 5000 for Web and 5001 for Application**
+**There will be 2 servers. Server port 5000 for Web and 5001 for Application.**
 
 ## Project Information
 
