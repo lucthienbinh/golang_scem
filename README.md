@@ -13,7 +13,7 @@ Some cool technology using in this project:
 
 - Golang - (go1.15.5)
 - Gcc - (gcc version 7.5.0) to run SQLite in Linux
-- MinGW - (GCC-8.1.0 x86_64-posix-seh) ![Download page](https://sourceforge.net/projects/mingw-w64/files/)
+- MinGW - (GCC-8.1.0 x86_64-posix-seh) [Sourceforge.net](https://sourceforge.net/projects/mingw-w64/files/)
 
 ## Project Advance Needs
 
