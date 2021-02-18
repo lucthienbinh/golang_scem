@@ -28,7 +28,8 @@ In folder cmd/scem/ run the below script to start the server.
 
 ### `go run main.go`
 
-**There will be 2 servers at 2 ports. I am uses port 5000 for Web and 5001 for Application.**
+There will be 2 servers at 2 ports. I am using port 5000 for Web and 5001 for Application.\
+We can activate or deactive authenticate for web in server environment file
 
 ## Project Information
 
