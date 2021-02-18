@@ -2,12 +2,12 @@
 
 Some technology in this project:
 
-1. Gin gonic (Golang framework)
-2. Gorm (Golang Object-relational mapping)
-3. GRPC (Binary protocol)
-4. BuntDB (Key-value embedded database in Golang)
-5. Zeebe Client (Connect to Zeebe engine)
-6. Gorush Client (Connect to Gorush for notification) 
+- Gin gonic (Golang framework)
+- Gorm (Golang Object-relational mapping)
+- GRPC (Binary protocol)
+- BuntDB (Key-value embedded database in Golang)
+- Zeebe Client (Connect to Zeebe engine)
+- Gorush Client (Connect to Gorush for notification) 
 
 ## Project Basic Needs
 
