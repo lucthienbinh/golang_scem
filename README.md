@@ -19,16 +19,16 @@ Some technology using in this project:
 - Docker Compose to run Zeebe and Gorush
 - Redis to replace BuntDB (production)
 - MySQL to replace SQLite (production)
-- 
-**Config Server Information in cmd/scem/.env**
 
-## Run script
+**Config Server Information in cmd/scem/.env!**
 
-In cmd/scem run below script to start the server.
+## Running Script
+
+In folder cmd/scem/ run the below script to start the server.
 
 ### `go run main.go`
 
-**There will 2 servers. Server port 5000 for Web and 5001 for Application**
+**There will be 2 servers. Server port 5000 for Web and 5001 for Application**
 
 ## Project Information
 
