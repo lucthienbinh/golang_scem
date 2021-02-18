@@ -24,7 +24,7 @@ Some cool technology using in this project:
 
 ## Running Script
 
-In folder cmd/scem/ run the below script to start the server.
+Go to folder cmd/scem/ and run the below script to start the server.
 
 ### `go run main.go`
 
