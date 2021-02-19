@@ -86,7 +86,7 @@ func DeployWorkflowLongShipHandlerSS(c *gin.Context) {
 func CreateInstanceWorkflowFSHandlerZB(c *gin.Context) {
 	orderWorkflowData := model.OrderWorkflowData{}
 	orderWorkflowData.OrderID = 1
-	orderWorkflowData.ShipperReceiveMoney = true
+	orderWorkflowData.ShipperReceiveMoney = false
 	orderWorkflowData.UseLongShip = true
 	orderWorkflowData.CustomerReceiveID = 1
 	workflowkey, workflowInstanceKey, err := ZBWorkflow.CreateFullShipInstance(&orderWorkflowData)
@@ -101,7 +101,7 @@ func CreateInstanceWorkflowFSHandlerZB(c *gin.Context) {
 func CreateInstanceInternalBugWorkflowFSHandlerZB(c *gin.Context) {
 	orderWorkflowData := model.OrderWorkflowData{}
 	orderWorkflowData.OrderID = 10
-	orderWorkflowData.ShipperReceiveMoney = true
+	orderWorkflowData.ShipperReceiveMoney = false
 	orderWorkflowData.UseLongShip = true
 	orderWorkflowData.CustomerReceiveID = 1
 	workflowkey, workflowInstanceKey, err := ZBWorkflow.CreateFullShipInstance(&orderWorkflowData)
@@ -116,7 +116,7 @@ func CreateInstanceInternalBugWorkflowFSHandlerZB(c *gin.Context) {
 func CreateInstanceMissingParamBugWorkflowFSHandlerZB(c *gin.Context) {
 	orderWorkflowData := model.OrderWorkflowData{}
 	orderWorkflowData.OrderID = 10
-	orderWorkflowData.ShipperReceiveMoney = true
+	orderWorkflowData.ShipperReceiveMoney = false
 	orderWorkflowData.UseLongShip = true
 	orderWorkflowData.CustomerReceiveID = 1
 	workflowkey, workflowInstanceKey, err := ZBWorkflow.CreateFullShipInstanceWithBug(&orderWorkflowData)
