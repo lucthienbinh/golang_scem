@@ -24,7 +24,7 @@ services:
       - GORUSH_CORE_QUEUE_NUM=512
       - GORUSH_GRPC_ENABLED=true
       - GORUSH_ANDROID_ENABLED=true
-      - GORUSH_ANDROID_APIKEY=AAAAFRYpOig:APA91bEcWiimq-Autq8mFpc4iBGsN3oUn2qouo_Th1_fcfRAdG4Nu8EfD4hbXF7Jjz1qQWDF--xRl7yuUAX4v3gt3qhTKWewQlD3WU35oyAZU77gaHUjgc7xIb3SZNEbCnbf9NLgKdGf
+      - GORUSH_ANDROID_APIKEY=<input from google fcm>
     # networks:
     #   - scem-net
   # redis:

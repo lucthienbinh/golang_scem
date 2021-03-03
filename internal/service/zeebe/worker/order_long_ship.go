@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"log"
-	"os"
 
 	"github.com/zeebe-io/zeebe/clients/go/pkg/entities"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/worker"
@@ -15,7 +14,7 @@ import (
 // RunOrderLongShip to start this worker
 func RunOrderLongShip() {
 	client, err := zbc.NewClient(&zbc.ClientConfig{
-		GatewayAddress:         os.Getenv("BROKER_ADDRESS"),
+		GatewayAddress:         "127.0.0.1:26500",
 		UsePlaintextConnection: true,
 	})
 	if err != nil {
@@ -55,7 +54,7 @@ func handleJobOrderLongShip(client worker.JobClient, job entities.Job) {
 	}
 
 	log.Println("Complete job", jobKey, "of type", job.Type)
-	log.Println("Created long ship id:", orderLongShipID)
+	log.Println("Created order long ship id:", orderLongShipID)
 
 	ctx := context.Background()
 	_, err = request.Send(ctx)

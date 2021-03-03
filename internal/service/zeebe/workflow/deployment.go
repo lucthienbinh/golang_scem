@@ -36,6 +36,7 @@ func ConnectZeebeEngine() error {
 func DeployFullShipWorkflow() error {
 
 	ctx := context.Background()
+	///// DEPLOY BPMN FILE TO ZEEEBE SERVER /////
 	response, err := zbClient.NewDeployWorkflowCommand().AddResourceFile(os.Getenv("FULL_SHIP_ZB_FILE_1")).Send(ctx)
 	if err != nil {
 		return err

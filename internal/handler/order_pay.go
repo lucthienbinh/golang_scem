@@ -226,7 +226,7 @@ func UpdateOrderPayConfirmHandler(c *gin.Context) {
 	orderPay := &model.OrderPay{}
 	orderInfoForPayment := &model.OrderInfoForPayment{}
 
-	// Get order pay info for validate step 2
+	// Update customer credit
 	g.Go(func() error {
 		var err error
 		orderPay, err = getOrderPayOrNotFoundByOrderID(orderID)
@@ -237,12 +237,6 @@ func UpdateOrderPayConfirmHandler(c *gin.Context) {
 			c.AbortWithStatus(http.StatusBadRequest)
 			return errors.New("Bad request sent to server")
 		}
-		return nil
-	})
-
-	// Update customer credit
-	g.Go(func() error {
-		var err error
 		orderInfoForPayment, err = getOrderInfoOrNotFoundForPayment(orderID)
 		if err != nil {
 			return err

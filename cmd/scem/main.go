@@ -51,8 +51,8 @@ func main() {
 	CommonService.MappingGormDBConnection(gormDB)
 	CommonMessage.MappingGormDBConnection(gormDB)
 
-	if err := handler.RefreshDatabase(); err != nil {
-		// if err := handler.MigrationDatabase(); err != nil {
+	// if err := handler.RefreshDatabase(); err != nil {
+	if err := handler.MigrationDatabase(); err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
